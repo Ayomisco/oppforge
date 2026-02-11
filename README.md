@@ -19,13 +19,14 @@
 
 ## 🔥 The Problem
 
-Web3 builders miss **90%+ of opportunities** because they're scattered across Twitter/X, Discord, governance forums, protocol blogs, and dozens of platforms. Manually tracking grants, airdrops, hackathons, and bug bounties across 50+ chains is impossible.
+Web3 builders miss **90%+ of opportunities** because they're scattered across Twitter/X, Discord, Telegram, Reddit, governance forums, protocol blogs, and dozens of platforms. Manually tracking grants, airdrops, hackathons, and bug bounties across 50+ chains is impossible.
 
 ## 💡 The Solution
 
 **OppForge** is an autonomous AI agent that:
 
-- 🔍 **Scans 20+ sources** across Solana, EVM chains, and emerging ecosystems
+- 🔍 **Scans 20+ sources** including **Twitter/X, Discord, Telegram, Reddit** and Web3 platforms across Solana, EVM chains, and emerging ecosystems
+- 📡 **Real-time social media monitoring** — catches opportunity announcements the moment they drop on social media
 - 🧠 **Scores opportunities 0–100** based on your skills, interests, and win probability
 - 💬 **AI Chat Assistant (Forge AI)** helps you draft proposals, plan farming strategies, and evaluate opportunities
 - 📊 **Personalized Dashboard** shows only what matters to YOU
@@ -35,6 +36,7 @@ Web3 builders miss **90%+ of opportunities** because they're scattered across Tw
 
 | Feature | Description |
 |---------|-------------|
+| **Social Media Scanner** | Real-time monitoring of Twitter/X, Discord, Telegram, and Reddit for opportunity announcements |
 | **Opportunity Feed** | Real-time, scored feed of grants, airdrops, hackathons, and bounties |
 | **AI Scoring** | Each opportunity scored 0–100 with detailed breakdown |
 | **Forge AI Chat** | Built-in AI assistant for personalized guidance and proposal drafting |
@@ -61,7 +63,8 @@ Web3 builders miss **90%+ of opportunities** because they're scattered across Tw
 ```
 ┌─────────────────────────────────────┐
 │         DATA SOURCES                │
-│  Twitter · Blogs · APIs · Discord   │
+│  Twitter/X · Discord · Telegram     │
+│  Reddit · Blogs · APIs · Forums     │
 └──────────────┬──────────────────────┘
                │
 ┌──────────────▼──────────────────────┐
