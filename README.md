@@ -25,10 +25,15 @@ Web3 builders miss **90%+ of opportunities** because they're scattered across Tw
 
 **OppForge** is an autonomous AI agent that:
 
-- 🔍 **Scans 20+ sources** including **Twitter/X, Discord, Telegram, Reddit** and Web3 platforms across Solana, EVM chains, and emerging ecosystems
-- 📡 **Real-time social media monitoring** — catches opportunity announcements the moment they drop on social media
+- 🔍 **Scans 20+ sources** including **Twitter/X, Reddit**, Web3 platforms, announcement pages, and news sites
+- 🌐 **Crawls the internet** — official project websites, announcement pages, news portals, and blogs
+- 📡 **Real-time social media monitoring** — catches opportunity announcements the moment they drop
 - 🧠 **Scores opportunities 0–100** based on your skills, interests, and win probability
-- 💬 **AI Chat Assistant (Forge AI)** helps you draft proposals, plan farming strategies, and evaluate opportunities
+- 🔥 **Testnet Tracker** — tracks active testnets to farm across all chains
+- 🪂 **Airdrop Alerts** — detects potential airdrop criteria from protocol activity
+- ⏰ **Deadline Urgency** — "Closing in 48hrs!" badges so you never miss out
+- 💬 **AI Chat Assistant (Forge AI)** helps evaluate opportunities and give personalized advice
+- 📧 **Email Notifications** — get alerted when high-score opportunities match your profile
 - 📊 **Personalized Dashboard** shows only what matters to YOU
 - 📋 **Application Tracker** to manage your submissions and results
 
@@ -36,10 +41,16 @@ Web3 builders miss **90%+ of opportunities** because they're scattered across Tw
 
 | Feature | Description |
 |---------|-------------|
-| **Social Media Scanner** | Real-time monitoring of Twitter/X, Discord, Telegram, and Reddit for opportunity announcements |
+| **Social Media Scanner** | Real-time monitoring of Twitter/X (via RSS/Nitter) and Reddit for opportunity announcements |
+| **Web & Announcement Scanning** | Crawls official project websites, announcement pages, and news portals |
 | **Opportunity Feed** | Real-time, scored feed of grants, airdrops, hackathons, and bounties |
 | **AI Scoring** | Each opportunity scored 0–100 with detailed breakdown |
-| **Forge AI Chat** | Built-in AI assistant for personalized guidance and proposal drafting |
+| **🔥 Testnet Tracker** | "Hot Testnets to Farm" — track active testnets across all chains |
+| **🪂 Airdrop Alerts** | "Potential airdrop criteria detected" based on protocol activity |
+| **⏰ Deadline Urgency** | "Closing in 48hrs!" badges + countdown timers |
+| **💰 Reward Estimator** | "This grant typically awards $5K–$20K based on past rounds" |
+| **Forge AI Chat** | Built-in AI assistant for personalized guidance |
+| **📧 Email Notifications** | Get alerted when high-score opportunities match your profile |
 | **Multi-Chain** | Covers Solana, Ethereum, Arbitrum, Base, Optimism, and more |
 | **Smart Filters** | Filter by category, chain, difficulty, reward size, and deadline |
 | **Application Tracker** | Track submissions from "Interested" to "Won" |
@@ -63,8 +74,9 @@ Web3 builders miss **90%+ of opportunities** because they're scattered across Tw
 ```
 ┌─────────────────────────────────────┐
 │         DATA SOURCES                │
-│  Twitter/X · Discord · Telegram     │
-│  Reddit · Blogs · APIs · Forums     │
+│  Twitter/X · Reddit · Blogs         │
+│  Announcement Pages · News Sites    │
+│  Web3 Platforms · Forums            │
 └──────────────┬──────────────────────┘
                │
 ┌──────────────▼──────────────────────┐
@@ -188,12 +200,13 @@ Each opportunity is scored using a hybrid approach:
 - [x] Project scaffold and infrastructure
 - [ ] Backend API with auth, CRUD, and scrapers
 - [ ] AI scoring engine and chat agent
-- [ ] Cyberpunk-brown frontend UI
+- [ ] Cyberpunk-brown frontend UI with testnet tracker + airdrop alerts
 - [ ] Chat integration and polish
+- [ ] Email notification system
 - [ ] Production deployment
-- [ ] Email notifications
-- [ ] Proposal generator
-- [ ] Farming strategy builder
+- [ ] Discord/Telegram scrapers (V2)
+- [ ] Proposal generator (V2)
+- [ ] Farming strategy builder (V2)
 - [ ] Monetization (Gumroad subscription)
 
 ## 🤝 Contributing
