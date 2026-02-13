@@ -1,0 +1,42 @@
+'use client'
+
+import React, { useState } from 'react'
+import Sidebar from '@/components/layout/Sidebar'
+import Header from '@/components/layout/Header'
+import ChatPanel from '@/components/chat/ChatPanel'
+
+export default function DashboardLayout({ children }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  return (
+    <div className="flex h-screen bg-[var(--bg-espresso)] overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar 
+        isMobile={false} 
+        isOpen={true} 
+      />
+      
+      {/* Mobile Sidebar */}
+      <Sidebar 
+        isMobile={true} 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <Header onMenuClick={() => setIsSidebarOpen(true)} />
+        
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[var(--bg-espresso)] scroll-smooth px-6 py-6 md:p-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-[#1A1410] via-transparent to-transparent opacity-50 pointer-events-none" />
+          <div className="w-full max-w-[1920px] mx-auto relative z-10 pb-24">
+            {children}
+          </div>
+        </main>
+
+        {/* Floating Chat Assistant */}
+        <ChatPanel />
+      </div>
+    </div>
+  )
+}
