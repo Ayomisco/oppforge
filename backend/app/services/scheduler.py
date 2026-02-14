@@ -1,42 +1,16 @@
 import schedule
 import time
 import threading
-from ..database import SessionLocal
-from ..models.opportunity import Opportunity
-from ..scrapers.twitter import TwitterScraper
-# from ..scrapers.gitcoin import GitcoinScraper
-
-def run_scrapers():
-    print("Running scrapers...")
-    scrapers = [
-        TwitterScraper(),
-        # GitcoinScraper()
-    ]
-    
-    db = SessionLocal()
-    for scraper in scrapers:
-        opportunities = scraper.run()
-        for opp_data in opportunities:
-            # Check for duplicates
-            exists = db.query(Opportunity).filter(
-                Opportunity.source_id == opp_data["source_id"],
-                Opportunity.source == opp_data["source"]
-            ).first()
-            if not exists:
-                print(f"  + Saving: {opp_data['title'][:30]}...")
-                opp = Opportunity(**opp_data)
-                db.add(opp)
-    
-    db.commit()
-    db.close()
-    print("Scrape complete.")
+from .ingestion import run_pipeline
 
 def start_scheduler():
-    # Run once on startup
-    # run_scrapers() # Commented out to avoid blocking startup in dev
+    # Run once on startup (in separate thread to not block)
+    # run_pipeline() 
     
     # Schedule every 6 hours
-    schedule.every(6).hours.do(run_scrapers)
+    schedule.every(6).hours.do(run_pipeline)
+    
+    print("[Scheduler] Started. Scrapers will run every 6 hours.")
     
     while True:
         schedule.run_pending()

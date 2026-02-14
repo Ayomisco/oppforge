@@ -6,20 +6,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Get DB URL
+# Get DB URL — use SQLite fallback for local development if Supabase is unreachable
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Fix Postgres Protocol
+# Fix Supabase/Heroku postgres:// prefix
 if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Fallback to SQLite if no URL
+# Fallback: if no DATABASE_URL or can't connect, use local SQLite
 if not SQLALCHEMY_DATABASE_URL:
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./oppforge.db"
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./oppforge_dev.db"
 
-# Engine Args
+# SQLite needs special connect_args
 connect_args = {}
-if "sqlite" in SQLALCHEMY_DATABASE_URL:
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)

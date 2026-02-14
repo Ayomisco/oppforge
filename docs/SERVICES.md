@@ -56,12 +56,20 @@
 
 ---
 
+## 6. Communication & Notifications
+
+| Service | Purpose | Cost | Status | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **Plunk** | Transactional Emails | **Free** | ⚠️ Config | Missing `PLUNK_API_KEY` in .env. |
+| **Google Auth** | Social Login | **Free** | ✅ Ready | Endpoint `/auth/google` active. |
+
+---
+
 ## 🔐 Environmental Variables (.env)
 
-| Key | Purpose | Current Value (masked) |
-| :--- | :--- | :--- |
-| `DATABASE_URL` | Aiven Connection | `postgres://avnadmin:AVNS...@...aivencloud.com:25460/defaultdb` |
-| `GROQ_API_KEY` | AI Inference | `gsk_i0k6...` |
-| `RAPIDAPI_KEY` | Twitter Scraping | `0ee1baae...` |
-| `HELIUS_API_KEY` | Solana RPC | `1301b4c8...` |
-| `GOOGLE_CLIENT_ID` | OAuth | `96703723...` |
+| Key | Purpose | Status | Action Required |
+| :--- | :--- | :--- | :--- |
+| `DATABASE_URL` | Aiven Connection | ✅ Verified | None. |
+| `GROQ_API_KEY` | AI Inference | ✅ Verified | None. |
+| `RAPIDAPI_KEY` | Twitter Scraping | ⚠️ 403 Error | **Subscribe** to `twitter-api45` on RapidAPI. |
+| `PLUNK_API_KEY` | Email | ❌ Missing | Add key to .env. |
