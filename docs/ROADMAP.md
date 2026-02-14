@@ -155,13 +155,14 @@ ollama pull llama3:8b
 
 ### Hour 7–9: Scraper Framework
 - [x] Create BaseScraper abstract class
-- [x] Implement Twitter/X scraper (RapidAPI - 30+ Ecosystems)
+- [x] Implement Twitter/X scraper (RapidAPI 154 + Nitter Fallback)
 - [ ] Implement Reddit scraper (Deferred)
 - [ ] Implement Web/announcement page crawler (Deferred)
 - [x] Implement Search (`/opportunities/search`) endpoint
 - [x] Implement Trending (`/opportunities/trending`) endpoint
 - [x] Configure Plunk Email Service
 - [x] Run Full API Test Suite (Coverage: Auth, Jobs, Tracker, Email)
+- [x] Implement Notification System (Email + Web Alerts on Match)
 
 ## Phase 3: Frontend Integration (Next)
 - [ ] Replace Mock Data in Dashboard with API Calls

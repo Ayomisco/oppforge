@@ -73,3 +73,8 @@
 | `GROQ_API_KEY` | AI Inference | ✅ Verified | None. |
 | `RAPIDAPI_KEY` | Twitter Scraping | ⚠️ 403 Error | **Subscribe** to `twitter-api45` on RapidAPI. |
 | `PLUNK_API_KEY` | Email | ❌ Missing | Add key to .env. |
+
+
+[x] **Scraper Engine**:
+  - Twitter (Verified): Using RapidAPI (`twitter154`) + Nitter Fallback (`nitter.net`, `xcancel.com`).
+  - Ingestion Pipeline: Running.
