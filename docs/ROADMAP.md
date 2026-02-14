@@ -158,10 +158,19 @@ ollama pull llama3:8b
 - [x] Implement Twitter/X scraper (RapidAPI - 30+ Ecosystems)
 - [ ] Implement Reddit scraper (Deferred)
 - [ ] Implement Web/announcement page crawler (Deferred)
-- [x] Implement Gitcoin scraper (Stub)
-- [x] Implement Superteam Earn scraper (Stub)
-- [x] Implement Immunefi scraper (Stub)
-- [ ] Implement RSS/blog scraper (Deferred)
+- [x] Implement Search (`/opportunities/search`) endpoint
+- [x] Implement Trending (`/opportunities/trending`) endpoint
+- [x] Configure Plunk Email Service
+- [x] Run Full API Test Suite (Coverage: Auth, Jobs, Tracker, Email)
+
+## Phase 3: Frontend Integration (Next)
+- [ ] Replace Mock Data in Dashboard with API Calls
+- [ ] Connect Authentication Flow (Google -> Backend)
+- [ ] Implement Real Search & Filtering UI
+
+## Phase 4: AI Engine & Smart Contracts
+- [ ] AI Scoring Logic (Groq Integration)
+- [ ] Smart Contract Deployment (OppForgeFounder.sol)
 
 ### Hour 8–9: Data Processing Pipeline
 - [x] Create ingestion pipeline: scrape → normalize → store

@@ -79,4 +79,6 @@ ollama-data/
 .Trashes
 ehthumbs.db
 
-dedundantsapps
+dedundantsappsdebug_twitter.py
+backend/debug_twitter.py
+backend/app/tests/test_full.py
