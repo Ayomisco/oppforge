@@ -1,36 +1,40 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic_settings import BaseSettings
-from supabase import create_client, Client
-import os
 from dotenv import load_dotenv
+from .database import engine, Base
+# Routers
+from .routers import auth, opportunities, stats, tracker, notifications, chat
 
 load_dotenv()
 
-class Settings(BaseSettings):
-    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
-    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
-    
-    class Config:
-        env_file = ".env"
-
-settings = Settings()
+# Create Tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="OppForge API", version="0.1.0")
 
 # CORS
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://app.oppforge.xyz",
+    "https://oppforge.xyz"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://oppforge.xyz", "https://app.oppforge.xyz"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Supabase Client (Lazy init if env vars missing)
-supabase: Client = None
-if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+# Routers
+app.include_router(auth.router)
+app.include_router(opportunities.router)
+app.include_router(stats.router)
+app.include_router(tracker.router)
+app.include_router(notifications.router)
+app.include_router(chat.router)
 
 @app.get("/")
 def read_root():
@@ -38,5 +42,4 @@ def read_root():
 
 @app.get("/health")
 def check_health():
-    db_status = "connected" if supabase else "disconnected (missing env)"
-    return {"status": "ok", "database": db_status}
+    return {"status": "ok", "database": "connected"}

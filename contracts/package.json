@@ -1,0 +1,18 @@
+{
+  "name": "oppforge-contracts",
+  "version": "1.0.0",
+  "description": "OppForge Arbitrum Smart Contracts",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy:arbitrum": "npx hardhat run scripts/deploy.js --network arbitrum"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "dotenv": "^16.3.1"
+  }
+}
