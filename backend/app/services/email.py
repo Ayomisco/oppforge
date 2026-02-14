@@ -1,43 +1,43 @@
-import requests
+import httpx
 import os
+from typing import List, Optional
 
-PLUNK_API_KEY = "sk_a4315e3be4181fd33525775a02cba709c939eb83f61d3caa" # Usually limit this to env, but user provided explicitly
+PLUNK_API_KEY = os.getenv("PLUNK_SECRET_KEY")
+API_URL = "https://api.useplunk.com/v1/send"
 
-def send_email(to_email: str, subject: str, body: str):
+async def send_email(to_email: str, subject: str, body: str, name: str = "OppForge"):
     """
-    Send email via Plunk API.
+    Send an email via Plunk API.
     """
-    try:
-        response = requests.post(
-            "https://api.useplunk.com/v1/send",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {PLUNK_API_KEY}"
-            },
-            json={
+    if not PLUNK_API_KEY:
+        print("Plunk: No API Key found. Skipping email.")
+        return False
+
+    async with httpx.AsyncClient() as client:
+        try:
+            payload = {
                 "to": to_email,
                 "subject": subject,
                 "body": body,
-                "name": "OppForge System"
+                "name": name,
+                "from": "hello@oppforge.xyz" # Adjust if user has a verified domain
             }
-        )
-        if response.status_code == 200:
-            return True, "Email sent"
-        else:
-            return False, f"Error: {response.text}"
-    except Exception as e:
-        return False, str(e)
-
-def send_welcome_email(user_email: str, name: str):
-    subject = "Welcome to OppForge! ⚒️"
-    body = f"""
-    Hi {name},
-    
-    Welcome to OppForge - The AI Agent for Web3 Opportunities.
-    
-    We're excited to help you find your next grant, gig, or airdrop.
-    
-    Best,
-    The OppForge Team
-    """
-    return send_email(user_email, subject, body)
+            
+            # Note: Plunk might require 'from' to be verified. 
+            # If default fails, we might need a generic one or user's domain.
+            
+            response = await client.post(
+                API_URL,
+                headers={"Authorization": f"Bearer {PLUNK_API_KEY}"},
+                json=payload
+            )
+            
+            if response.status_code == 200:
+                print(f"Plunk: Email sent to {to_email}")
+                return True
+            else:
+                print(f"Plunk Error {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            print(f"Plunk Exception: {e}")
+            return False
