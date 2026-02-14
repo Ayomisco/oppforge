@@ -25,11 +25,15 @@ export const viewport = {
   themeColor: '#0D0A07',
 }
 
+import { Providers } from '../components/providers/Providers';
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

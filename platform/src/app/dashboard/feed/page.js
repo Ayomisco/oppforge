@@ -1,44 +1,38 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import useSWR from 'swr'
+import api from '@/lib/api'
 import OpportunityCard from '@/components/dashboard/OpportunityCard'
 import FilterBar from '@/components/dashboard/FilterBar'
-import { Rocket, Filter, SlidersHorizontal } from 'lucide-react'
+import { Rocket, Filter, SlidersHorizontal, Loader2 } from 'lucide-react'
 
-// Reuse mock data for now (will lift to context later)
-const MOCK_OPPS = [
-  {
-    id: '1', title: 'Solana Foundation Renaissance Hackathon', type: 'Hackathon', chain: 'Solana', reward: '$1,000,000+', score: 98, deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), source: 'Twitter', summary: 'Build the next generation of dApps on Solana. Special tracks for DePIN, DeFi, and Consumer Apps.'
-  },
-  {
-    id: '2', title: 'Arbitrum Stylus Grant Program', type: 'Grant', chain: 'Arbitrum', reward: '$50,000 max', score: 92, deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), source: 'Gitcoin', summary: 'Grants for developers building with Rust, C, or C++ on Stylus.'
-  },
-  {
-    id: '3', title: 'Superteam Earn: DePIN Dashboard', type: 'Bounty', chain: 'Solana', reward: '$3,500', score: 88, deadline: new Date(Date.now() + 40 * 60 * 60 * 1000).toISOString(), source: 'Superteam', summary: 'Design and build a comprehensive analytics dashboard for a new DePIN protocol.'
-  },
-  {
-    id: '4', title: 'Optimism RetroPGF Round 4', type: 'Grant', chain: 'Optimism', reward: 'Varies', score: 85, deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), source: 'Mirror', summary: 'Retroactive public goods funding for contributions to the Optimism ecosystem.'
-  },
-  {
-    id: '5', title: 'Scroll Mainnet Airdrop Strategy', type: 'Airdrop', chain: 'Scroll', reward: 'Alpha', score: 95, deadline: null, source: 'Alpha Feed', summary: 'Potential airdrop criteria detected based on recent mainnet activity.'
-  },
-  {
-    id: '6', title: 'Base Onchain Summer II', type: 'Hackathon', chain: 'Base', reward: '$500,000', score: 78, deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(), source: 'Warpcast', summary: 'Join the second Onchain Summer hackathon. Build on Base and get funded.'
-  },
-  {
-    id: '7', title: 'ZkSync Native Paymaster Bounty', type: 'Bounty', chain: 'ZkSync', reward: '$2,000', score: 75, deadline: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(), source: 'Bountycaster', summary: 'Implement a native paymaster for gasless transactions on ZkSync Era.'
-  },
-  {
-    id: '8', title: 'Farcaster Frame Grant', type: 'Grant', chain: 'Base', reward: '$5,000', score: 91, deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), source: 'Farcaster', summary: 'Build an innovative Frame that drives user engagement.'
-  }
-]
+const fetcher = url => api.get(url).then(res => res.data)
 
 export default function FeedPage() {
   const [category, setCategory] = useState('all')
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
-  const filteredOpps = category === 'all' 
-    ? MOCK_OPPS 
-    : MOCK_OPPS.filter(o => o.type.toLowerCase().includes(category))
+  // Debounce Search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  // Construct API Query
+  const getQuery = () => {
+    const params = []
+    if (debouncedSearch) return `/opportunities/search?q=${encodeURIComponent(debouncedSearch)}`
+    
+    // Standard Feed
+    let endpoint = '/opportunities'
+    if (category !== 'all') params.push(`category=${category}`)
+    
+    return params.length > 0 ? `${endpoint}?${params.join('&')}` : endpoint
+  }
+
+  const { data: opportunities, error, isLoading } = useSWR(getQuery(), fetcher)
 
   return (
     <div className="space-y-6">
@@ -47,7 +41,7 @@ export default function FeedPage() {
         <div>
           <h1 className="text-2xl font-bold text-white mb-1">Live Feed</h1>
           <p className="text-xs text-gray-500 font-mono">
-             REAL_TIME_MONITORING // ACTIVE_SIGNALS: <span className="text-[var(--accent-forge)]">{filteredOpps.length}</span>
+             REAL_TIME_MONITORING // ACTIVE_SIGNALS: <span className="text-[var(--accent-forge)]">{opportunities ? opportunities.length : 0}</span>
           </p>
         </div>
         
@@ -56,11 +50,13 @@ export default function FeedPage() {
              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
              <input 
                type="text" 
-               placeholder="Filter stream..." 
-               className="bg-[var(--bg-walnut)] border border-[var(--glass-border)] rounded px-3 py-1.5 pl-9 text-xs font-mono text-white focus:outline-none focus:border-[var(--accent-forge)]"
+               placeholder="Filter stream... (e.g. 'Solana Grant')" 
+               value={search}
+               onChange={(e) => setSearch(e.target.value)}
+               className="bg-[#1E293B] border border-gray-700 rounded px-3 py-1.5 pl-9 text-xs font-mono text-white focus:outline-none focus:border-blue-500 min-w-[200px]"
              />
            </div>
-           <button className="btn btn-secondary px-3 py-1.5">
+           <button className="btn btn-secondary px-3 py-1.5 border border-gray-700 hover:bg-gray-800 rounded flex items-center gap-2 text-xs text-gray-300">
              <SlidersHorizontal size={14} /> View
            </button>
         </div>
@@ -69,13 +65,28 @@ export default function FeedPage() {
       {/* Filter Bar */}
       <FilterBar activeCategory={category} onCategoryChange={setCategory} />
 
-      {/* Infinite List */}
+      {/* List */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center pb-2 border-b border-[var(--glass-border)]">
+        <div className="flex justify-between items-center pb-2 border-b border-gray-800">
               <span className="text-[10px] font-mono uppercase text-gray-500">Signal Stream</span>
-              <span className="text-[10px] font-mono text-gray-600">Sync: 12ms ago</span>
+              <span className="text-[10px] font-mono text-gray-600">
+                  {isLoading ? 'Syncing...' : 'Live'}
+              </span>
         </div>
-        {filteredOpps.map((opp, idx) => (
+        
+        {isLoading && (
+            <div className="flex justify-center py-10">
+                <Loader2 className="animate-spin text-blue-500" size={24} />
+            </div>
+        )}
+        
+        {!isLoading && opportunities?.length === 0 && (
+            <div className="text-center py-10 text-gray-500">
+                No signals detected matching parameters.
+            </div>
+        )}
+
+        {opportunities?.map((opp, idx) => (
           <OpportunityCard key={opp.id} opp={opp} index={idx} />
         ))}
       </div>

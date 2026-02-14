@@ -8,10 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.10",
+    "@react-oauth/google": "^0.13.4",
     "@tailwindcss/postcss": "^4.1.18",
+    "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.5",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.0",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
     "postcss": "^8.5.6",
@@ -21,7 +25,9 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.7.0",
     "socket.io-client": "^4.8.3",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "viem": "^2.45.3",
+    "wagmi": "^2.19.5"
   },
   "devDependencies": {
     "babel-plugin-react-compiler": "1.0.0"

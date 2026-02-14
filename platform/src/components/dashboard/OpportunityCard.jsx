@@ -20,6 +20,9 @@ const ScoreRing = ({ score }) => {
 }
 
 export default function OpportunityCard({ opp, index }) {
+  const score = opp.score || opp.ai_score || 0
+  const type = opp.type || opp.category || 'Unknown'
+  const summary = opp.summary || opp.description || ''
   const isUrgent = opp.deadline && new Date(opp.deadline) < new Date(Date.now() + 48 * 60 * 60 * 1000)
 
   return (
@@ -32,14 +35,14 @@ export default function OpportunityCard({ opp, index }) {
     >
       {/* 1. Left: Score Indicator */}
       <div className="shrink-0 pt-1">
-        <ScoreRing score={opp.score} />
+        <ScoreRing score={score} />
       </div>
 
       {/* 2. Middle: Info Density */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-[10px] uppercase tracking-wider text-[var(--accent-holo)] bg-[var(--accent-holo)]/10 px-1.5 rounded-sm">
-            {opp.type}
+            {type}
           </span>
           <span className="text-[10px] text-gray-500 font-mono">
             {opp.chain} // {opp.source}
@@ -56,7 +59,7 @@ export default function OpportunityCard({ opp, index }) {
         </Link>
         
         <p className="text-[11px] text-gray-400 line-clamp-1 mt-0.5">
-          {opp.summary}
+          {summary}
         </p>
       </div>
 

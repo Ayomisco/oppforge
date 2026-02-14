@@ -55,12 +55,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 # --- Endpoints ---
 
+from ..schemas.auth import GoogleLoginRequest
+
 @router.post("/google", response_model=dict)
-def google_login(token_data: dict, db: Session = Depends(database.get_db)):
+def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.get_db)):
     """
     Verifies Google Token, Creates/Updates User, Returns JWT + User Data.
     """
-    token = token_data.get("token")
+    token = login_data.token
     if not token:
         raise HTTPException(status_code=400, detail="Token required")
     
