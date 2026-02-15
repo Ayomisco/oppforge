@@ -18,6 +18,7 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     username: Optional[str] = None
     bio: Optional[str] = None
+    wallet_address: Optional[str] = None
     location: Optional[str] = None
     website_url: Optional[str] = None
     
@@ -38,6 +39,7 @@ class UserUpdate(BaseModel):
 class UserResponse(UserBase):
     id: int
     username: Optional[str] = None
+    wallet_address: Optional[str] = None
     # Computed/Gamified
     xp: int
     level: int

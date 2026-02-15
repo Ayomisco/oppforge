@@ -59,6 +59,7 @@ def seed_db():
             "required_skills": ["Must be built on Solana", "Open source code repository", "Short video demo (max 3 mins)", "Working prototype deployed to devnet/mainnet"],
             "ai_summary": "Build the next generation of dApps on Solana. Special tracks for DePIN, DeFi, and Consumer Apps.",
             "win_probability": "High",
+            "estimated_value_usd": 1000000.0,
             "deadline": datetime.now() + timedelta(hours=48),
         },
         {
@@ -70,6 +71,7 @@ def seed_db():
             "ai_score": 92, "difficulty": "Hard",
             "tags": ["Rust", "C++", "Stylus"],
             "ai_summary": "Grants for developers building with Rust, C, or C++ on Stylus.",
+            "estimated_value_usd": 50000.0,
             "deadline": datetime.now() + timedelta(days=20),
         },
         {
@@ -81,6 +83,7 @@ def seed_db():
             "ai_score": 88, "difficulty": "Medium",
             "tags": ["React", "Analytics", "DePIN"],
             "ai_summary": "Design and build a comprehensive analytics dashboard for a new DePIN protocol.",
+            "estimated_value_usd": 3500.0,
             "deadline": datetime.now() + timedelta(hours=48),
         },
         {
@@ -92,6 +95,7 @@ def seed_db():
             "ai_score": 85, "difficulty": "Medium",
             "tags": ["Public Goods", "Governance", "L2"],
             "ai_summary": "Retroactive public goods funding for contributions to the Optimism ecosystem.",
+            "estimated_value_usd": 250000.0,
             "deadline": datetime.now() + timedelta(days=14),
         },
         {
@@ -103,6 +107,7 @@ def seed_db():
             "ai_score": 95, "difficulty": "Easy",
             "tags": ["Bridge", "DEX", "Volume"],
             "ai_summary": "Potential airdrop criteria detected based on recent mainnet activity.",
+            "estimated_value_usd": 0.0,
             "deadline": None,
         },
         {
@@ -114,6 +119,7 @@ def seed_db():
             "ai_score": 78, "difficulty": "Medium",
             "tags": ["Onchain", "Consumer", "Social"],
             "ai_summary": "Join the second Onchain Summer hackathon. Build on Base and get funded.",
+            "estimated_value_usd": 500000.0,
             "deadline": datetime.now() + timedelta(days=10),
         },
         {
@@ -125,6 +131,7 @@ def seed_db():
             "ai_score": 75, "difficulty": "Hard",
             "tags": ["Solidity", "ZK", "Paymaster"],
             "ai_summary": "Implement a native paymaster for gasless transactions on ZkSync Era.",
+            "estimated_value_usd": 2000.0,
             "deadline": datetime.now() + timedelta(hours=72),
         },
         {
@@ -136,16 +143,59 @@ def seed_db():
             "ai_score": 91, "difficulty": "Medium",
             "tags": ["Frames", "Social", "React"],
             "ai_summary": "Build an innovative Frame that drives user engagement.",
+            "estimated_value_usd": 5000.0,
             "deadline": datetime.now() + timedelta(days=3),
+        },
+        {
+            "title": "Monad Community Ambassador Program",
+            "category": "Ambassador", "chain": "Monad",
+            "reward_pool": "Token Allocation", "source": "Twitter",
+            "url": "https://monad.xyz/ambassadors",
+            "description": "Join the Monad ecosystem as a lead community contributor. Responsibilities include content creation, local events, and technical moderation.",
+            "ai_score": 94, "difficulty": "Easy",
+            "tags": ["Community", "Content", "Moderation"],
+            "ai_summary": "Join the Monad ecosystem as a community lead for content and moderation.",
+            "estimated_value_usd": 12000.0,
+            "deadline": datetime.now() + timedelta(days=30),
+        },
+        {
+            "title": "Berachain Artio Testnet Campaign",
+            "category": "Testnet", "chain": "Berachain",
+            "reward_pool": "Future Airdrop", "source": "Galaxy",
+            "url": "https://berachain.com",
+            "description": "Participate in the Artio testnet by swapping, lending, and providing liquidity to earn Proof of Liquidity points.",
+            "ai_score": 96, "difficulty": "Easy",
+            "tags": ["Testnet", "DeFi", "Liquidity"],
+            "ai_summary": "Interact with Berachain testnet to qualify for future rewards.",
+            "estimated_value_usd": 0.0,
+            "deadline": None,
+        },
+        {
+            "title": "Hyperlane Bridging Quest",
+            "category": "Airdrop Alpha", "chain": "Multi-chain",
+            "reward_pool": "Alpha", "source": "Alpha Feed",
+            "url": "https://hyperlane.xyz",
+            "description": "Bridge assets using Hyperlane to maximize cross-chain interaction scores. Potential criteria for upcoming distribution.",
+            "ai_score": 89, "difficulty": "Easy",
+            "tags": ["Bridge", "Interoperability", "Staking"],
+            "ai_summary": "Strategic bridging guide for Hyperlane ecosystem rewards.",
+            "estimated_value_usd": 0.0,
+            "deadline": datetime.now() + timedelta(days=7),
         },
     ]
 
     created = 0
+    updated = 0
     for data in opps_data:
-        if not db.query(Opportunity).filter(Opportunity.title == data["title"]).first():
+        existing = db.query(Opportunity).filter(Opportunity.title == data["title"]).first()
+        if not existing:
             db.add(Opportunity(**data))
             created += 1
-    print(f"  ✓ {created} opportunities seeded")
+        else:
+            for key, value in data.items():
+                setattr(existing, key, value)
+            updated += 1
+    print(f"  ✓ {created} opportunities seeded, {updated} updated")
 
     # ─── 4. Demo Tracked Applications (for Tracker page) ───
     if demo and demo.id:

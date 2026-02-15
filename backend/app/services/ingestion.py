@@ -9,6 +9,8 @@ from ..scrapers.gitcoin import GitcoinScraper
 from .email import send_email, get_email_template
 import asyncio
 
+from .curator import AgentCurator
+
 class IngestionPipeline:
     def __init__(self):
         self.scrapers = [
@@ -19,7 +21,7 @@ class IngestionPipeline:
         self.db = SessionLocal()
 
     def run(self):
-        print("[Ingestion] Starting pipeline...")
+        print("[Ingestion] Starting pipeline (AI Augmented)...")
         total_new = 0
         new_opps_list = [] # Store for notification processing
         
@@ -43,24 +45,33 @@ class IngestionPipeline:
     def _save_opportunities(self, opportunities):
         added = []
         for opp_data in opportunities:
+            # 0. Check if it exists FIRST to avoid redundant AI calls
             exists = self.db.query(Opportunity).filter(
-                Opportunity.source_id == opp_data["source_id"],
+                Opportunity.source_id == str(opp_data["source_id"]),
                 Opportunity.source == opp_data["source"]
             ).first()
-            
-            if not exists:
-                title_exists = self.db.query(Opportunity).filter(
-                    Opportunity.title == opp_data["title"]
-                ).first()
-                if title_exists:
-                    continue
+            if exists: continue
 
-                print(f"  + Saving: {opp_data['title'][:40]}...")
-                opp = Opportunity(**opp_data)
-                self.db.add(opp)
-                self.db.commit() # Commit immediately to get ID
-                self.db.refresh(opp)
-                added.append(opp)
+            # 1. AI Triage & Refinement
+            print(f"  ? Triaging: {opp_data['title'][:40]}...")
+            refined_data = AgentCurator.triage_and_refine(opp_data)
+            
+            if not refined_data:
+                print(f"  - Noise discarded.")
+                continue
+
+            # 2. Final duplication check on refined title
+            title_exists = self.db.query(Opportunity).filter(
+                Opportunity.title == refined_data["title"]
+            ).first()
+            if title_exists: continue
+
+            print(f"  + Saving Refined: {refined_data['title'][:40]}...")
+            opp = Opportunity(**refined_data)
+            self.db.add(opp)
+            self.db.commit() # Commit immediately to get ID
+            self.db.refresh(opp)
+            added.append(opp)
         
         return added
 
@@ -109,7 +120,7 @@ class IngestionPipeline:
                     if user.email:
                         body_html = get_email_template(
                             title=f"New Match: {opp.title}",
-                            body=f"We found a new opportunity that matches your preferences.<br><br><strong>Category:</strong> {opp.category}<br><strong>Chain:</strong> {opp.chain}<br><strong>Reward:</strong> {opp.reward or 'Unspecified'}<br><br>{opp.description[:200]}...",
+                            body=f"We found a new opportunity that matches your preferences.<br><br><strong>Category:</strong> {opp.category}<br><strong>Chain:</strong> {opp.chain}<br><strong>Reward:</strong> {opp.reward_pool or 'Unspecified'}<br><br>{opp.description[:200]}...",
                             cta_link=opp.url, # Or platform link
                             cta_text="View Details"
                         )

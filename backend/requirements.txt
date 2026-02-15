@@ -16,8 +16,9 @@ beautifulsoup4
 playwright
 lxml
 schedule
-pydantic
+pydantic[email]
 pydantic-settings
 python-multipart
 httpx
 sqlalchemy-libsql
+email-validator

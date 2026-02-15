@@ -73,16 +73,24 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
         google_id = idinfo['sub']
         email = idinfo['email']
         name = idinfo.get('name')
+        first_name = idinfo.get('given_name')
+        last_name = idinfo.get('family_name')
         picture = idinfo.get('picture')
 
         # 2. Logic: Find or Create User
         user = db.query(UserModel).filter(UserModel.email == email).first()
         
         if not user:
+            # Generate a simple username from email if not provided
+            base_username = email.split('@')[0]
+            # Simple dedup for username (could be improved)
             user = UserModel(
                 email=email,
                 google_id=google_id,
                 full_name=name,
+                first_name=first_name,
+                last_name=last_name,
+                username=base_username,
                 avatar_url=picture,
                 is_pro=False,
                 tier="scout"
@@ -94,6 +102,9 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
             if not user.google_id:
                 user.google_id = google_id
             user.avatar_url = picture
+            if not user.first_name: user.first_name = first_name
+            if not user.last_name: user.last_name = last_name
+            if not user.username: user.username = email.split('@')[0]
             db.commit()
             db.refresh(user)
             
@@ -107,7 +118,7 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
         return {
             "access_token": access_token, 
             "token_type": "bearer",
-            "user": schemas.UserResponse.from_orm(user)
+            "user": schemas.UserResponse.model_validate(user)
         }
 
     except ValueError as e:

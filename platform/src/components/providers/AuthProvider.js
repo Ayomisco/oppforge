@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Cookies from 'js-cookie';
-import api from '../lib/api';
+import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-      <AuthContext.Provider value={{ user, loading, loginGoogle, logout }}>
+      <AuthContext.Provider value={{ user, loading, loginGoogle, logout, setUser }}>
         {children}
       </AuthContext.Provider>
     </GoogleOAuthProvider>

@@ -42,7 +42,13 @@ class RedditScraper(BaseScraper):
         unique_ids = set()
         
         # Keywords to identify opportunities vs just discussion
-        opp_keywords = ["hackathon", "grant", "bounty", "apply", "hiring", "job", "career", "testnet", "airdrop"]
+        opportunity_patterns = {
+            "Grant": ["grants", "funding", "program", "apply for", "developer grant"],
+            "Hackathon": ["hackathon", "buidl", "code challenge", "prize pool"],
+            "Bounty": ["bounty", "bug bounty", "issue", "reward for"],
+            "Airdrop": ["airdrop", "alpha", "eligible", "snapshot"],
+            "Testnet": ["testnet", "incentivized", "node operator", "validator program"]
+        }
         
         for post in raw_data:
             pid = post.get("id")
@@ -53,30 +59,35 @@ class RedditScraper(BaseScraper):
             selftext = post.get("selftext", "")
             subreddit = post.get("_subreddit", "")
             
-            # Simple filter: must contain opportunity keywords
             combined_text = (title + " " + selftext).lower()
-            if not any(k in combined_text for k in opp_keywords):
+            
+            # Identify category and verify it's a real opportunity
+            found_category = None
+            for cat, keywords in opportunity_patterns.items():
+                if any(k in combined_text for k in keywords):
+                    found_category = cat
+                    break
+            
+            if not found_category:
                 continue
 
-            # Guess Category
-            category = "Grant" # Default catch-all
-            if "hackathon" in combined_text: category = "Hackathon"
-            elif "bounty" in combined_text: category = "Bounty"
-            elif "airdrop" in combined_text: category = "Airdrop"
-            elif "testnet" in combined_text: category = "Testnet"
+            # Bonus score for specific actionable phrases
+            action_bonus = 0
+            if any(x in combined_text for x in ["apply now", "register", "deadline", "prize", "submit"]):
+                action_bonus = 15
             
             unique_ids.add(pid)
             parsed_items.append({
                 "title": title[:100],
-                "description": selftext[:500] or title, # Truncate for DB
+                "description": selftext[:800] or title,
                 "url": post.get("url") or f"https://reddit.com{post.get('permalink')}",
                 "source": "Reddit",
                 "source_id": pid,
-                "category": category,
-                "chain": "Multi-chain", # Could infer from subreddit (e.g. solana -> Solana)
+                "category": found_category,
+                "chain": subreddit.capitalize(),
                 "posted_at": datetime.fromtimestamp(post.get("created_utc", 0)),
-                "tags": [category, "Reddit", subreddit],
-                "ai_score": 40 + (post.get("score", 0) % 20) # Score based on upvotes roughly
+                "tags": [found_category, "Reddit", subreddit],
+                "ai_score": min(45 + action_bonus + (post.get("ups", 0) // 10), 95)
             })
             
         return parsed_items

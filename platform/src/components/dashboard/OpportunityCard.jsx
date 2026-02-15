@@ -31,7 +31,7 @@ export default function OpportunityCard({ opp, index }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       whileHover={{ scale: 1.01 }}
-      className="glass-card group flex items-start gap-4 p-3 hover:bg-[var(--bg-mahogany)]/30 transition-colors"
+      className="glass-card group flex items-start gap-4 p-3 hover:border-[#ff5500]/30 transition-all hover:bg-[var(--glass-shine)]"
     >
       {/* 1. Left: Score Indicator */}
       <div className="shrink-0 pt-1">
@@ -41,7 +41,7 @@ export default function OpportunityCard({ opp, index }) {
       {/* 2. Middle: Info Density */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] uppercase tracking-wider text-[var(--accent-holo)] bg-[var(--accent-holo)]/10 px-1.5 rounded-sm">
+          <span className="text-[10px] uppercase tracking-wider text-[#ffaa00] bg-[#ffaa00]/10 px-1.5 rounded-sm border border-[#ffaa00]/20">
             {type}
           </span>
           <span className="text-[10px] text-gray-500 font-mono">
@@ -54,7 +54,7 @@ export default function OpportunityCard({ opp, index }) {
           )}
         </div>
 
-        <Link href={`/dashboard/opportunity/${opp.id}`} className="group-hover:text-[var(--accent-forge)] transition-colors">
+        <Link href={`/dashboard/opportunity/${opp.id}`} className="group-hover:text-[#ff5500] transition-colors">
           <h3 className="text-sm font-bold text-white truncate pr-4">{opp.title}</h3>
         </Link>
         
@@ -65,18 +65,18 @@ export default function OpportunityCard({ opp, index }) {
 
       {/* 3. Right: Reward & Action */}
       <div className="shrink-0 text-right flex flex-col items-end gap-2">
-        <div className="text-sm font-bold text-[var(--accent-amber)] font-mono">{opp.reward}</div>
+        <div className="text-sm font-bold text-[#10b981] font-mono">{opp.reward_pool || opp.reward || ''}</div>
         
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
           <Link 
             href={`/dashboard/opportunity/${opp.id}`}
-            className="p-1.5 hover:bg-white/10 rounded-sm text-gray-400 hover:text-white"
+            className="p-1.5 hover:bg-white/10 rounded-sm text-gray-500 hover:text-[#ffaa00] transition-colors"
           >
              <MessageSquare size={14} />
           </Link>
           <Link 
             href={`/dashboard/opportunity/${opp.id}`}
-            className="p-1.5 bg-[var(--accent-forge)] text-black rounded-sm hover:brightness-110"
+            className="p-1.5 bg-gradient-to-r from-[#ff5500] to-[#cc4400] text-white rounded-sm hover:scale-110 active:scale-95 transition-all shadow-lg shadow-orange-500/20"
           >
              <ArrowUpRight size={14} />
           </Link>

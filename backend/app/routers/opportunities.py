@@ -50,6 +50,52 @@ def get_trending(db: Session = Depends(database.get_db)):
     """
     return db.query(Opportunity).order_by(desc(Opportunity.ai_score)).limit(10).all()
 
+@router.get("/priority", response_model=List[schemas.OpportunityResponse])
+def get_priority_stream(
+    db: Session = Depends(database.get_db), 
+    current_user = Depends(get_current_user)
+):
+    """
+    Personalized stream based on user skills and preferred chains.
+    Calculates a dynamic score: AI Base Score + Match Bonus.
+    """
+    all_opps = db.query(Opportunity).filter(Opportunity.is_open == True).all()
+    
+    scored_opps = []
+    user_skills = set(current_user.skills or [])
+    user_chains = set(current_user.preferred_chains or [])
+    
+    for opp in all_opps:
+        match_bonus = 0
+        opp_tags = set(opp.tags or [])
+        opp_reqs = set(opp.required_skills or [])
+        
+        # Skill Match Bonus (+5 per skill)
+        skill_matches = user_skills.intersection(opp_tags.union(opp_reqs))
+        match_bonus += len(skill_matches) * 5
+        
+        # Chain Match Bonus (+10)
+        if opp.chain in user_chains:
+            match_bonus += 10
+            
+        # Add a dynamic 'match_score' attribute for the response
+        # In a real app, we'd probably save this or return it in a wrapper
+        # For now, we'll just sort by (ai_score + match_bonus)
+        opp.ai_score = min(opp.ai_score + match_bonus, 100)
+        scored_opps.append(opp)
+        
+    # Sort by the updated score
+    scored_opps.sort(key=lambda x: x.ai_score, reverse=True)
+    
+    return scored_opps[:20]
+
+@router.get("/testnets", response_model=List[schemas.OpportunityResponse])
+def get_testnets(db: Session = Depends(database.get_db)):
+    """
+    Returns only testnet opportunities for the side widget.
+    """
+    return db.query(Opportunity).filter(Opportunity.category == "Testnet").limit(5).all()
+
 @router.get("/{id}", response_model=schemas.OpportunityResponse)
 def read_opportunity(id: int, db: Session = Depends(database.get_db)):
     opp = db.query(Opportunity).filter(Opportunity.id == id).first()

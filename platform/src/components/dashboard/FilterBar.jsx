@@ -2,13 +2,24 @@
 
 import React from 'react'
 
+import { 
+  Hash, 
+  Rocket, 
+  Zap, 
+  Target, 
+  Sparkles, 
+  Users, 
+  Activity 
+} from 'lucide-react'
+
 const categories = [
-  { id: 'all', label: 'All Opportunities' },
-  { id: 'grant', label: 'Grants' },
-  { id: 'hackathon', label: 'Hackathons' },
-  { id: 'bounty', label: 'Bounties' },
-  { id: 'airdrop', label: 'Airdrop Alpha' },
-  { id: 'testnet', label: 'Testnets' },
+  { id: 'all', label: 'All', icon: Hash },
+  { id: 'grant', label: 'Grants', icon: Rocket },
+  { id: 'hackathon', label: 'Hackathons', icon: Zap },
+  { id: 'bounty', label: 'Bounties', icon: Target },
+  { id: 'airdrop', label: 'Alpha', icon: Sparkles },
+  { id: 'ambassador', label: 'Ambassadors', icon: Users },
+  { id: 'testnet', label: 'Testnets', icon: Activity },
 ]
 
 export default function FilterBar({ activeCategory, onCategoryChange }) {
@@ -21,12 +32,13 @@ export default function FilterBar({ activeCategory, onCategoryChange }) {
             key={cat.id}
             onClick={() => onCategoryChange(cat.id)}
             className={`
-              whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
+              flex items-center gap-2 whitespace-nowrap px-3 py-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider transition-all duration-200 border
               ${activeCategory === cat.id 
-                ? 'bg-[var(--accent-forge)] text-[var(--bg-espresso)] border-[var(--accent-forge)] shadow-[0_0_10px_rgba(255,107,26,0.3)]' 
-                : 'bg-[var(--bg-walnut)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)]'}
+                ? 'bg-[#ff5500] text-black border-[#ff5500] shadow-[0_0_15px_rgba(255,85,0,0.3)]' 
+                : 'bg-[#0a0806] border-[#1a1512] text-gray-400 hover:text-white hover:border-gray-700'}
             `}
           >
+            <cat.icon size={12} className={activeCategory === cat.id ? 'text-black' : 'text-gray-500'} />
             {cat.label}
           </button>
         ))}
@@ -35,9 +47,9 @@ export default function FilterBar({ activeCategory, onCategoryChange }) {
         <div className="flex-1" />
 
         {/* Chain Filter (Mock) */}
-        <button className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--bg-walnut)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] hover:border-[var(--text-primary)]">
+        <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#0a0806] border border-white/5 text-[9px] font-mono uppercase text-gray-400 hover:border-[#ff5500]/50 transition-all">
           <span>All Chains</span>
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
         </button>
       </div>
     </div>

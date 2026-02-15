@@ -25,6 +25,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.7.0",
     "socket.io-client": "^4.8.3",
+    "swr": "^2.4.0",
     "tailwindcss": "^4.1.18",
     "viem": "^2.45.3",
     "wagmi": "^2.19.5"

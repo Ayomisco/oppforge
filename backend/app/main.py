@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from .database import engine, Base
-# Routers
-from .routers import auth, opportunities, stats, tracker, notifications, chat
+import os
 
 load_dotenv()
+
+# Routers
+from .routers import auth, opportunities, stats, tracker, notifications, chat
+from .database import engine, Base
 
 # Create Tables
 Base.metadata.create_all(bind=engine)

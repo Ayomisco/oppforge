@@ -103,20 +103,20 @@ export default function ChatPage() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Initialize command sequence or ask query..."
-            className="w-full bg-[var(--bg-walnut)] text-white font-mono text-sm px-4 py-3 pr-12 rounded border border-[var(--glass-border)] focus:outline-none focus:border-[var(--accent-forge)] focus:shadow-[0_0_10px_rgba(255,85,0,0.2)] transition-all placeholder-gray-600"
+            placeholder="INITIALIZE_COMMAND_SEQUENCE..."
+            className="w-full bg-[#0a0806] text-white font-mono text-sm px-4 py-3 pr-12 rounded border border-[#1a1512] focus:outline-none focus:border-[#ff5500] focus:shadow-[0_0_15px_rgba(255,85,0,0.1)] transition-all placeholder-gray-700"
             autoFocus
           />
           <button 
             type="submit"
             disabled={!input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[var(--accent-forge)] hover:bg-[var(--accent-forge)] hover:text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#ff5500] hover:bg-[#ff5500] hover:text-black rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <Send size={16} />
+            <Send size={18} />
           </button>
         </form>
-        <div className="mt-2 text-[10px] text-center text-gray-600 font-mono">
-          Forge AI can make mistakes. Verify critical financial data.
+        <div className="mt-2 text-[10px] text-center text-gray-500 font-mono tracking-tighter uppercase">
+          Forge AI v1.0 // Verify critical financial data // Alpha access only
         </div>
       </div>
 

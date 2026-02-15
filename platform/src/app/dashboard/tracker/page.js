@@ -4,6 +4,7 @@ import React from 'react'
 import useSWR from 'swr'
 import api from '@/lib/api'
 import { MoreHorizontal, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react'
+import { TableSkeleton } from '@/components/ui/Skeleton'
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -27,34 +28,42 @@ const fetcher = url => api.get(url).then(res => res.data)
 export default function TrackerPage() {
   const { data: applications, error } = useSWR('/tracker', fetcher)
   
-  if (!applications) return <div className="p-8 text-center text-gray-500">Loading Tracker...</div>
+  if (!applications && !error) return (
+    <div className="space-y-6">
+      <div className="h-10 w-48 bg-white/5 animate-pulse rounded" />
+      <TableSkeleton />
+    </div>
+  )
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">My Applications</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-white tracking-tight">Mission Ledger</h1>
+        <p className="text-gray-500 font-mono text-xs uppercase tracking-widest mt-1">Track your active deployments and results</p>
+      </div>
 
       <div className="glass-card overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-walnut)]">
-              <th className="p-4 text-xs font-mono uppercase text-[var(--text-tertiary)]">Opportunity</th>
-              <th className="p-4 text-xs font-mono uppercase text-[var(--text-tertiary)]">Type</th>
-              <th className="p-4 text-xs font-mono uppercase text-[var(--text-tertiary)]">Status</th>
-              <th className="p-4 text-xs font-mono uppercase text-[var(--text-tertiary)]">Date</th>
-              <th className="p-4 text-xs font-mono uppercase text-[var(--text-tertiary)]">Est. Reward</th>
-              <th className="p-4 text-xs font-mono uppercase text-[var(--text-tertiary)] text-right">Action</th>
+            <tr className="border-b border-[#2a1a12] bg-[#1a1512]/50">
+              <th className="p-4 text-xs font-mono uppercase text-[#9ca3af]">Opportunity</th>
+              <th className="p-4 text-xs font-mono uppercase text-[#9ca3af]">Type</th>
+              <th className="p-4 text-xs font-mono uppercase text-[#9ca3af]">Status</th>
+              <th className="p-4 text-xs font-mono uppercase text-[#9ca3af]">Date</th>
+              <th className="p-4 text-xs font-mono uppercase text-[#9ca3af]">Est. Reward</th>
+              <th className="p-4 text-xs font-mono uppercase text-[#9ca3af] text-right">Action</th>
             </tr>
           </thead>
           <tbody>
             {applications.map((app) => (
-              <tr key={app.id} className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-walnut)]/50 transition-colors">
-                <td className="p-4 font-medium text-[var(--text-primary)]">{app.title}</td>
-                <td className="p-4 text-sm text-[var(--text-secondary)]">{app.type}</td>
+              <tr key={app.id} className="border-b border-[#2a1a12] hover:bg-[#2a1a12]/30 transition-colors">
+                <td className="p-4 font-medium text-white">{app.title}</td>
+                <td className="p-4 text-sm text-[#9ca3af]">{app.type}</td>
                 <td className="p-4"><StatusBadge status={app.status} /></td>
-                <td className="p-4 text-sm text-[var(--text-secondary)] font-mono">{app.date}</td>
-                <td className="p-4 text-sm text-[var(--text-secondary)] font-mono">{app.reward}</td>
+                <td className="p-4 text-sm text-[#9ca3af] font-mono">{app.date}</td>
+                <td className="p-4 text-sm text-[#9ca3af] font-mono">{app.reward}</td>
                 <td className="p-4 text-right">
-                  <button className="p-2 hover:bg-[var(--bg-espresso)] rounded-full text-[var(--text-secondary)] transition-colors">
+                  <button className="p-2 hover:bg-[#1a1512] rounded-full text-[#9ca3af] transition-colors">
                     <MoreHorizontal size={16} />
                   </button>
                 </td>

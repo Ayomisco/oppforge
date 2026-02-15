@@ -41,7 +41,7 @@ export default function FeedPage() {
         <div>
           <h1 className="text-2xl font-bold text-white mb-1">Live Feed</h1>
           <p className="text-xs text-gray-500 font-mono">
-             REAL_TIME_MONITORING // ACTIVE_SIGNALS: <span className="text-[var(--accent-forge)]">{opportunities ? opportunities.length : 0}</span>
+             REAL_TIME_MONITORING // ACTIVE_SIGNALS: <span className="text-[#ff5500] font-bold">{opportunities ? opportunities.length : 0}</span>
           </p>
         </div>
         
@@ -53,10 +53,10 @@ export default function FeedPage() {
                placeholder="Filter stream... (e.g. 'Solana Grant')" 
                value={search}
                onChange={(e) => setSearch(e.target.value)}
-               className="bg-[#1E293B] border border-gray-700 rounded px-3 py-1.5 pl-9 text-xs font-mono text-white focus:outline-none focus:border-blue-500 min-w-[200px]"
+               className="bg-[#1a1512] border border-[#2a1a12] rounded-lg px-3 py-1.5 pl-9 text-xs font-mono text-white focus:outline-none focus:border-[#ff5500] min-w-[200px] transition-all"
              />
            </div>
-           <button className="btn btn-secondary px-3 py-1.5 border border-gray-700 hover:bg-gray-800 rounded flex items-center gap-2 text-xs text-gray-300">
+           <button className="btn btn-secondary px-3 py-1.5 border border-[#2a1a12] hover:bg-[#2a1a12] rounded-lg flex items-center gap-2 text-xs text-gray-400">
              <SlidersHorizontal size={14} /> View
            </button>
         </div>
@@ -67,9 +67,9 @@ export default function FeedPage() {
 
       {/* List */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center pb-2 border-b border-gray-800">
-              <span className="text-[10px] font-mono uppercase text-gray-500">Signal Stream</span>
-              <span className="text-[10px] font-mono text-gray-600">
+        <div className="flex justify-between items-center pb-2 border-b border-slate-800/50">
+              <span className="text-[10px] font-mono uppercase text-slate-500">Signal Stream</span>
+              <span className="text-[10px] font-mono text-slate-600">
                   {isLoading ? 'Syncing...' : 'Live'}
               </span>
         </div>
@@ -81,7 +81,7 @@ export default function FeedPage() {
         )}
         
         {!isLoading && opportunities?.length === 0 && (
-            <div className="text-center py-10 text-gray-500">
+            <div className="text-center py-10 text-slate-500">
                 No signals detected matching parameters.
             </div>
         )}
@@ -93,7 +93,7 @@ export default function FeedPage() {
       
       {/* End of Feed */}
       <div className="text-center py-8">
-        <button className="text-xs font-mono text-[var(--accent-forge)] hover:text-white transition-colors animate-pulse">
+        <button className="text-xs font-mono text-blue-400 hover:text-white transition-colors animate-pulse">
            LOAD_MORE_SIGNALS...
         </button>
       </div>

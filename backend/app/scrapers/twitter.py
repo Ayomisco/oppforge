@@ -142,28 +142,44 @@ class TwitterScraper(BaseScraper):
             text = tweet.get("text") or tweet.get("full_text", "")
             if len(text) < 20: continue
             
-            query = tweet.get("_query", "")
-            
-            # Simple keyword categorization
-            category = "Grant"
+            # Improved Selection Logic
             lower_text = text.lower()
-            if "hackathon" in lower_text: category = "Hackathon"
-            elif "bounty" in lower_text: category = "Bounty"
-            elif "airdrop" in lower_text: category = "Airdrop"
-            elif "testnet" in lower_text: category = "Testnet"
+            found_category = "Grant"
+            action_bonus = 0
+            
+            if "hackathon" in lower_text: found_category = "Hackathon"
+            elif "bounty" in lower_text: found_category = "Bounty"
+            elif "airdrop" in lower_text: found_category = "Airdrop"
+            elif "testnet" in lower_text: found_category = "Testnet"
+            
+            # Filter non-actionable chatter
+            action_keywords = ["apply", "register", "live", "portal", "grant", "submit", "testnet", "incentivized"]
+            if not any(k in lower_text for k in action_keywords):
+                continue
+            
+            if "live" in lower_text or "open" in lower_text:
+                action_bonus = 20
+
+            # Determine chain from text
+            chains = ["Solana", "Ethereum", "Base", "Arbitrum", "Monad", "Polygon"]
+            chain = "Multi-chain"
+            for c in chains:
+                if c.lower() in lower_text:
+                    chain = c
+                    break
 
             unique_ids.add(tweet_id)
             parsed_items.append({
-                "title": f"New {category} Opportunity ({query.split()[0]})",
+                "title": text[:60] + "..." if len(text) > 60 else text,
                 "description": text,
                 "url": f"https://twitter.com/x/status/{tweet_id}",
                 "source": "Twitter",
                 "source_id": str(tweet_id),
-                "category": category,
-                "chain": query.split()[0] if query else "Multi-chain",
+                "category": found_category,
+                "chain": chain,
                 "posted_at": datetime.now(),
-                "tags": [category, "Twitter"],
-                "ai_score": 50 + (len(text) % 40)
+                "tags": [found_category, "Twitter"],
+                "ai_score": min(40 + action_bonus + (len(text) % 30), 98)
             })
             
         return parsed_items
