@@ -41,9 +41,20 @@ export default function OnboardingPage() {
   const [selectedChains, setSelectedChains] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const { user, setUser } = useAuth();
-  const { address, isConnected, isConnecting, isDisconnected } = useAccount();
+  const { user, setUser, loading } = useAuth();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
+
+  // Sync Google Data into Form
+  useEffect(() => {
+    if (user && !formData.fullName) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: user.full_name || '',
+        username: user.username || ''
+      }));
+    }
+  }, [user]);
 
   // Wallet Connection Feedback
   useEffect(() => {
@@ -130,7 +141,20 @@ export default function OnboardingPage() {
             {currentStep === 0 && (
               <div className="space-y-4 text-left max-w-md mx-auto py-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase text-gray-500">Full Name / Codename</label>
+                  <label className="text-[10px] font-mono uppercase text-gray-500">Forge Username (Codename)</label>
+                  <div className="relative">
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ff5500]" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="e.g. satoshi_scout"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 focus:border-[#ff5500] focus:outline-none transition-colors font-mono text-sm"
+                      value={formData.username}
+                      onChange={e => setFormData({...formData, username: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-gray-500">Display Name (Auto-filled from Google)</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" size={16} />
                     <input 
