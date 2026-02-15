@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import uuid
+import os
+import httpx
 from typing import List
 from .. import database, models, schemas
 from .auth import get_current_user
@@ -93,3 +95,75 @@ def delete_tracking(id: uuid.UUID, db: Session = Depends(database.get_db), curre
     db.delete(tracking)
     db.commit()
     return {"status": "deleted"}
+
+@router.post("/{id}/draft")
+async def generate_draft(
+    id: uuid.UUID, 
+    db: Session = Depends(database.get_db), 
+    current_user = Depends(get_current_user)
+):
+    """
+    Generates an AI-powered application draft for a tracked opportunity.
+    """
+    tracking = db.query(models.TrackedApplication).filter(
+        models.TrackedApplication.id == id,
+        models.TrackedApplication.user_id == current_user.id
+    ).first()
+    
+    if not tracking:
+        raise HTTPException(status_code=404, detail="Tracking entry not found")
+        
+    opp = tracking.opportunity
+    
+    # Prompt Construction
+    prompt = f"""
+    Act as a Web3 Application Advisor. Generate a high-fidelity application draft for a mission.
+    
+    USER PROFILE:
+    - Name: {current_user.full_name}
+    - Bio: {current_user.bio}
+    - Skills: {", ".join(current_user.skills or [])}
+    
+    MISSION DETAILS:
+    - Title: {opp.title}
+    - Category: {opp.category}
+    - Requirements: {", ".join(opp.required_skills or [])}
+    - Briefing: {opp.ai_summary}
+    
+    GOAL: Write a 3-paragraph compelling proposal/application draft. 
+    1. Professional greeting and 'Why Me' based on user bio.
+    2. Tactical approach based on mission briefing.
+    3. Call to action.
+    
+    Output in Markdown format.
+    """
+    
+    try:
+        groq_key = os.getenv("GROQ_API_KEY")
+        if not groq_key:
+            return {"draft": "Forging error: AI service not configured. Set GROQ_API_KEY."}
+            
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.1-70b-versatile",
+                    "messages": [
+                        {"role": "system", "content": "You are Forge AI, an elite Web3 mission strategist."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.7
+                },
+                timeout=20.0
+            )
+            data = resp.json()
+            draft_content = data["choices"][0]["message"]["content"]
+            
+            # Save a snapshot to the tracking record
+            tracking.ai_strategy_notes = draft_content
+            db.commit()
+            
+            return {"draft": draft_content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI Agent failed to forge draft: {str(e)}")
