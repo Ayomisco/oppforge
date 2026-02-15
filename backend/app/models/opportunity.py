@@ -3,10 +3,13 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..database import Base
 
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+
 class Opportunity(Base):
     __tablename__ = "opportunities"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     
     # Core Info
     title = Column(String, index=True, nullable=False)
@@ -40,6 +43,7 @@ class Opportunity(Base):
     
     # AI Analysis & Scoring
     ai_summary = Column(Text, nullable=True)
+    ai_strategy = Column(Text, nullable=True)
     ai_score = Column(Integer, default=0, index=True) # 0-100
     win_probability = Column(String, default="Medium") # Low, Medium, High
     difficulty = Column(String, default="Intermediate") # Beginner, Intermediate, Expert

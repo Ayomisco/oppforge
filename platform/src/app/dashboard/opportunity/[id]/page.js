@@ -2,48 +2,41 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Globe, Shield, Calendar, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Clock, Globe, Shield, Zap, ExternalLink } from 'lucide-react'
+import useSWR from 'swr'
+import api from '@/lib/api'
+import { formatDistanceToNow } from 'date-fns'
 import AIAnalysisPanel from '@/components/dashboard/AIAnalysisPanel'
 
-// Mock Data (matches ID 1 from feed)
-const MOCK_DETAIL = {
-  id: '1',
-  title: 'Solana Foundation Renaissance Hackathon',
-  type: 'Hackathon',
-  chain: 'Solana',
-  reward: '$1,000,000+',
-  deadline: '2026-02-14T23:59:00Z',
-  source: 'Colosseum',
-  url: 'https://colosseum.org/renaissance',
-  description: `
-    The Renaissance Hackathon is a global online competition focused on bringing the next wave of high-impact projects to the Solana ecosystem. 
-    
-    Tracks include:
-    - **DeFi & Payments**: Building the future of finance.
-    - **Consumer Apps**: Mobile-first experiences for mass adoption.
-    - **DePIN**: Decentralized Physical Infrastructure Networks.
-    - **Gaming**: On-chain games and infrastructure.
-    - **DAO & Governance**: Tools for decentralized communities.
-    
-    Winners receive non-dilutive prizes and pre-seed investment opportunities from the Colosseum accelerator.
-  `,
-  requirements: [
-    'Must be built on Solana',
-    'Open source code repository',
-    'Short video demo (max 3 mins)',
-    'Working prototype deployed to devnet/mainnet'
-  ],
-  aiAnalysis: {
-    score: 98,
-    probability: 'High',
-    summary: 'Perfect match for your Rust and React skills. Your previous DeFi project gives you a strong competitive edge in the payments track.',
-    strategy: 'Focus on the "Consumer Apps" track but leverage your DeFi experience to build a mobile-first payment interface. Simplicity wins here.'
-  }
-}
+const fetcher = url => api.get(url).then(res => res.data)
 
 export default function OpportunityDetail({ params }) {
-  // In a real app, fetch data based on params.id
-  const opp = MOCK_DETAIL 
+  const { id } = params
+  const { data: opp, error, isLoading } = useSWR(`/opportunities/${id}`, fetcher)
+
+  if (isLoading) return (
+    <div className="max-w-5xl mx-auto pb-20 animate-pulse">
+      <div className="h-4 w-24 bg-white/5 rounded mb-6" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="h-10 w-3/4 bg-white/5 rounded" />
+          <div className="h-40 bg-white/5 rounded" />
+          <div className="h-32 bg-white/5 rounded" />
+        </div>
+        <div className="h-64 bg-white/5 rounded" />
+      </div>
+    </div>
+  )
+
+  if (error || !opp) return (
+    <div className="max-w-5xl mx-auto py-20 text-center">
+      <p className="text-gray-500 mb-4">Opportunity not found or mission aborted.</p>
+      <Link href="/dashboard" className="btn btn-secondary">Return to Mission Control</Link>
+    </div>
+  )
+
+  const isExpired = opp.deadline && new Date(opp.deadline) < new Date()
+  const timeLimit = opp.deadline ? formatDistanceToNow(new Date(opp.deadline), { addSuffix: true }) : 'No deadline'
 
   return (
     <div className="max-w-5xl mx-auto pb-20">
@@ -60,49 +53,59 @@ export default function OpportunityDetail({ params }) {
           {/* Header */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <span className="px-2 py-1 rounded bg-[var(--bg-walnut)] border border-[var(--border-subtle)] text-xs font-mono uppercase tracking-wide text-[var(--text-secondary)]">
-                {opp.type}
+              <span className="px-2 py-1 rounded bg-[#ff5500]/10 border border-[#ff5500]/20 text-[10px] font-mono uppercase tracking-wide text-[#ffaa00]">
+                {opp.category}
               </span>
-              <span className="px-2 py-1 rounded bg-[var(--bg-walnut)] border border-[var(--border-subtle)] text-xs font-mono uppercase tracking-wide text-[var(--text-secondary)]">
+              <span className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-wide text-gray-400">
                 {opp.chain}
               </span>
+              {opp.is_verified && (
+                <span className="flex items-center gap-1 text-[10px] text-[#10b981] font-bold">
+                  <Shield size={10} /> VERIFIED
+                </span>
+              )}
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">{opp.title}</h1>
+            <h1 className="text-3xl font-bold mb-4 leading-tight text-white">{opp.title}</h1>
             
-            <div className="flex flex-wrap gap-6 text-sm text-[var(--text-secondary)]">
+            <div className="flex flex-wrap gap-6 text-xs text-gray-500">
               <div className="flex items-center gap-2">
-                <Globe size={16} /> {opp.source}
+                <Globe size={14} /> {opp.source}
               </div>
-              <div className="flex items-center gap-2">
-                <Clock size={16} /> Closing in 48h
+              <div className={`flex items-center gap-2 ${isExpired ? 'text-red-400' : 'text-orange-400'}`}>
+                <Clock size={14} /> {isExpired ? 'Expired' : `Deadline: ${timeLimit}`}
               </div>
-              <div className="flex items-center gap-2 text-[var(--text-primary)] font-bold">
-                <span className="text-[var(--accent-gold)]">$</span> {opp.reward} Prize Pool
+              <div className="flex items-center gap-2 text-white font-bold">
+                <span className="text-[#10b981]">$</span> {opp.reward_pool || 'Unspecified Value'}
               </div>
             </div>
           </div>
 
-          {/* Description */}
-          <div className="glass-card p-6">
-            <h3 className="text-lg font-bold mb-4">Overview</h3>
-            <div className="prose prose-invert prose-sm max-w-none text-[var(--text-secondary)] whitespace-pre-line">
+          {/* Mission Briefing */}
+          <div className="glass-card p-6 border-l-2 border-l-[#ff5500]">
+            <h3 className="text-sm font-mono uppercase tracking-widest text-[#ff5500] mb-4 flex items-center gap-2">
+              <Zap size={14} /> Mission_Briefing
+            </h3>
+            <div className="prose prose-invert prose-sm max-w-none text-gray-300 whitespace-pre-line leading-relaxed">
               {opp.description}
             </div>
           </div>
 
-          {/* Requirements */}
-          <div className="glass-card p-6">
-            <h3 className="text-lg font-bold mb-4">Requirements</h3>
-            <ul className="space-y-3">
-              {opp.requirements.map((req, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
-                  <Shield size={16} className="text-[var(--accent-forge)] mt-0.5 shrink-0" />
-                  {req}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Operational Requirements */}
+          {opp.required_skills?.length > 0 && (
+            <div className="glass-card p-6">
+              <h3 className="text-sm font-mono uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                <Shield size={14} /> Operational_Requirements
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {opp.required_skills.map((req, i) => (
+                  <span key={i} className="px-3 py-1 bg-white/5 rounded text-[10px] text-gray-400 border border-white/10">
+                    {req}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
         </div>
 
@@ -110,10 +113,10 @@ export default function OpportunityDetail({ params }) {
         <div className="space-y-6">
           {/* AI Analysis Panel */}
           <AIAnalysisPanel 
-            score={opp.aiAnalysis.score}
-            probability={opp.aiAnalysis.probability}
-            summary={opp.aiAnalysis.summary}
-            strategy={opp.aiAnalysis.strategy}
+            score={opp.ai_score}
+            probability={opp.win_probability}
+            summary={opp.ai_summary || "Our agents are currently scanning deeper for strategic advantages..."}
+            strategy={opp.strategy || "Analyze the official documentation for specific submission requirements while our AI generates a targeted approach."}
           />
 
           {/* Actions */}
@@ -122,24 +125,28 @@ export default function OpportunityDetail({ params }) {
               href={opp.url} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="btn btn-secondary w-full justify-between group"
+              className="btn btn-primary w-full justify-between group py-3"
             >
-              Official Page <ExternalLink size={16} className="group-hover:translate-x-1 transition-transform" />
+              Apply to Mission <ExternalLink size={16} className="group-hover:translate-x-1 transition-transform" />
             </a>
-            <button className="btn btn-ghost w-full border border-[var(--border-subtle)]">
+            <button className="btn btn-secondary w-full justify-center">
               Add to Tracker
             </button>
           </div>
 
-          {/* Metadata */}
-          <div className="p-4 rounded-lg bg-[var(--bg-walnut)]/50 border border-[var(--border-subtle)] text-xs text-[var(--text-tertiary)] space-y-2">
-            <div className="flex justify-between">
-              <span>Added:</span>
-              <span>2 hours ago</span>
+          {/* Intelligence Metadata */}
+          <div className="p-4 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono text-gray-500 space-y-3">
+            <div className="flex justify-between items-center">
+              <span>INTEL_AGE:</span>
+              <span className="text-white">{formatDistanceToNow(new Date(opp.created_at))}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Last Checked:</span>
-              <span>10 mins ago</span>
+            <div className="flex justify-between items-center">
+              <span>SCAN_SOURCE:</span>
+              <span className="text-[#ff5500]">{opp.source.toUpperCase()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>CONFIDENCE_LEVEL:</span>
+              <span className="text-[#10b981]">HIGH_FIDELITY</span>
             </div>
           </div>
 

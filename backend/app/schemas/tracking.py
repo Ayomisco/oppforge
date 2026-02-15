@@ -1,6 +1,7 @@
 from pydantic import BaseModel, computed_field
 from typing import Optional
 from datetime import datetime
+import uuid
 from .opportunity import OpportunityResponse
 
 class TrackedAppBase(BaseModel):
@@ -10,7 +11,7 @@ class TrackedAppBase(BaseModel):
     reminder_at: Optional[datetime] = None
 
 class TrackedAppCreate(TrackedAppBase):
-    opportunity_id: int
+    opportunity_id: uuid.UUID
 
 class TrackedAppUpdate(BaseModel):
     status: Optional[str] = None
@@ -18,8 +19,8 @@ class TrackedAppUpdate(BaseModel):
     submission_link: Optional[str] = None
 
 class TrackedAppResponse(TrackedAppBase):
-    id: int
-    user_id: int
+    id: uuid.UUID
+    user_id: uuid.UUID
     opportunity: OpportunityResponse
     ai_strategy_notes: Optional[str] = None
     updated_at: Optional[datetime] = None

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+import uuid
 from typing import List
 from .. import database, schemas
 from ..models.notification import Notification
@@ -24,7 +25,7 @@ def unread_count(db: Session = Depends(database.get_db), current_user = Depends(
     return {"count": count}
 
 @router.put("/{id}/read")
-def mark_read(id: int, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+def mark_read(id: uuid.UUID, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     """Mark a single notification as read."""
     notif = db.query(Notification).filter(
         Notification.id == id,

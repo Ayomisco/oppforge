@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+import uuid
 from typing import List
 from .. import database, models, schemas
 from .auth import get_current_user
@@ -49,7 +50,7 @@ def track_opportunity(
 
 @router.put("/{id}", response_model=schemas.TrackedAppResponse)
 def update_tracking(
-    id: int, 
+    id: uuid.UUID, 
     update_data: schemas.TrackedAppUpdate, 
     db: Session = Depends(database.get_db), 
     current_user = Depends(get_current_user)
@@ -77,7 +78,7 @@ def update_tracking(
     return tracking
 
 @router.delete("/{id}")
-def delete_tracking(id: int, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+def delete_tracking(id: uuid.UUID, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     """
     Remove from tracker.
     """

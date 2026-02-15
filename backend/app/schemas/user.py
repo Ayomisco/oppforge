@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, HttpUrl
 from typing import List, Optional, Any, Dict
 from datetime import datetime
+import uuid
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -37,7 +38,7 @@ class UserUpdate(BaseModel):
     notification_settings: Optional[Dict[str, bool]] = None
 
 class UserResponse(UserBase):
-    id: int
+    id: uuid.UUID
     username: Optional[str] = None
     wallet_address: Optional[str] = None
     # Computed/Gamified

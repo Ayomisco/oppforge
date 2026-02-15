@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+import uuid
 from sqlalchemy import or_, desc
 from typing import List, Optional
 from .. import database, schemas
@@ -16,7 +17,7 @@ def read_opportunities(
     chain: Optional[str] = None,
     db: Session = Depends(database.get_db)
 ):
-    query = db.query(Opportunity)
+    query = db.query(Opportunity).filter(Opportunity.is_open == True)
     
     if category and category != "All":
         query = query.filter(Opportunity.category == category)
@@ -97,7 +98,7 @@ def get_testnets(db: Session = Depends(database.get_db)):
     return db.query(Opportunity).filter(Opportunity.category == "Testnet").limit(5).all()
 
 @router.get("/{id}", response_model=schemas.OpportunityResponse)
-def read_opportunity(id: int, db: Session = Depends(database.get_db)):
+def read_opportunity(id: uuid.UUID, db: Session = Depends(database.get_db)):
     opp = db.query(Opportunity).filter(Opportunity.id == id).first()
     if opp is None:
         raise HTTPException(status_code=404, detail="Opportunity not found")

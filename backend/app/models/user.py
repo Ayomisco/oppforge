@@ -4,10 +4,13 @@ from sqlalchemy.sql import func
 from ..database import Base
 from .enums import UserRole
 
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     
     # Auth & Identity
     email = Column(String, unique=True, index=True, nullable=False)

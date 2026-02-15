@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+import uuid
 from typing import List, Optional
 from pydantic import BaseModel
 from .. import database, schemas
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 class ChatRequest(BaseModel):
     message: str
-    opportunity_id: Optional[int] = None
+    opportunity_id: Optional[uuid.UUID] = None
 
 class ChatResponse(BaseModel):
     role: str

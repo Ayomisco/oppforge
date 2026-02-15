@@ -26,28 +26,37 @@ class AgentCurator:
         if len(text) < 30: return None
 
         prompt = f"""
-        Act as a Web3 Opportunity Scout. Triage this raw data.
+        Act as a Web3 Intelligence Analyst. Triage this raw data for ACTIONABLE WEB3 opportunities.
         
         Raw Data: {text}
         
-        Determine if this is a real opportunity (Grant, Hackathon, Bounty, Airdrop, Testnet) or just chatter.
-        Strictly exclude: generic news, price talk, memes, or "I want a grant" posts.
+        Strict Triage Rules:
+        - Include ONLY if it is a specific, open mission for Web3/Crypto applications (Grants, Hackathons, Bounties, Airdrops, Testnets).
+        - MUST have a clear call to action (Apply, Submit, Join, Register).
+        - MUST be about a blockchain protocol, dApp, or crypto project.
+        - EXCLUDE: Generic news, partnership announcements without a call for others to join, recruitment (jobs), marketing hype without specific rewards/deadlines, and success stories.
+        - EXCLUDE: Generic grants for non-crypto entities (e.g. government grants for schools).
+        - IF UNSURE: Set is_opportunity to false. We prefer high-fidelity over high-volume.
         
-        If it's a real opportunity, refine the data.
-        - Extract deadline (if any, use YYYY-MM-DD).
-        - Extract reward token/amount (if any).
-        - Correct category.
+        Refinement:
+        1. Professional Title: Action-oriented (e.g. "Apply for Optimism Retro Grants").
+        2. Category: Grant, Hackathon, Bounty, Airdrop, or Testnet.
         
         Output JSON only:
-        {{
+        {
             "is_opportunity": boolean,
             "category": "Grant" | "Hackathon" | "Bounty" | "Airdrop" | "Testnet",
-            "title": "Concise high-impact title",
-            "reward_pool": "Amount or 'Unspecified'",
-            "deadline": "YYYY-MM-DD or null",
-            "chain": "Best guess (Solana, Ethereum, etc) or 'Multi-chain'",
-            "reasons": "Short reason for triage decision"
-        }}
+            "title": "Clear Actionable Title",
+            "reward_pool": "string",
+            "deadline": "YYYY-MM-DD" | null,
+            "chain": "string",
+            "required_skills": ["skill1", "skill2"],
+            "win_probability": "Low" | "Medium" | "High",
+            "difficulty": "Beginner" | "Intermediate" | "Expert",
+            "ai_summary": "Short crisp mission briefing",
+            "strategy_tip": "Single tactical tip for winning",
+            "reasons": "Why triaged this way"
+        }
         """
 
         try:
@@ -55,9 +64,9 @@ class AgentCurator:
                 GROQ_URL,
                 headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
                 json={
-                    "model": "llama3-8b-8192",
+                    "model": "llama3-70b-8192", # Using 70B for deeper research
                     "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0.3,
+                    "temperature": 0.2,
                     "response_format": {"type": "json_object"}
                 }
             )
@@ -69,14 +78,19 @@ class AgentCurator:
                 if not refined.get("is_opportunity"):
                     return None
                 
-                # Merge refined data back into raw_item
                 raw_item.update({
                     "title": refined.get("title"),
                     "category": refined.get("category"),
                     "reward_pool": refined.get("reward_pool"),
                     "deadline": datetime.strptime(refined["deadline"], "%Y-%m-%d") if refined.get("deadline") else None,
                     "chain": refined.get("chain"),
-                    "ai_score": raw_item.get("ai_score", 50) + 10 # Boost for AI verified ones
+                    "required_skills": refined.get("required_skills", []),
+                    "win_probability": refined.get("win_probability", "Medium"),
+                    "difficulty": refined.get("difficulty", "Intermediate"),
+                    "ai_summary": refined.get("ai_summary"),
+                    "ai_strategy": refined.get("strategy_tip"),
+                    "description": text + "\n\n---\n**AI MISSION INTELLIGENCE**\n" + refined.get("ai_summary", ""),
+                    "ai_score": (85 if refined.get("win_probability") == "High" else 65) + (len(refined.get("required_skills", [])) * 2)
                 })
                 return raw_item
             else:

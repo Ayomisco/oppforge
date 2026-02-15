@@ -3,12 +3,15 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..database import Base
 
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+
 class TrackedApplication(Base):
     __tablename__ = "tracked_applications"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    opportunity_id = Column(Integer, ForeignKey("opportunities.id"), index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    opportunity_id = Column(UUID(as_uuid=True), ForeignKey("opportunities.id"), index=True)
     
     # Pipeline Status
     status = Column(String, default="Interested", index=True) 

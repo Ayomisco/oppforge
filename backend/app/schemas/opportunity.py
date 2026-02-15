@@ -1,6 +1,7 @@
 from pydantic import BaseModel, computed_field
 from typing import List, Optional
 from datetime import datetime
+import uuid
 
 class OpportunityBase(BaseModel):
     title: str
@@ -26,12 +27,13 @@ class OpportunityCreate(OpportunityBase):
     posted_at: Optional[datetime] = None
 
 class OpportunityResponse(OpportunityBase):
-    id: int
+    id: uuid.UUID
     slug: Optional[str] = None
     
     # AI Stats
     ai_score: int = 0
     ai_summary: Optional[str] = None
+    ai_strategy: Optional[str] = None
     win_probability: str = "Medium"
     difficulty: str = "Intermediate"
     required_skills: List[str] = []
@@ -61,7 +63,12 @@ class OpportunityResponse(OpportunityBase):
     @computed_field
     @property
     def summary(self) -> Optional[str]:
-        return self.ai_summary or self.description
+        return self.ai_summary or (self.description[:300] if self.description else "")
+
+    @computed_field
+    @property
+    def strategy(self) -> Optional[str]:
+        return self.ai_strategy or "Focus on community engagement and technical excellence."
 
     @computed_field
     @property

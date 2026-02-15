@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+import uuid
 
 class NotificationCreate(BaseModel):
     title: str
@@ -9,7 +10,7 @@ class NotificationCreate(BaseModel):
     link: Optional[str] = None
 
 class NotificationResponse(BaseModel):
-    id: int
+    id: uuid.UUID
     title: str
     message: Optional[str] = None
     type: str
