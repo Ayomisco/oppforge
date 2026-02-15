@@ -7,7 +7,7 @@ import api from '@/lib/api';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, ChevronRight, Check, Hammer, Globe, Search, User, FileText, X } from 'lucide-react';
+import { Zap, ChevronRight, Check, Hammer, Globe, Search, User, FileText, X, Hash } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const steps = [
