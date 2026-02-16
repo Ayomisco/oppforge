@@ -22,3 +22,7 @@ python-multipart
 httpx
 sqlalchemy-libsql
 email-validator
+chromadb
+sentence-transformers
+numpy
+tqdm

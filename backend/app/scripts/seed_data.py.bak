@@ -1,0 +1,95 @@
+import uuid
+from datetime import datetime, timedelta
+from app.database import SessionLocal
+from app.models.opportunity import Opportunity
+
+def seed():
+    db = SessionLocal()
+    
+    missions = [
+        {
+            "id": uuid.uuid4(),
+            "source": "Twitter",
+            "source_id": "opp_001",
+            "title": "Optimism Retro Funding 4",
+            "category": "Grant",
+            "description": "Retroactive funding for impact in the Optimism Collective. Focus on Open Source Software and Community.",
+            "reward_pool": "10M OP",
+            "deadline": datetime.now() + timedelta(days=30),
+            "chain": "Optimism",
+            "required_skills": ["Rust", "Solidity", "Community"],
+            "win_probability": "High",
+            "difficulty": "Intermediate",
+            "ai_summary": "High-signal retroactive grant for active builders within the Superchain ecosystem.",
+            "ai_strategy": "Focus your application on specific metrics of usage or open-source contributions rather than just ideas.",
+            "ai_score": 92,
+            "url": "https://optimism.io/retrofunding"
+        },
+        {
+            "id": uuid.uuid4(),
+            "source": "Reddit",
+            "source_id": "opp_002",
+            "title": "Solana Radar Hackathon",
+            "category": "Hackathon",
+            "description": "Global hackathon for the Solana community. Multiple tracks: DeFi, Gaming, DePIN, Payments.",
+            "reward_pool": "$1M+",
+            "deadline": datetime.now() + timedelta(days=15),
+            "chain": "Solana",
+            "required_skills": ["Rust", "React", "Mobile"],
+            "win_probability": "Medium",
+            "difficulty": "Expert",
+            "ai_summary": "Prestigious global hackathon with heavy VC attention. Winner tracks receive direct investment intros.",
+            "ai_strategy": "Prioritize DePIN or Mobile tracks for less competition and higher strategic value to the Solana Foundation.",
+            "ai_score": 88,
+            "url": "https://solana.com/radar"
+        },
+        {
+            "id": uuid.uuid4(),
+            "source": "Twitter",
+            "source_id": "opp_003",
+            "title": "Berachain Artio Testnet V2",
+            "category": "Testnet",
+            "description": "Join the Berachain public testnet. Interact with BEX, Bend, and Berps to earn early scout credentials.",
+            "reward_pool": "TBA / Points",
+            "deadline": None,
+            "chain": "Berachain",
+            "required_skills": ["Testing", "Dapp Interaction"],
+            "win_probability": "High",
+            "difficulty": "Beginner",
+            "ai_summary": "Incentivized testnet for one of the most anticipated L1 launches using Proof of Liquidity.",
+            "ai_strategy": "Consistently interact with native dApps daily to maximize position on the internal reputation leaderboard.",
+            "ai_score": 95,
+            "url": "https://artio.berachain.com"
+        },
+        {
+            "id": uuid.uuid4(),
+            "source": "Gitcoin",
+            "source_id": "opp_004",
+            "title": "Arbitrum DAO Hackathon Bounties",
+            "category": "Bounty",
+            "description": "Specific protocol upgrades and marketing quests funded by the Arbitrum Treasury.",
+            "reward_pool": "$5k - $50k",
+            "deadline": datetime.now() + timedelta(days=7),
+            "chain": "Arbitrum",
+            "required_skills": ["Solidity", "Technical Writing"],
+            "win_probability": "Medium",
+            "difficulty": "Intermediate",
+            "ai_summary": "Micro-missions for direct DAO contribution. Fast payment cycles and direct protocol impact.",
+            "ai_strategy": "Submit refined documentation along with your code to stand out from automated bot submissions.",
+            "ai_score": 82,
+            "url": "https://gitcoin.co/arbitrum"
+        }
+    ]
+    
+    for m in missions:
+        exists = db.query(Opportunity).filter(Opportunity.title == m["title"]).first()
+        if not exists:
+            opp = Opportunity(**m)
+            db.add(opp)
+    
+    db.commit()
+    print(f"Successfully seeded {len(missions)} elite missions.")
+    db.close()
+
+if __name__ == "__main__":
+    seed()

@@ -27,7 +27,11 @@ const ECOSYSTEMS = [
   "Aptos", "Near", "Cosmos", "Polkadot", "Celestia", "Starknet", "zkSync", "Linea", "Mantle", "Scroll", 
   "Ronin", "Blast", "Sei", "Injective", "Thorchain", "Algorand", "Cardano", "Hedera", "Gnosis", "Moonbeam", 
   "Astar", "Cronos", "Core", "Celo", "Klaytn", "Metis", "Mode", "Manta", "Taiko", "Fuel", "Aleo", "Babylon", 
-  "EigenLayer", "Hyperliquid", "Jupiter", "Wormhole", "Pyth", "LayerZero"
+  "EigenLayer", "Hyperliquid", "Jupiter", "Wormhole", "Pyth", "LayerZero", "Frax", "Fraxtal", "Ethena", "Aevo",
+  "Drift", "Axelar", "Stargate", "Lido", "Aave", "Uniswap", "Curve", "MakerDAO", "Compound", "Synthetix",
+  "PancakeSwap", "Balancer", "Instadapp", "SushiSwap", "GMX", "dYdX", "Radiant", "Velodrome", "Camelot",
+  "Quickswap", "Orca", "Raydium", "Vertex", "Friend.tech", "Lens Protocol", "Farcaster", "Zora", "Mirror",
+  "Blur", "OpenSea", "Magic Eden"
 ].sort();
 
 export default function OnboardingPage() {
@@ -58,7 +62,18 @@ export default function OnboardingPage() {
 
   // Wallet Connection Feedback
   useEffect(() => {
-    if (isConnected) toast.success("Wallet synchronized.");
+    if (isConnected) {
+      toast.success("Identity Synchronized", {
+        icon: '🔗',
+        style: {
+          background: '#1a1a1a',
+          color: '#fff',
+          border: '1px solid rgba(255, 85, 0, 0.2)',
+          fontFamily: 'monospace',
+          fontSize: '12px',
+        },
+      });
+    }
   }, [isConnected]);
 
   const handleNext = () => {

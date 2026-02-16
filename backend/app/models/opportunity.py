@@ -45,13 +45,24 @@ class Opportunity(Base):
     ai_summary = Column(Text, nullable=True)
     ai_strategy = Column(Text, nullable=True)
     ai_score = Column(Integer, default=0, index=True) # 0-100
+    urgency_score = Column(Integer, default=0) # 0-100 based on deadline closeness
     win_probability = Column(String, default="Medium") # Low, Medium, High
     difficulty = Column(String, default="Intermediate") # Beginner, Intermediate, Expert
+    difficulty_score = Column(Integer, default=5) # 1-10 numeric difficulty
     required_skills = Column(JSON, default=[])
     
     # Meta
     is_verified = Column(Boolean, default=False)
     views_count = Column(Integer, default=0)
+    
+    # Aliases/Computed helpers for the user request
+    @property
+    def raw_url(self):
+        return self.source_url or self.url
+
+    @property
+    def reward_estimate(self):
+        return self.estimated_value_usd or self.reward_pool
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -44,6 +44,7 @@ data/
 *.sqlite
 *.sqlite3
 chromadb/
+chroma_db/
 
 # --- IDE & Editor ---
 .vscode/
@@ -79,6 +80,15 @@ ollama-data/
 .Trashes
 ehthumbs.db
 
-dedundantsappsdebug_twitter.py
+# --- Debug Files ---
+debug_twitter.py
 backend/debug_twitter.py
 backend/app/tests/test_full.py
+
+# --- Individual Repo Git Directories (if using Option 2) ---
+# Uncomment these if you use setup-repos.sh
+# website/.git/
+# platform/.git/
+# contracts/.git/
+# backend/.git/
+# ai-engine/.git/

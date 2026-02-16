@@ -20,6 +20,11 @@ const ScoreRing = ({ score }) => {
 }
 
 export default function OpportunityCard({ opp, index }) {
+  if (!opp || !opp.id) {
+    console.warn("OpportunityCard received invalid data:", opp);
+    return null;
+  }
+
   const score = opp.score || opp.ai_score || 0
   const type = opp.type || opp.category || 'Unknown'
   const summary = opp.summary || opp.description || ''

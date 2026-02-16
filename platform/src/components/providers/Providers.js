@@ -9,7 +9,20 @@ export function Providers({ children }) {
     <Web3Provider>
       <AuthProvider>
         {children}
-        <Toaster position="bottom-right" />
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#1a1a1a',
+              color: '#fff',
+              border: '1px solid rgba(255, 85, 0, 0.2)',
+              borderRadius: '12px',
+              fontFamily: 'monospace',
+              fontSize: '12px',
+            },
+          }}
+        />
       </AuthProvider>
     </Web3Provider>
   );

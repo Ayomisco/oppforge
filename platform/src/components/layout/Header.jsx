@@ -1,9 +1,19 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Search, Bell, Sparkles } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function Header({ onMenuClick }) {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && query.trim()) {
+      router.push(`/dashboard?q=${encodeURIComponent(query)}`)
+    }
+  }
+
   return (
     <header className="h-14 border-b border-[var(--glass-border)] bg-[var(--bg-espresso)]/90 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4">
       
@@ -27,6 +37,9 @@ export default function Header({ onMenuClick }) {
         <input 
           type="text" 
           placeholder="SEARCH_PROTOCOL..." 
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleSearch}
           className="w-full bg-[#1a1512] border border-[#2a1a12] rounded-lg py-1.5 pl-9 pr-4 text-xs font-mono text-white focus:outline-none focus:border-[#ff5500] focus:ring-1 focus:ring-[#ff5500]/20 transition-all placeholder-gray-800"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2">
