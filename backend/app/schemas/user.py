@@ -35,12 +35,14 @@ class UserUpdate(BaseModel):
     preferred_categories: Optional[List[str]] = None
     
     # Settings
+    onboarded: Optional[bool] = None
     notification_settings: Optional[Dict[str, bool]] = None
 
 class UserResponse(UserBase):
     id: uuid.UUID
     username: Optional[str] = None
     wallet_address: Optional[str] = None
+    role: str
     # Computed/Gamified
     xp: int
     level: int
@@ -56,6 +58,7 @@ class UserResponse(UserBase):
     skills: List[str] = []
     preferred_chains: List[str] = []
     preferred_categories: List[str] = []
+    onboarded: bool = False
     
     created_at: datetime
 

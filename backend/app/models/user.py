@@ -57,6 +57,7 @@ class User(Base):
     subscription_status = Column(String, default="active")
     
     # Settings
+    onboarded = Column(Boolean, default=False)
     notification_settings = Column(JSON, default={
         "email_alerts": True,
         "push_alerts": False,

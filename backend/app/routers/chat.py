@@ -36,41 +36,51 @@ async def send_message(
     )
     db.add(user_msg)
     
-    # Build context
-    context = f"User '{current_user.full_name}' with skills {current_user.skills} asks: {req.message}"
+    # Build Contextual Request for AI Engine
+    ai_request = {
+        "message": req.message,
+        "user_profile": {
+            "id": str(current_user.id),
+            "full_name": current_user.full_name,
+            "skills": current_user.skills,
+            "xp": current_user.xp,
+            "level": current_user.level,
+            "bio": current_user.bio
+        }
+    }
     
     if req.opportunity_id:
         from ..models.opportunity import Opportunity
         opp = db.query(Opportunity).filter(Opportunity.id == req.opportunity_id).first()
         if opp:
-            context += f"\n\nContext - Opportunity: {opp.title} ({opp.category})\nChain: {opp.chain}\nReward: {opp.reward_pool}\nDescription: {opp.description}"
+            ai_request["opportunity"] = {
+                "id": str(opp.id),
+                "title": opp.title,
+                "description": opp.description,
+                "category": opp.category,
+                "chain": opp.chain,
+                "reward_pool": opp.reward_pool,
+                "trust_score": opp.trust_score,
+                "mission_requirements": opp.mission_requirements
+            }
 
-    # Call Groq AI
+    # Call AI Engine Service (Decoupled Architecture)
+    AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
     try:
-        groq_key = os.getenv("GROQ_API_KEY")
-        if not groq_key:
-            ai_content = f"I've analyzed your request about \"{req.message}\". Based on current data, I recommend exploring the opportunity further. Note: AI service not configured — set GROQ_API_KEY in .env."
-        else:
-            import httpx
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                    json={
-                        "model": "llama-3.1-8b-instant",
-                        "messages": [
-                            {"role": "system", "content": "You are Forge AI, a Web3 opportunity advisor for OppForge. Be concise, tactical, and data-driven. Help users evaluate grants, hackathons, bounties, and airdrops."},
-                            {"role": "user", "content": context}
-                        ],
-                        "temperature": 0.7,
-                        "max_tokens": 500
-                    },
-                    timeout=15.0
-                )
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{AI_ENGINE_URL}/ai/chat",
+                json=ai_request,
+                timeout=30.0
+            )
+            if resp.status_code == 200:
                 data = resp.json()
-                ai_content = data["choices"][0]["message"]["content"]
+                ai_content = data.get("response", "AI Engine failed to return response.")
+            else:
+                ai_content = f"Forge AI Engine offline (Status: {resp.status_code})."
     except Exception as e:
-        ai_content = f"I encountered an issue processing your request. Please try again. (Error: {str(e)[:100]})"
+        ai_content = f"Communication failure with AI Engine: {str(e)[:100]}"
 
     # Save AI response
     ai_msg = ChatMessage(
@@ -93,4 +103,46 @@ def get_history(
     """Get chat history for current user."""
     return db.query(ChatMessage).filter(
         ChatMessage.user_id == current_user.id
-    ).order_by(ChatMessage.timestamp.desc()).limit(limit).all()
+    ).order_by(ChatMessage.timestamp.asc()).limit(limit).all()
+
+@router.delete("/{message_id}")
+def delete_message(
+    message_id: uuid.UUID,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    """Delete a chat message."""
+    msg = db.query(ChatMessage).filter(
+        ChatMessage.id == message_id,
+        ChatMessage.user_id == current_user.id
+    ).first()
+    
+    if not msg:
+        raise HTTPException(status_code=404, detail="Message not found")
+        
+    db.delete(msg)
+    db.commit()
+    return {"success": True}
+
+class EditRequest(BaseModel):
+    content: str
+
+@router.patch("/{message_id}")
+def edit_message(
+    message_id: uuid.UUID,
+    req: EditRequest,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    """Edit a chat message."""
+    msg = db.query(ChatMessage).filter(
+        ChatMessage.id == message_id,
+        ChatMessage.user_id == current_user.id
+    ).first()
+    
+    if not msg:
+        raise HTTPException(status_code=404, detail="Message not found")
+        
+    msg.content = req.content
+    db.commit()
+    return {"success": True, "content": msg.content}

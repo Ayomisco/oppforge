@@ -16,6 +16,9 @@ beautifulsoup4
 playwright
 lxml
 schedule
+celery[redis]
+redis
+flower
 pydantic[email]
 pydantic-settings
 python-multipart

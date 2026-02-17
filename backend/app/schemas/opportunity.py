@@ -25,6 +25,8 @@ class OpportunityCreate(OpportunityBase):
     source_id: Optional[str] = None
     source_url: Optional[str] = None
     posted_at: Optional[datetime] = None
+    mission_requirements: List[str] = []
+    trust_score: int = 100
 
 class OpportunityResponse(OpportunityBase):
     id: uuid.UUID
@@ -37,6 +39,8 @@ class OpportunityResponse(OpportunityBase):
     win_probability: str = "Medium"
     difficulty: str = "Intermediate"
     required_skills: List[str] = []
+    mission_requirements: List[str] = [] # Real field from DB
+    trust_score: int = 70
     
     is_verified: bool = False
     views_count: int = 0
@@ -73,6 +77,9 @@ class OpportunityResponse(OpportunityBase):
     @computed_field
     @property
     def requirements(self) -> List[str]:
+        # Return real requirements if they exist, otherwise fallback to skills
+        if hasattr(self, 'mission_requirements') and self.mission_requirements:
+            return self.mission_requirements
         return self.required_skills
 
     class Config:

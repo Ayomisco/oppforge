@@ -50,6 +50,13 @@ class Opportunity(Base):
     difficulty = Column(String, default="Intermediate") # Beginner, Intermediate, Expert
     difficulty_score = Column(Integer, default=5) # 1-10 numeric difficulty
     required_skills = Column(JSON, default=[])
+    mission_requirements = Column(JSON, default=[]) # Specific mission requirements (List)
+    
+    # Trust & Verification
+    trust_score = Column(Integer, default=70) # 0-100 based on anti-deception engine
+    risk_score = Column(Integer, nullable=True, index=True) # 0-100, null if not assessed yet
+    risk_level = Column(String, nullable=True) # Low, Medium, High, Critical
+    risk_flags = Column(JSON, default=[]) # List of detected risk issues
     
     # Meta
     is_verified = Column(Boolean, default=False)
@@ -69,3 +76,22 @@ class Opportunity(Base):
     
     # Relationships
     tracked_by = relationship("TrackedApplication", back_populates="opportunity")
+    
+    def to_dict(self):
+        """Convert opportunity to dictionary for AI processing"""
+        return {
+            "id": str(self.id),
+            "title": self.title,
+            "description": self.description,
+            "category": self.category,
+            "chain": self.chain,
+            "reward_pool": self.reward_pool,
+            "deadline": self.deadline.isoformat() if self.deadline else None,
+            "source": self.source,
+            "tags": self.tags,
+            "required_skills": self.required_skills,
+            "mission_requirements": self.mission_requirements,
+            "trust_score": self.trust_score,
+            "url": self.url,
+            "is_verified": self.is_verified,
+        }

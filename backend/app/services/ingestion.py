@@ -139,6 +139,17 @@ class IngestionPipeline:
                 print(f"  - Exists (Title Match), skipping.")
                 continue
 
+            # --- 3. Trust Protocol (Anti-Deception) ---
+            from ..utils.trust_engine import TrustEngine
+            trust_score = TrustEngine.calculate_score(refined_data)
+            refined_data["trust_score"] = trust_score
+            
+            if trust_score < 30:
+                print(f"  [Trust] HIGH RISK detected (Score: {trust_score}). Auto-flagging.")
+                refined_data["is_verified"] = False
+            elif trust_score > 85:
+                refined_data["is_verified"] = True
+
             # --- 3. Enhanced Field Extraction ---
             text_blob = (refined_data.get("description", "") or "") + " " + (refined_data.get("title", "") or "")
             

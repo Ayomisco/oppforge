@@ -9,6 +9,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
 
 class AgentCurator:
     """
@@ -31,42 +32,21 @@ class AgentCurator:
         
         if len(full_text) < 15: return None
 
-        prompt = f"""
-        Act as a Web3 Intelligence Analyst. Triage this raw data for ACTIONABLE WEB3 opportunities.
-        Raw Data: {full_text}
-        Output JSON:
-        {{
-            "is_opportunity": true,
-            "category": "Grant",
-            "title": "Action Title",
-            "reward_pool": "string",
-            "deadline": "YYYY-MM-DD",
-            "chain": "string",
-            "required_skills": ["skill1"],
-            "win_probability": "High",
-            "difficulty": "Intermediate",
-            "ai_summary": "Brief",
-            "strategy_tip": "Tip"
-        }}
-        """
-
+        # Call AI Engine Classifier Agent
         try:
-            print(f"[Curator] Calling Groq for: {title[:30]}...")
+            print(f"[Curator] Calling AI-Engine Classify for: {title[:30]}...")
             response = requests.post(
-                GROQ_URL,
-                headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+                f"{AI_ENGINE_URL}/ai/classify",
                 json={
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0.1,
-                    "response_format": {"type": "json_object"}
+                    "raw_text": full_text,
+                    "source": raw_item.get("source", "Unknown"),
+                    "model": "llama-3.3-70b-versatile" # Specify the model to use
                 },
-                timeout=30
+                timeout=45
             )
 
             if response.status_code == 200:
-                data = response.json()['choices'][0]['message']['content']
-                refined = json.loads(data)
+                refined = response.json().get("data", {}) # Assign result to 'refined' for consistency
                 
                 if not refined.get("is_opportunity"):
                     print(f"  [Curator] Skipped: {title[:30]} (Not an opportunity)")

@@ -7,7 +7,52 @@ from .. import database, schemas
 from ..models.opportunity import Opportunity
 from .auth import get_current_user
 
+from ..models.enums import UserRole
+
 router = APIRouter(prefix="/opportunities", tags=["opportunities"])
+
+@router.post("/", response_model=schemas.OpportunityResponse)
+def create_opportunity(
+    payload: schemas.OpportunityCreate,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Admin Only: Manually upload an opportunity.
+    Bypasses automated scraping.
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=403, 
+            detail="Only administrators can manually deploy missions."
+        )
+    
+    # Check for duplicate URL
+    existing = db.query(Opportunity).filter(Opportunity.url == payload.url).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Opportunity with this URL already exists.")
+
+    new_opp = Opportunity(**payload.model_dump())
+    new_opp.source = "manual"
+    new_opp.is_verified = True # Admin uploads are pre-verified
+    
+    db.add(new_opp)
+    
+    # Audit Log
+    from ..models.audit import AuditLog
+    audit = AuditLog(
+        action="manual_deployment",
+        user_id=current_user.id,
+        target_id=str(new_opp.id),
+        details=f"Admin {current_user.email} deployed mission: {new_opp.title}",
+        type="data",
+        payload=payload.model_dump()
+    )
+    db.add(audit)
+    
+    db.commit()
+    db.refresh(new_opp)
+    return new_opp
 
 @router.get("/", response_model=List[schemas.OpportunityResponse])
 def read_opportunities(
@@ -62,32 +107,61 @@ def get_priority_stream(
     """
     all_opps = db.query(Opportunity).filter(Opportunity.is_open == True).all()
     
-    scored_opps = []
-    user_skills = set(current_user.skills or [])
-    user_chains = set(current_user.preferred_chains or [])
+    # Build User Profile for AI Engine
+    user_profile = {
+        "skills": current_user.skills,
+        "experience_level": current_user.experience_level,
+        "preferred_chains": current_user.preferred_chains,
+        "bio": current_user.bio
+    }
     
+    AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
+    
+    scored_opps = []
+    
+    # Batch process for performance or individual calls (individual for now)
     for opp in all_opps:
-        match_bonus = 0
-        opp_tags = set(opp.tags or [])
-        opp_reqs = set(opp.required_skills or [])
-        
-        # Skill Match Bonus (+5 per skill)
-        skill_matches = user_skills.intersection(opp_tags.union(opp_reqs))
-        match_bonus += len(skill_matches) * 5
-        
-        # Chain Match Bonus (+10)
-        if opp.chain in user_chains:
-            match_bonus += 10
+        # 1. Start with AI Engine Semantic Score
+        semantic_score = None
+        try:
+            import requests # Fast synchronous for this loop
+            resp = requests.post(
+                f"{AI_ENGINE_URL}/ai/match-score",
+                json={
+                    "opportunity": {
+                        "title": opp.title,
+                        "description": opp.description,
+                        "tags": opp.tags
+                    },
+                    "user_profile": user_profile
+                },
+                timeout=0.5 # Fail fast
+            )
+            if resp.status_code == 200:
+                semantic_score = resp.json().get("match_score")
+        except:
+            pass
+
+        if semantic_score is not None:
+            opp.ai_score = semantic_score
+        else:
+            # Fallback to manual match scoring (Heuristic)
+            user_skills = set(current_user.skills or [])
+            user_chains = set(current_user.preferred_chains or [])
+            match_bonus = 0
+            opp_tags = set(opp.tags or [])
+            opp_reqs = set(opp.required_skills or [])
             
-        # Add a dynamic 'match_score' attribute for the response
-        # In a real app, we'd probably save this or return it in a wrapper
-        # For now, we'll just sort by (ai_score + match_bonus)
-        opp.ai_score = min(opp.ai_score + match_bonus, 100)
+            skill_matches = user_skills.intersection(opp_tags.union(opp_reqs))
+            match_bonus += len(skill_matches) * 5
+            if opp.chain in user_chains:
+                match_bonus += 10
+                
+            opp.ai_score = min(opp.ai_score + match_bonus, 100)
+            
         scored_opps.append(opp)
         
-    # Sort by the updated score
     scored_opps.sort(key=lambda x: x.ai_score, reverse=True)
-    
     return scored_opps[:20]
 
 @router.get("/testnets", response_model=List[schemas.OpportunityResponse])
@@ -103,3 +177,60 @@ def read_opportunity(id: uuid.UUID, db: Session = Depends(database.get_db)):
     if opp is None:
         raise HTTPException(status_code=404, detail="Opportunity not found")
     return opp
+
+@router.delete("/{id}")
+def delete_opportunity(
+    id: uuid.UUID, 
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    opp = db.query(Opportunity).filter(Opportunity.id == id).first()
+    if not opp:
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    db.delete(opp)
+    
+    # Audit
+    from ..models.audit import AuditLog
+    db.add(AuditLog(
+        action="opportunity_deleted",
+        user_id=current_user.id,
+        target_id=str(id),
+        details=f"Admin deleted mission: {opp.title}",
+        type="security"
+    ))
+    
+    db.commit()
+    return {"status": "success"}
+
+@router.patch("/{id}/verify")
+def verify_opportunity(
+    id: uuid.UUID, 
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    opp = db.query(Opportunity).filter(Opportunity.id == id).first()
+    if not opp:
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    opp.is_verified = True
+    opp.trust_score = 100
+    
+    # Audit
+    from ..models.audit import AuditLog
+    db.add(AuditLog(
+        action="opportunity_verified",
+        user_id=current_user.id,
+        target_id=str(id),
+        details=f"Admin verified mission: {opp.title}",
+        type="data"
+    ))
+    
+    db.commit()
+    return {"status": "success"}

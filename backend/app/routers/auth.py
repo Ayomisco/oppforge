@@ -105,13 +105,22 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
             if not user.first_name: user.first_name = first_name
             if not user.last_name: user.last_name = last_name
             if not user.username: user.username = email.split('@')[0]
+            
+            # Logic: If existing user, mark as onboarded to skip sequence as requested
+            user.onboarded = True
+                
             db.commit()
             db.refresh(user)
             
         # 3. Create Session JWT
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"sub": user.email}, expires_delta=access_token_expires
+            data={
+                "sub": user.email, 
+                "role": user.role.value, 
+                "onboarded": user.onboarded
+            }, 
+            expires_delta=access_token_expires
         )
         
         # 4. Return everything needed for frontend state

@@ -138,32 +138,38 @@ async def generate_draft(
     Output in Markdown format.
     """
     
+    # Call AI Engine for specialized drafting
+    AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
+    
+    ai_request = {
+        "message": f"MISSION_DRAFT_REQUEST: {opp.title}. Structure it as a 3-paragraph compelling proposal. Tone: Professional, Data-driven.",
+        "user_profile": {
+            "full_name": current_user.full_name,
+            "bio": current_user.bio,
+            "skills": current_user.skills or []
+        },
+        "opportunity": {
+            "title": opp.title,
+            "description": opp.description,
+            "category": opp.category,
+            "ai_summary": opp.ai_summary
+        }
+    }
+
     try:
-        groq_key = os.getenv("GROQ_API_KEY")
-        if not groq_key:
-            return {"draft": "Forging error: AI service not configured. Set GROQ_API_KEY."}
-            
         async with httpx.AsyncClient() as client:
             resp = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                json={
-                    "model": "llama-3.1-70b-versatile",
-                    "messages": [
-                        {"role": "system", "content": "You are Forge AI, an elite Web3 mission strategist."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    "temperature": 0.7
-                },
-                timeout=20.0
+                f"{AI_ENGINE_URL}/ai/chat",
+                json=ai_request,
+                timeout=45.0
             )
-            data = resp.json()
-            draft_content = data["choices"][0]["message"]["content"]
-            
-            # Save a snapshot to the tracking record
-            tracking.ai_strategy_notes = draft_content
-            db.commit()
-            
-            return {"draft": draft_content}
+            if resp.status_code == 200:
+                draft_content = resp.json().get("response", "AI Engine failed to return a draft.")
+                # Save snapshot
+                tracking.ai_strategy_notes = draft_content
+                db.commit()
+                return {"draft": draft_content}
+            else:
+                return {"draft": f"AI Engine error: {resp.status_code}"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI Agent failed to forge draft: {str(e)}")
+        return {"draft": f"Communication error: {str(e)}"}
