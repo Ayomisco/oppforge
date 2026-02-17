@@ -112,7 +112,8 @@ export default function OnboardingPage() {
         skills: selectedSkills,
         preferred_chains: selectedChains,
         wallet_address: address,
-        is_pro: false 
+        is_pro: false,
+        onboarded: true
       });
       setUser(data);
       toast.success("Identity forged! Welcome to Mission Control.", { id: toastId });

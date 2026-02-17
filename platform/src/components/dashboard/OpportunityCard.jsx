@@ -2,8 +2,12 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Clock, MessageSquare, Zap, Hash, ArrowUpRight } from 'lucide-react'
+import { Clock, MessageSquare, Zap, Hash, ArrowUpRight, ShieldCheck, Trash2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
+import { formatMissionDeadline, getTrustStatus, truncate } from '@/lib/utils'
+import { useAuth } from '../providers/AuthProvider'
+import api from '@/lib/api'
+import toast from 'react-hot-toast'
 
 // Score ring component
 const ScoreRing = ({ score }) => {
@@ -19,16 +23,45 @@ const ScoreRing = ({ score }) => {
   )
 }
 
-export default function OpportunityCard({ opp, index }) {
+export default function OpportunityCard({ opp, index, onRefresh }) {
+  const { user } = useAuth();
+  
   if (!opp || !opp.id) {
     console.warn("OpportunityCard received invalid data:", opp);
     return null;
   }
 
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await api.patch(`/opportunities/${opp.id}/verify`);
+      toast.success('Mission Verified');
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      toast.error('Failed to verify');
+    }
+  }
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Abort this mission permanently?')) return;
+    try {
+      await api.delete(`/opportunities/${opp.id}`);
+      toast.success('Mission Purged');
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      toast.error('Failed to delete');
+    }
+  }
+
   const score = opp.score || opp.ai_score || 0
   const type = opp.type || opp.category || 'Unknown'
-  const summary = opp.summary || opp.description || ''
-  const isUrgent = opp.deadline && new Date(opp.deadline) < new Date(Date.now() + 48 * 60 * 60 * 1000)
+  const summary = opp.summary || opp.ai_summary || opp.description || ''
+  const trust = getTrustStatus(opp.trust_score || (opp.is_verified ? 95 : 60))
+  const deadlineLabel = formatMissionDeadline(opp.deadline)
+  const isUrgent = deadlineLabel.includes('day') || deadlineLabel.includes('hour')
 
   return (
     <motion.div
@@ -49,12 +82,18 @@ export default function OpportunityCard({ opp, index }) {
           <span className="text-[10px] uppercase tracking-wider text-[#ffaa00] bg-[#ffaa00]/10 px-1.5 rounded-sm border border-[#ffaa00]/20">
             {type}
           </span>
-          <span className="text-[10px] text-gray-500 font-mono">
-            {opp.chain} // {opp.source}
+          <div 
+            className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-sm border"
+            style={{ color: trust.color, borderColor: `${trust.color}22`, backgroundColor: trust.bg }}
+          >
+             <ShieldCheck size={10} /> {trust.label}
+          </div>
+          <span className="text-[10px] text-gray-700 font-mono">
+             {opp.source}
           </span>
-          {isUrgent && (
-            <span className="ml-auto flex items-center gap-1 text-[10px] text-red-500 font-bold animate-pulse">
-              <Clock size={10} /> 48H
+          {deadlineLabel !== "EXPIRED" && (
+            <span className={`ml-auto flex items-center gap-1 text-[10px] font-bold ${isUrgent ? 'text-red-500 animate-pulse' : 'text-gray-500'}`}>
+              <Clock size={10} /> {deadlineLabel}
             </span>
           )}
         </div>
@@ -73,6 +112,26 @@ export default function OpportunityCard({ opp, index }) {
         <div className="text-sm font-bold text-[#10b981] font-mono">{opp.reward_pool || opp.reward || ''}</div>
         
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+          {user?.role === 'admin' && (
+            <>
+              {!opp.is_verified && (
+                <button 
+                  onClick={handleVerify}
+                  className="p-1.5 hover:bg-green-500/10 rounded-sm text-gray-500 hover:text-green-500 transition-colors"
+                  title="Verify Mission"
+                >
+                   <CheckCircle size={14} />
+                </button>
+              )}
+              <button 
+                onClick={handleDelete}
+                className="p-1.5 hover:bg-red-500/10 rounded-sm text-gray-500 hover:text-red-500 transition-colors"
+                title="Delete Mission"
+              >
+                 <Trash2 size={14} />
+              </button>
+            </>
+          )}
           <Link 
             href={`/dashboard/opportunity/${opp.id}`}
             className="p-1.5 hover:bg-white/10 rounded-sm text-gray-500 hover:text-[#ffaa00] transition-colors"

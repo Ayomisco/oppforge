@@ -31,9 +31,13 @@ export default function DashboardPage() {
   const { data: stats, error: statsError } = useSWR('/stats/dashboard', fetcher)
   
   // 2. Fetch Opportunities (Priority Stream - Personalized)
-  const { data: opportunities, error: oppsError } = useSWR('/opportunities/priority', fetcher)
+  const { data: opportunities, error: oppsError, mutate } = useSWR('/opportunities/priority', fetcher)
 
-  const loading = !stats || !opportunities
+  const loading = !stats && !statsError && !opportunities && !oppsError
+  const hasError = statsError || oppsError
+
+  // If there's an error, we shouldn't stay in loading state
+  // If stats load but opps fail, we show the stats and an empty list/error
 
   // Filter Logic (Client-side for now, or could be API param)
   const filteredOpps = (opportunities || []).filter(opp => {
@@ -106,11 +110,16 @@ export default function DashboardPage() {
                 <OpportunitySkeleton />
                 <OpportunitySkeleton />
               </div>
+            ) : oppsError ? (
+              <div className="text-center py-20 border border-red-500/10 rounded bg-red-500/5">
+                <p className="text-red-500 text-xs font-mono uppercase tracking-[0.2em]">Data_Fetch_Failure // Priority_Stream_Offline</p>
+                <p className="text-[10px] text-gray-600 font-mono mt-2">Check backend link or refresh protocol</p>
+              </div>
             ) : filteredOpps.length === 0 ? (
                <div className="text-center py-10 text-gray-500 text-sm">No opportunities found in this category.</div>
             ) : (
                filteredOpps.map((opp, idx) => (
-                  <OpportunityCard key={opp.id} opp={opp} index={idx} />
+                  <OpportunityCard key={opp.id} opp={opp} index={idx} onRefresh={mutate} />
                ))
             )}
           </div>

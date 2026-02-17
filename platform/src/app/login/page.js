@@ -14,14 +14,27 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("Auth State Changed:", { user, onboarded: user?.onboarded });
     if (user) {
-      if (user.skills?.length > 0 || user.preferred_chains?.length > 0) {
+      if (user.onboarded) {
+        console.log("Redirecting to Dashboard...");
         router.push('/dashboard');
       } else {
+        console.log("Redirecting to Onboarding...");
         router.push('/onboarding');
       }
     }
   }, [user, router]);
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const success = await loginGoogle(credentialResponse);
+    if (success) {
+      // The user state in AuthProvider might take a tick to update,
+      // but the loginGoogle function has already set the user state.
+      // We can check the token to be extra sure or just rely on the next tick.
+      toast.success("Syncing Mission Control...");
+    }
+  };
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#050403]">
@@ -122,7 +135,7 @@ export default function LoginPage() {
                   </div>
                   <div className="flex justify-center w-full">
                     <GoogleLogin
-                        onSuccess={loginGoogle}
+                        onSuccess={handleGoogleSuccess}
                         onError={() => console.log('Login Failed')}
                         theme="filled_black"
                         shape="rect"

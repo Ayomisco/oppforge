@@ -3,12 +3,14 @@
 import { AuthProvider } from './AuthProvider';
 import { Web3Provider } from './Web3Provider';
 import { Toaster } from 'react-hot-toast';
+import MissionUploadModal from '../dashboard/MissionUploadModal';
 
 export function Providers({ children }) {
   return (
     <Web3Provider>
       <AuthProvider>
         {children}
+        <MissionUploadModal />
         <Toaster 
           position="top-right" 
           toastOptions={{

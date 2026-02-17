@@ -13,7 +13,10 @@ import {
   LogOut, 
   Menu,
   Terminal,
-  Cpu
+  Cpu,
+  ShieldCheck,
+  PlusSquare,
+  Crown
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../providers/AuthProvider'
@@ -23,6 +26,7 @@ const menuItems = [
   { icon: Zap, label: 'Live Feed', href: '/dashboard/feed' },
   { icon: Target, label: 'Tracker', href: '/dashboard/tracker' },
   { icon: MessageSquare, label: 'Forge AI', href: '/dashboard/chat' },
+  { icon: Crown, label: 'Upgrades', href: '/dashboard/subscription' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -78,9 +82,27 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
 
         <div className="mt-8 text-[9px] font-mono text-gray-700 uppercase mb-3 pl-3">Database</div>
         <SidebarItem 
-          item={{ icon: FolderKanban, label: 'Applications', href: '/dashboard/tracker' }}
-          isActive={pathname === '/dashboard/tracker'}
+          item={{ icon: FolderKanban, label: 'Applications', href: '/dashboard/applications' }}
+          isActive={pathname === '/dashboard/applications'}
+          isCollapsed={false}
         />
+
+        {(user?.role?.toLowerCase() === 'admin') && (
+          <>
+            <div className="mt-8 text-[9px] font-mono text-[#ffaa00] uppercase mb-3 pl-3">Intelligence HQ</div>
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('open-mission-upload'))}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-gray-400 hover:text-[#ffaa00] hover:bg-[#ffaa00]/10 transition-all duration-200 text-xs font-mono tracking-wide uppercase group"
+            >
+              <PlusSquare size={16} className="group-hover:rotate-90 transition-transform" />
+              <span>Deploy Mission</span>
+            </button>
+            <SidebarItem 
+              item={{ icon: ShieldCheck, label: 'Audit Logs', href: '/dashboard/admin/audit' }}
+              isActive={pathname === '/dashboard/admin/audit'}
+            />
+          </>
+        )}
       </div>
 
       {/* User Profile / Footer */}

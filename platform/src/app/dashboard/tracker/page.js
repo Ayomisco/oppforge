@@ -40,8 +40,7 @@ export default function TrackerPage() {
   )
 
   const openDrafter = (mission) => {
-    setSelectedMission(mission)
-    setIsDrafterOpen(true)
+    router.push(`/dashboard/forge/workspace/${mission.opportunity_id || mission.id}`)
   }
 
   return (
@@ -117,11 +116,6 @@ export default function TrackerPage() {
         </div>
       )}
 
-      <AIDrafterModal 
-        mission={selectedMission}
-        isOpen={isDrafterOpen}
-        onClose={() => setIsDrafterOpen(false)}
-      />
     </div>
   )
 }

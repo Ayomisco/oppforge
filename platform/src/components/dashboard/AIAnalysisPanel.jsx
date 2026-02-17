@@ -3,7 +3,7 @@
 import React from 'react'
 import { Sparkles, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react'
 
-export default function AIAnalysisPanel({ score, probability, summary, strategy }) {
+export default function AIAnalysisPanel({ id, score, probability, summary, strategy }) {
   return (
     <div className="glass-card p-6 border border-[var(--border-glow)] shadow-[0_0_30px_rgba(255,107,26,0.1)] relative overflow-hidden">
       {/* Background Decor */}
@@ -40,7 +40,10 @@ export default function AIAnalysisPanel({ score, probability, summary, strategy 
         </div>
 
         {/* Action */}
-        <button className="w-full btn btn-primary mt-4 group justify-between">
+        <button 
+          onClick={() => window.location.href = `/dashboard/forge/workspace/${id}`}
+          className="w-full btn btn-primary mt-4 group justify-between"
+        >
           <span>Ask Forge to Draft Proposal</span> <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </button>
       </div>

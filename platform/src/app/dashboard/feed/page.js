@@ -32,7 +32,7 @@ export default function FeedPage() {
     return params.length > 0 ? `${endpoint}?${params.join('&')}` : endpoint
   }
 
-  const { data: opportunities, error, isLoading } = useSWR(getQuery(), fetcher)
+  const { data: opportunities, error, isLoading, mutate } = useSWR(getQuery(), fetcher)
 
   return (
     <div className="space-y-6">
@@ -87,7 +87,7 @@ export default function FeedPage() {
         )}
 
         {opportunities?.map((opp, idx) => (
-          <OpportunityCard key={opp.id} opp={opp} index={idx} />
+          <OpportunityCard key={opp.id} opp={opp} index={idx} onRefresh={mutate} />
         ))}
       </div>
       

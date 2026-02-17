@@ -31,21 +31,21 @@ export function AuthProvider({ children }) {
   }, []);
 
   const loginGoogle = async (credentialResponse) => {
+    console.log("Executing loginGoogle with credential...");
     try {
       const { credential } = credentialResponse;
-      // Send Google token to backend to exchange for internal JWT
       const { data } = await api.post('/auth/google', { token: credential });
+      console.log("Backend auth successful, received token:", !!data.access_token);
       
-      // Store JWT
-      Cookies.set('token', data.access_token, { expires: 7 }); // 7 days
+      Cookies.set('token', data.access_token, { expires: 7 }); 
+      setUser(data.user);
+      console.log("User state updated in context:", data.user.email);
       
-      // Update User State
-      setUser(data.user); // Assuming backend returns user object with token
       toast.success(`Welcome back, ${data.user.first_name || 'Partner'}!`);
       return true;
     } catch (error) {
-      console.error("Login failed:", error);
-      toast.error("Login failed. Please try again.");
+      console.error("Login process failed at some step:", error);
+      toast.error("Login failed. Check console for details.");
       return false;
     }
   };

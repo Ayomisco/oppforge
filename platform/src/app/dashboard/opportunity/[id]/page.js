@@ -2,20 +2,82 @@
 
 import React, { use } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Globe, Shield, Zap, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Clock, Globe, Shield, Zap, ExternalLink, ShieldCheck, Trash2 } from 'lucide-react'
+import { useAuth } from '@/components/providers/AuthProvider'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 import useSWR from 'swr'
 import api from '@/lib/api'
+import { formatMissionDeadline, getTrustStatus } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
 import AIAnalysisPanel from '@/components/dashboard/AIAnalysisPanel'
+import { useWriteContract, useAccount } from 'wagmi'
+import { parseEther, keccak256, encodePacked } from 'viem'
 
 const fetcher = url => api.get(url).then(res => res.data)
 
 export default function OpportunityDetail({ params }) {
   const { id } = use(params)
+  const { user } = useAuth()
+  const router = useRouter()
   
   // Guard Clause: Don't fetch if ID is invalid
   const shouldFetch = id && id !== 'undefined'
-  const { data: opp, error, isLoading } = useSWR(shouldFetch ? `/opportunities/${id}` : null, fetcher)
+  const { data: opp, error, isLoading, mutate } = useSWR(shouldFetch ? `/opportunities/${id}` : null, fetcher)
+
+  const handleVerify = async () => {
+    try {
+      await api.patch(`/opportunities/${id}/verify`)
+      toast.success('Mission Verified')
+      mutate()
+    } catch (error) {
+      toast.error('Failed to verify')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Abort this mission permanently?')) return
+    try {
+      await api.delete(`/opportunities/${id}`)
+      toast.success('Mission Purged')
+      router.push('/dashboard')
+    } catch (error) {
+      toast.error('Failed to delete')
+    }
+  }
+
+  const { writeContractAsync } = useWriteContract()
+  const { isConnected } = useAccount()
+
+  const handleFund = async () => {
+    if (!isConnected) {
+        toast.error("Connect Wallet to fund mission");
+        return;
+    }
+    const amount = prompt("Enter reward amount in ETH (e.g. 0.01):");
+    if (!amount) return;
+
+    const tid = toast.loading(`Funding Mission on Arbitrum...`);
+    try {
+        const missionIdBytes = keccak256(encodePacked(['string'], [id]));
+        await writeContractAsync({
+            address: '0x0000000000000000000000000000000000000000', // Protocol Address
+            abi: [{
+                "inputs": [{"internalType": "bytes32", "name": "_missionId", "type": "bytes32"}],
+                "name": "fundMission",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            }],
+            functionName: 'fundMission',
+            args: [missionIdBytes],
+            value: parseEther(amount)
+        });
+        toast.success('Funds Secured On-Chain', { id: tid });
+    } catch (e) {
+        toast.error('Funding failed', { id: tid });
+    }
+  }
 
   if (isLoading) return (
     <div className="max-w-5xl mx-auto pb-20 animate-pulse">
@@ -38,8 +100,9 @@ export default function OpportunityDetail({ params }) {
     </div>
   )
 
-  const isExpired = opp.deadline && new Date(opp.deadline) < new Date()
-  const timeLimit = opp.deadline ? formatDistanceToNow(new Date(opp.deadline), { addSuffix: true }) : 'No deadline'
+  const deadlineLabel = formatMissionDeadline(opp.deadline)
+  const isExpired = deadlineLabel === "EXPIRED"
+  const trust = getTrustStatus(opp.trust_score || (opp.is_verified ? 95 : 60))
 
   return (
     <div className="max-w-6xl mx-auto pb-20">
@@ -63,11 +126,12 @@ export default function OpportunityDetail({ params }) {
               <span className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-wide text-gray-400">
                 {opp.chain}
               </span>
-              {opp.is_verified && (
-                <span className="flex items-center gap-1 text-[10px] text-[#10b981] font-bold">
-                  <Shield size={10} /> VERIFIED
-                </span>
-              )}
+              <div 
+                className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded border"
+                style={{ color: trust.color, borderColor: `${trust.color}44`, backgroundColor: trust.bg }}
+              >
+                 <ShieldCheck size={12} /> {trust.label}
+              </div>
             </div>
             
             <h1 className="text-4xl font-black mb-4 leading-tight text-white tracking-tight">{opp.title}</h1>
@@ -78,7 +142,7 @@ export default function OpportunityDetail({ params }) {
               </div>
               <div className={`flex items-center gap-2 ${isExpired ? 'text-red-400' : 'text-gray-300'}`}>
                 <Clock size={14} className="text-[#ff5500]" /> 
-                <span>{isExpired ? 'MISSION_EXPIRED' : `CLOSING_IN: ${timeLimit.toUpperCase()}`}</span>
+                <span className={isExpired ? 'animate-pulse' : ''}>{isExpired ? 'MISSION_EXPIRED' : `CLOSING_IN: ${deadlineLabel.toUpperCase()}`}</span>
               </div>
               <div className="flex items-center gap-2 text-white font-bold bg-[#10b981]/10 px-3 py-1.5 rounded-full border border-[#10b981]/20">
                 <span className="text-[#10b981] font-black">$</span> 
@@ -106,7 +170,7 @@ export default function OpportunityDetail({ params }) {
                 <Shield size={14} /> 02 // REQUIREMENTS
               </h3>
               <div className="space-y-4">
-                {(opp.required_skills?.length > 0 ? opp.required_skills : ["Technical Proficiency", "Ecosystem Alignment", "Active Participation"]).map((req, i) => (
+                {(opp.requirements?.length > 0 ? opp.requirements : ["Technical Proficiency", "Ecosystem Alignment", "Active Participation"]).map((req, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="mt-1 w-1.5 h-1.5 rounded-full bg-[#ff5500] shadow-[0_0_5px_#ff5500]" />
                     <span className="text-sm text-gray-400">{req}</span>
@@ -136,10 +200,12 @@ export default function OpportunityDetail({ params }) {
         <div className="lg:col-span-4 space-y-6 lg:ml-4">
           {/* AI Analysis Panel */}
           <AIAnalysisPanel 
+            id={id}
             score={opp.score}
             probability={opp.win_probability}
             summary={opp.summary}
             strategy={opp.strategy}
+            trust={opp.trust_score}
           />
 
           {/* Actions */}
@@ -152,9 +218,41 @@ export default function OpportunityDetail({ params }) {
             >
               DEPLOY_NOW <ExternalLink size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </a>
-            <button className="btn btn-secondary w-full justify-center py-4 text-sm font-mono hover:bg-white/10">
-              TRACK_MISSION
+            <button 
+              onClick={() => router.push(`/dashboard/forge/workspace/${id}`)}
+              className="btn btn-primary w-full justify-center py-4 text-sm font-mono group"
+            >
+              <span>ENTER_FORGE_WORKSPACE</span> <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
             </button>
+            
+            {user?.role === 'admin' && (
+              <div className="pt-4 space-y-3">
+                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest border-b border-white/5 pb-2">Admin_Actions</div>
+                {!opp.is_verified && (
+                  <button 
+                    onClick={handleVerify}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-[#10b981]/10 border border-[#10b981]/20 rounded text-[#10b981] text-xs font-mono uppercase hover:bg-[#10b981]/20 transition-all"
+                  >
+                    <span>Verify_Mission</span>
+                    <ShieldCheck size={16} />
+                  </button>
+                )}
+                <button 
+                  onClick={handleFund}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-[#ff5500]/10 border border-[#ff5500]/20 rounded text-[#ffaa00] text-xs font-mono uppercase hover:bg-[#ff5500]/20 transition-all"
+                >
+                  <span>Bank_Protocol_Funding</span>
+                  <Zap size={16} />
+                </button>
+                <button 
+                  onClick={handleDelete}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-red-500/10 border border-red-500/20 rounded text-red-500 text-xs font-mono uppercase hover:bg-red-500/20 transition-all"
+                >
+                  <span>Abort_Mission</span>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Intelligence Metadata */}
