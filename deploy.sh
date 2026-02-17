@@ -10,12 +10,12 @@
 
 set -e  # Exit on error
 
-MAIN_REPO="git@github.com:Ayomisco/oppforge.git"
-WEBSITE_REPO="git@github.com:oppforge/oppforge-website.git"
-PLATFORM_REPO="git@github.com:oppforge/oppforge-platform.git"
-CONTRACTS_REPO="git@github.com:oppforge/smart-contracts.git"
-BACKEND_REPO="git@github.com:oppforge/oppforge-backend.git"
-AI_ENGINE_REPO="git@github.com:oppforge/ai-engine.git"
+MAIN_REPO="https://github.com/Ayomisco/oppforge.git"
+WEBSITE_REPO="https://github.com/oppforge/oppforge-website.git"
+PLATFORM_REPO="https://github.com/oppforge/oppforge-platform.git"
+CONTRACTS_REPO="https://github.com/oppforge/smart-contracts.git"
+BACKEND_REPO="https://github.com/oppforge/oppforge-backend.git"
+AI_ENGINE_REPO="https://github.com/oppforge/ai-engine.git"
 
 echo "🚀 OppForge Multi-Repo Deployment"
 echo "=================================="
