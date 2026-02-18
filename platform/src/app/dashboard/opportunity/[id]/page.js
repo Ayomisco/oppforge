@@ -2,24 +2,28 @@
 
 import React, { use } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Globe, Shield, Zap, ExternalLink, ShieldCheck, Trash2 } from 'lucide-react'
+import { ArrowLeft, Clock, Globe, Shield, Zap, ExternalLink, ShieldCheck, Trash2, Sparkles } from 'lucide-react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import useSWR from 'swr'
 import api from '@/lib/api'
 import { formatMissionDeadline, getTrustStatus } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, format } from 'date-fns'
 import AIAnalysisPanel from '@/components/dashboard/AIAnalysisPanel'
 import { useWriteContract, useAccount } from 'wagmi'
 import { parseEther, keccak256, encodePacked } from 'viem'
+
+import { LoginModal } from '@/components/auth/LoginModal'
+import { useState } from 'react'
 
 const fetcher = url => api.get(url).then(res => res.data)
 
 export default function OpportunityDetail({ params }) {
   const { id } = use(params)
-  const { user } = useAuth()
+  const { user, isGuest } = useAuth()
   const router = useRouter()
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
   
   // Guard Clause: Don't fetch if ID is invalid
   const shouldFetch = id && id !== 'undefined'
@@ -208,18 +212,22 @@ export default function OpportunityDetail({ params }) {
             trust={opp.trust_score}
           />
 
-          {/* Actions */}
+            {/* Actions */}
           <div className="space-y-3">
-            <a 
-              href={opp.url} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <button 
+              onClick={() => {
+                if (isGuest) setIsLoginOpen(true);
+                else window.open(opp.url, '_blank');
+              }}
               className="btn btn-primary w-full justify-between items-center group py-4 px-6 text-sm"
             >
               DEPLOY_NOW <ExternalLink size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            </a>
+            </button>
             <button 
-              onClick={() => router.push(`/dashboard/forge/workspace/${id}`)}
+              onClick={() => {
+                if (isGuest) setIsLoginOpen(true);
+                else router.push(`/dashboard/forge/workspace/${id}`);
+              }}
               className="btn btn-primary w-full justify-center py-4 text-sm font-mono group"
             >
               <span>ENTER_FORGE_WORKSPACE</span> <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
@@ -268,7 +276,7 @@ export default function OpportunityDetail({ params }) {
 
             <div className="flex justify-between items-center">
               <span>SCAN_TIMESTAMP:</span>
-              <span className="text-white">{formatDistanceToNow(new Date(opp.created_at || Date.now()))} AGO</span>
+              <span className="text-white">{opp.created_at ? format(new Date(opp.created_at), 'MMM dd, yyyy') : 'JUST NOW'}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>SOURCE_PROTOCOL:</span>
@@ -291,6 +299,12 @@ export default function OpportunityDetail({ params }) {
         </div>
 
       </div>
+
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+        triggerText="Unlock This Mission"
+      />
     </div>
   )
 }

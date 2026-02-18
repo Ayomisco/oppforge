@@ -36,3 +36,10 @@ export function truncate(str, len = 100) {
   if (!str) return ""
   return str.length > len ? str.substring(0, len) + "..." : str
 }
+
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}

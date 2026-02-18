@@ -1,12 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Search, Bell, Sparkles } from 'lucide-react'
+import { Search, Bell, Sparkles, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/components/providers/AuthProvider'
+import { LoginModal } from '@/components/auth/LoginModal'
 
 export default function Header({ onMenuClick }) {
   const router = useRouter()
+  const { isGuest } = useAuth()
   const [query, setQuery] = useState('')
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && query.trim()) {
@@ -49,23 +53,41 @@ export default function Header({ onMenuClick }) {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-3">
-        {/* Status */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#ff5500]/5 border border-[#ff5500]/10 shadow-inner">
-          <Sparkles size={14} className="text-[#ffaa00] animate-pulse" />
-          <span className="text-[10px] font-mono font-bold text-[#ffaa00] tracking-wider uppercase">PRO: Active</span>
-        </div>
+        {isGuest ? (
+          <button 
+            onClick={() => setIsLoginOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#ff5500] hover:bg-[#ff6600] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_#ff5500]/40"
+          >
+            <img src="/logo.png" alt="logo" className="w-4 h-4 object-contain brightness-0 invert" />
+            Connect_Wallet
+          </button>
+        ) : (
+          <>
+            {/* Status */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#ff5500]/5 border border-[#ff5500]/10 shadow-inner">
+              <Sparkles size={14} className="text-[#ffaa00] animate-pulse" />
+              <span className="text-[10px] font-mono font-bold text-[#ffaa00] tracking-wider uppercase">PRO: Active</span>
+            </div>
 
-        {/* Notifications */}
-        <button className="p-2 relative text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
-          <Bell size={18} />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#ff5500] shadow-[0_0_8px_#ff5500]" />
-        </button>
+            {/* Notifications */}
+            <button className="p-2 relative text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
+              <Bell size={18} />
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#ff5500] shadow-[0_0_8px_#ff5500]" />
+            </button>
+          </>
+        )}
 
         {/* Mobile Search Toggle */}
         <button className="md:hidden p-2 text-[var(--text-secondary)]">
           <Search size={20} />
         </button>
       </div>
+
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+        triggerText="Access The Forge"
+      />
     </header>
   )
 }

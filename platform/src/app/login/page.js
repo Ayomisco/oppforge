@@ -4,14 +4,26 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { GoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useAccount } from 'wagmi';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ChevronRight, Shield, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-  const { user, loginGoogle } = useAuth();
+  const { user, loginGoogle, loginWallet } = useAuth();
   const router = useRouter();
+  const { address, isConnected } = useAccount();
+  const loginAttempted = useRef(false);
+
+  useEffect(() => {
+    // If wallet is connected and we don't have a user, attempt wallet login
+    if (isConnected && address && !user && !loginAttempted.current) {
+        loginAttempted.current = true;
+        loginWallet(address);
+    }
+  }, [isConnected, address, user, loginWallet]);
 
   useEffect(() => {
     console.log("Auth State Changed:", { user, onboarded: user?.onboarded });
@@ -115,8 +127,8 @@ export default function LoginPage() {
           className="w-full max-w-md bg-[#0a0806]/90 backdrop-blur-xl p-8 rounded-2xl border border-[#1a1512] shadow-2xl relative z-10"
         >
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff5500] to-[#cc4400] mb-4 shadow-lg shadow-orange-900/40">
-              <Zap className="w-6 h-6 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 filter drop-shadow-[0_0_12px_rgba(255,85,0,0.4)]">
+              <img src="/logo.png" alt="OppForge Logo" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Welcome to OppForge</h2>
             <p className="text-gray-400 text-sm">Sign in to access your command center</p>

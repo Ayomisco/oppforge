@@ -29,7 +29,7 @@ import { Providers } from '../components/providers/Providers';
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
         <Providers>
           {children}

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 import uuid
+import os
 from sqlalchemy import or_, desc
 from typing import List, Optional
 from .. import database, schemas
@@ -104,8 +105,22 @@ def get_priority_stream(
     """
     Personalized stream based on user skills and preferred chains.
     Calculates a dynamic score: AI Base Score + Match Bonus.
+    Only shows current/future opportunities (not expired).
     """
-    all_opps = db.query(Opportunity).filter(Opportunity.is_open == True).all()
+    from datetime import datetime
+    
+    # Filter: is_open AND (no deadline OR deadline >= today)
+    # Order by: deadline ASC (soonest first), then created_at DESC (newest first)
+    all_opps = db.query(Opportunity).filter(
+        Opportunity.is_open == True,
+        or_(
+            Opportunity.deadline == None,
+            Opportunity.deadline >= datetime.now()
+        )
+    ).order_by(
+        Opportunity.deadline.asc().nullslast(),  # Soonest deadlines first, no deadline at end
+        desc(Opportunity.created_at)  # Then newest first
+    ).all()
     
     # Build User Profile for AI Engine
     user_profile = {

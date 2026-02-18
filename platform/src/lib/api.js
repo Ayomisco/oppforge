@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  timeout: 5000, // Fail fast (5s) to show error state if backend is offline
   headers: {
     'Content-Type': 'application/json',
   },

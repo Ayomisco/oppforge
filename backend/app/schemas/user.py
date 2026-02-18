@@ -64,3 +64,15 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+        
+    @classmethod
+    def model_validate(cls, obj):
+        """Override to ensure role enum is converted to string value"""
+        if hasattr(obj, 'role') and hasattr(obj.role, 'value'):
+            # Convert enum to its string value
+            obj_dict = {
+                **{k: getattr(obj, k) for k in dir(obj) if not k.startswith('_')},
+                'role': obj.role.value
+            }
+            return super().model_validate(obj_dict)
+        return super().model_validate(obj)

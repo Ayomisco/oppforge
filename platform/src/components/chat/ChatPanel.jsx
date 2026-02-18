@@ -3,6 +3,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageSquare, X, Send, Sparkles, AlertCircle, Bot } from 'lucide-react'
+import api from '@/lib/api'
+import { useParams } from 'next/navigation'
+import { useAuth } from '../providers/AuthProvider'
 
 const SUGGESTED_PROMPTS = [
   "Draft a proposal for this hackathon",
@@ -12,6 +15,10 @@ const SUGGESTED_PROMPTS = [
 ]
 
 export default function ChatPanel() {
+  const { isGuest } = useAuth()
+  const params = useParams()
+  const opportunity_id = params?.id
+
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
     { id: 1, role: 'system', content: 'Forge AI connection established. I can help you evaluate opportunities and draft proposals.' }
@@ -25,28 +32,48 @@ export default function ChatPanel() {
   }
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (isOpen) {
+      scrollToBottom()
+    }
+  }, [messages, isOpen])
 
-  const handleSend = async () => {
-    if (!input.trim()) return
+  const handleSend = async (forcedText = null) => {
+    const textToSend = forcedText || input
+    if (!textToSend.trim() || isTyping) return
+    if (isGuest) {
+      setMessages(prev => [...prev, { id: Date.now(), role: 'system', content: 'Please Connect Wallet or Sign In to use Forge AI features.' }])
+      return
+    }
 
     // Add user message
-    const userMsg = { id: Date.now(), role: 'user', content: input }
+    const userMsg = { id: Date.now(), role: 'user', content: textToSend }
     setMessages(prev => [...prev, userMsg])
-    setInput('')
+    if (!forcedText) setInput('')
     setIsTyping(true)
 
-    // Simulate AI response delay
-    setTimeout(() => {
+    try {
+      const response = await api.post('/chat', {
+        message: textToSend,
+        opportunity_id: opportunity_id || null
+      })
+
       const aiResponse = { 
         id: Date.now() + 1, 
         role: 'system', 
-        content: `I've analyzed your request: "${userMsg.content}". Based on your profile (Rust, React), you have a strong advantage here. I recommend emphasizing your experience with Solana PoS in the proposal.` 
+        content: response.data.content
       }
       setMessages(prev => [...prev, aiResponse])
+    } catch (error) {
+      console.error('Chat Error:', error)
+      const errorMsg = { 
+        id: Date.now() + 1, 
+        role: 'system', 
+        content: 'Forge AI Engine is currently offline or busy. Please try again in secondary relay.' 
+      }
+      setMessages(prev => [...prev, errorMsg])
+    } finally {
       setIsTyping(false)
-    }, 1500)
+    }
   }
 
   return (
@@ -145,8 +172,7 @@ export default function ChatPanel() {
                   {SUGGESTED_PROMPTS.map((prompt, i) => (
                     <button 
                       key={i}
-                      onClick={() => { setInput(prompt); handleSend(); }} // Fix: setInput is async, better to pass directly? For mock it's ok.
-                      // Actually better to just call logic with prompt
+                      onClick={() => handleSend(prompt)}
                       className="whitespace-nowrap px-3 py-1.5 rounded-full bg-[var(--bg-walnut)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] hover:border-[var(--accent-forge)] hover:text-[var(--text-primary)] transition-colors"
                     >
                       {prompt}

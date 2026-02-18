@@ -167,31 +167,51 @@ def scrape_twitter():
 @shared_task
 def scrape_grant_platforms():
     """
-    Scrape grant platforms (Gitcoin, DoraHacks, Devpost, etc.).
+    Scrape grant platforms (Gitcoin, DoraHacks, Devpost, Questbook, etc.).
     Runs every 4 hours.
     """
     try:
         logger.info("💰 Scraping grant platforms...")
         
-        # Gitcoin
-        gitcoin_scraper = gitcoin.GitcoinScraper()
-        gitcoin_results = gitcoin_scraper.run()
-        
         db = SessionLocal()
         count = 0
         
-        for opp_data in gitcoin_results:
-            try:
-                ingest_opportunity(db, opp_data)
-                count += 1
-            except Exception as e:
-                logger.error(f"Error ingesting Gitcoin opportunity: {e}")
+        # Import all platform scrapers
+        from app.scrapers.gitcoin import GitcoinScraper
+        from app.scrapers.dorahacks import DoraHacksScraper
+        from app.scrapers.questbook import QuestbookScraper
+        from app.scrapers.hackquest import HackQuestScraper
+        from app.scrapers.superteam import SuperteamScraper
         
-        # TODO: Add DoraHacks, Devpost, Immunefi scrapers
+        scrapers = [
+            GitcoinScraper(),
+            DoraHacksScraper(),
+            QuestbookScraper(),
+            HackQuestScraper(),
+            SuperteamScraper(),
+        ]
+        
+        for scraper in scrapers:
+            try:
+                logger.info(f"🔍 Running {scraper.source_name}...")
+                results = scraper.run()
+                
+                for opp_data in results:
+                    try:
+                        ingest_opportunity(db, opp_data)
+                        count += 1
+                    except Exception as e:
+                        logger.error(f"Error ingesting from {scraper.source_name}: {e}")
+                
+                logger.info(f"✅ {scraper.source_name}: {len(results)} opportunities")
+                
+            except Exception as e:
+                logger.error(f"❌ {scraper.source_name} failed: {e}")
+                continue
         
         db.close()
         logger.info(f"✅ Platform scrape complete: {count} opportunities")
-        return {"source": "platforms", "count": count}
+        return {"source": "platforms", "count": count, "scrapers": len(scrapers)}
         
     except Exception as e:
         logger.error(f"Platform scrape failed: {e}")

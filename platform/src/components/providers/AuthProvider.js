@@ -12,18 +12,28 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [isGuest, setIsGuest] = useState(false);
+
   // Check for session on mount
   useEffect(() => {
     const checkSession = async () => {
       const token = Cookies.get('token');
+      const guestCookie = Cookies.get('isGuest');
+
       if (token) {
         try {
           const { data } = await api.get('/auth/me');
           setUser(data);
+          setIsGuest(false);
         } catch (error) {
           console.error("Session check failed:", error);
           Cookies.remove('token');
+          // Fallback to guest if token invalid
+          setIsGuest(true);
         }
+      } else {
+        // No token = Guest
+        setIsGuest(true);
       }
       setLoading(false);
     };
@@ -50,6 +60,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginWallet = async (address) => {
+    console.log("Executing loginWallet with address:", address);
+    try {
+      const { data } = await api.post('/auth/wallet', { address });
+      console.log("Wallet auth successful, received token:", !!data.access_token);
+      
+      Cookies.set('token', data.access_token, { expires: 7 }); 
+      setUser(data.user);
+      
+      toast.success(`Welcome back, Hunter!`);
+      return true;
+    } catch (error) {
+      console.error("Wallet login failed:", error);
+      toast.error("Wallet authentication failed.");
+      return false;
+    }
+  };
+
   const logout = () => {
     Cookies.remove('token');
     setUser(null);
@@ -59,7 +87,7 @@ export function AuthProvider({ children }) {
 
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-      <AuthContext.Provider value={{ user, loading, loginGoogle, logout, setUser }}>
+      <AuthContext.Provider value={{ user, loading, isGuest, loginGoogle, loginWallet, logout, setUser }}>
         {children}
       </AuthContext.Provider>
     </GoogleOAuthProvider>

@@ -201,8 +201,8 @@ export default function OnboardingPage() {
             {/* Step 1: Wallet */}
             {currentStep === 1 && (
               <div className="flex flex-col items-center gap-8 py-8">
-                 <div className={`p-8 rounded-full border transition-all duration-700 ${isConnected ? 'bg-[#10b981]/10 border-[#10b981]/30 shadow-[0_0_30px_rgba(16,185,129,0.2)]' : 'bg-[#ff5500]/5 border-[#ff5500]/20 animate-pulse'}`}>
-                    <Zap size={64} className={isConnected ? 'text-[#10b981]' : 'text-[#ff5500]'} />
+                 <div className={`p-8 w-32 h-32 flex items-center justify-center transition-all duration-700 ${isConnected ? 'drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'drop-shadow-[0_0_20px_rgba(255,85,0,0.3)] animate-pulse'}`}>
+                    <img src="/logo.png" alt="OppForge" className="w-full h-full object-contain" />
                  </div>
                  <ConnectButton />
                  <p className="text-xs text-gray-500 max-w-sm leading-relaxed">

@@ -131,6 +131,29 @@ class IngestionPipeline:
                 print(f"  - Noise discarded.")
                 continue
 
+            # --- 1b. Strict Freshness Filter (User Request) ---
+            # Check Title/Description for "2024" or "2025" keywords if they are clearly old
+            # (Crude but effective)
+            blob = (opp_data.get("title") or "") + (opp_data.get("description") or "")
+            if "2024" in blob or "2025" in blob:
+                # Unless it also says 2026
+                if "2026" not in blob:
+                    # Double check deadline
+                    d = opp_data.get("deadline")
+                    if d:
+                        if isinstance(d, str): pass # Can't easily check string without parsing
+                        elif hasattr(d, 'year') and d.year < 2026:
+                             print(f"  - Stale (Context: 2024/2025 keywords), skipping.")
+                             continue
+
+            # Check Deadline object
+            deadline_obj = opp_data.get("deadline")
+            if deadline_obj:
+                 # Ensure it's a datetime object
+                 if hasattr(deadline_obj, 'year') and deadline_obj.year < 2026:
+                     print(f"  - Stale (Year {deadline_obj.year} < 2026), skipping.")
+                     continue
+            
             # --- 2. Post-Refinement Deduplication ---
             title_exists = self.db.query(Opportunity).filter(
                 Opportunity.title == refined_data["title"]
@@ -290,6 +313,16 @@ class IngestionPipeline:
             notify_db.close()
 
 from dotenv import load_dotenv
+
+
+def ingest_opportunity(db: Session, opp_data: dict):
+    """
+    Standalone function to ingest a single opportunity.
+    Used by Celery tasks.
+    """
+    pipeline = IngestionPipeline()
+    pipeline.db = db
+    return pipeline._save_opportunities([opp_data])
 
 def run_pipeline():
     load_dotenv()

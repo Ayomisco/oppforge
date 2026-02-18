@@ -105,9 +105,6 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
             if not user.first_name: user.first_name = first_name
             if not user.last_name: user.last_name = last_name
             if not user.username: user.username = email.split('@')[0]
-            
-            # Logic: If existing user, mark as onboarded to skip sequence as requested
-            user.onboarded = True
                 
             db.commit()
             db.refresh(user)
@@ -132,6 +129,50 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")
+
+@router.post("/wallet", response_model=dict)
+def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depends(database.get_db)):
+    """
+    Finds or creates a user by wallet address. Returns JWT.
+    """
+    address = login_data.address.lower()
+    if not address:
+        raise HTTPException(status_code=400, detail="Wallet address required")
+    
+    # Logic: Find or Create User by Wallet
+    user = db.query(UserModel).filter(UserModel.wallet_address == address).first()
+    
+    if not user:
+        # Create a new Web3 user
+        user = UserModel(
+            email=f"{address[:10]}@web3.internal", # Placeholder email for unique constraint
+            wallet_address=address,
+            username=f"hunter_{address[2:8]}",
+            full_name=f"Hunter {address[:6]}",
+            tier="scout",
+            is_pro=False,
+            onboarded=False
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    
+    # Create Session JWT
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={
+            "sub": user.email, 
+            "role": user.role.value if user.role else "user", 
+            "onboarded": user.onboarded
+        }, 
+        expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": schemas.UserResponse.model_validate(user)
+    }
 
 @router.get("/me", response_model=schemas.UserResponse)
 def read_users_me(current_user: UserModel = Depends(get_current_user)):

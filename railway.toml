@@ -1,0 +1,26 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/health"
+restartPolicyType = "on_failure"
+
+[[services]]
+name = "backend"
+root = "backend"
+
+[[services]]
+name = "ai-engine"
+root = "ai-engine"
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+
+[[services]]
+name = "worker"
+root = "backend"
+startCommand = "celery -A app.tasks worker --loglevel=info"
+
+[[services]]
+name = "platform"
+root = "platform"
+startCommand = "npm start"

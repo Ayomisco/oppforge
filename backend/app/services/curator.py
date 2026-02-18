@@ -80,4 +80,6 @@ class AgentCurator:
 
         except Exception as e:
             print(f"  [Curator] Exception: {e}")
-            return None
+            print("  [Curator] Falling back to raw item (Bypassing AI)...")
+            # Fallback: Return raw item without AI enrichment
+            return raw_item
