@@ -104,14 +104,23 @@ async def generate_draft(
 ):
     """
     Generates an AI-powered application draft for a tracked opportunity.
+    Accepts either a Tracking Entry ID or an Opportunity ID.
     """
+    # Try looking up as Tracking ID first
     tracking = db.query(models.TrackedApplication).filter(
         models.TrackedApplication.id == id,
         models.TrackedApplication.user_id == current_user.id
     ).first()
     
+    # If not found, try looking up as Opportunity ID
     if not tracking:
-        raise HTTPException(status_code=404, detail="Tracking entry not found")
+        tracking = db.query(models.TrackedApplication).filter(
+            models.TrackedApplication.opportunity_id == id,
+            models.TrackedApplication.user_id == current_user.id
+        ).first()
+    
+    if not tracking:
+        raise HTTPException(status_code=404, detail="Tracking entry not found for this user/id")
         
     opp = tracking.opportunity
     
