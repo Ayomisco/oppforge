@@ -1,0 +1,15 @@
+import requests
+import uuid
+import time
+
+API_URL = "https://oppbackendapi.oppforge.xyz"
+# Note: You need a real admin user to seed opportunities via the API normally,
+# but we can try to find an existing user or just use raw DB access if possible.
+# Since I only have API access, I'll try to explain how to seed.
+
+def seed_test_data():
+    print("This script would seed data if we had an admin token.")
+    print("However, I can verify the AI Engine's connection to ChromaDB.")
+
+if __name__ == "__main__":
+    seed_test_data()
