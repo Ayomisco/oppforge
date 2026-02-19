@@ -12,17 +12,12 @@
 | Field | Details |
 |-------|---------|
 | **Name** | OppForge |
-| **Tagline** | *"Forge your next opportunity."* |
-| **Category** | Web3 AI Agent / Opportunity Intelligence Platform |
-| **Target Launch** | MVP within 48 hours of focused development |
+| **Tagline** | *"The Intelligence Layer for Web3 Alpha."* |
+| **Category** | AI-Driven Opportunity Intelligence Protocol |
+| **Status** | Mainnet Alpha |
 
-### Short Description
-OppForge is an autonomous AI agent that scans, scores, and surfaces Web3 opportunities — grants, airdrops, hackathons, bug bounties, and new ecosystem launches — across Solana, EVM chains, and emerging networks, then helps users prepare winning submissions and optimized farming strategies through a personalized AI chat interface.
-
-### Long Description
-In the rapidly evolving Web3 ecosystem, thousands of opportunities emerge daily across dozens of blockchains — grants worth $10K–$500K, airdrops that can yield $1K–$50K+, hackathons with prize pools exceeding $100K, and bug bounties paying $5K–$1M. Yet most builders miss 90%+ of these because they're scattered across Twitter/X, Discord servers, governance forums, and protocol blogs.
-
-OppForge solves this by deploying AI agents that autonomously hunt, aggregate, analyze, and score these opportunities in real-time, delivering a personalized feed ranked by your skills, interests, and win probability. The built-in AI chat assistant ("Forge AI") goes further — helping you draft proposals, plan farming strategies, and prepare hackathon submissions, turning discovery into action.
+### The Intelligence Layer Architecture
+OppForge is the intelligence layer between Web3 ecosystems and builders. It doesn’t just aggregate; it **Detects, Verifies, Scores, De-duplicates, Assesses Risk, Matches Talent, Tracks Outcomes, and Generates Execution Plans.**
 
 ---
 
@@ -86,24 +81,29 @@ OppForge solves this by deploying AI agents that autonomously hunt, aggregate, a
 
 ### Solution Pillars
 
-1. **Autonomous Discovery** — AI agents continuously scan 20+ data sources including **Twitter/X, Reddit**, protocol announcement pages, news sites, and Web3 platforms, extracting and classifying opportunities without human intervention.
+1. **Strategic Ingestion Pipeline** — Deep integration with primary hackathon and grant platforms including **DoraHacks, Devpost, Gitcoin, Dework, Immunefi, Code4rena, Sherlock, Layer3, QuestN, Zealy, and ETHGlobal**.
 
-2. **Web & Announcement Page Scanning** — Crawls official project websites, announcement pages, and news portals to catch opportunities at the source — not just social media.
+2. **Structured AI Processing** — Beyond simple scraping, every ingestion triggers:
+   - **Category classification** (Grant vs Reward vs Bounty vs Airdrop)
+   - **Deadline parsing** (Automated normalization to UTC)
+   - **Prize normalization** (Converting token rewards to real-time USD value)
+   - **Chain tagging** (L1/L2 identification)
 
-3. **Real-Time Social Media Monitoring** — Dedicated scrapers monitor Twitter/X feeds and Reddit in real-time, catching grant announcements, airdrop alpha, hackathon launches, and bounty postings the moment they’re published. *(Discord/Telegram scrapers planned for V2.)*
+3. **🧠 AI Risk Engine** — Critical security layer. Instead of just scoring value, we score **Risk Dimensions**:
+   - **Scam probability** (Based on domain age, social proof, and contract audit status)
+   - **Rug risk** (Liquidity and team transparency analysis)
+   - **Fake bounty detection** (Cross-referencing verified ecosystem providers)
+   - **Suspicious domain/announcement analysis** (Detecting copycat phishing attempts)
 
-4. **Intelligent Scoring** — Each opportunity is scored (0–100) based on: reward value, deadline proximity, difficulty, your skill match, historical win rates, and competition level.
+4. **Advanced Deduplication Engine** — 3-layer filtering to maintain a clean alpha feed:
+   - **Layer 1: URL-based** (Canonicalizing links)
+   - **Layer 2: Content-based** (Cosine similarity thresholds on descriptions)
+   - **Layer 3: Semantic Clustering** (Merging "Same opportunity" announcements across X, Discord, Blog, and Devpost into ONE unified mission object)
 
-5. **Personalized Feed** — Your dashboard shows only what matters to YOU, ranked by probability of success and ROI.
-
-6. **Forge AI Chat** — A contextual AI assistant that helps you:
-   - Evaluate if an opportunity is worth your time
-   - Understand technical requirements
-   - Get personalized strategy advice
-
-7. **Action Tracking** — Track your applications, farming activities, and results in one place.
-
-8. **Email Notifications** — Users who sign up receive email alerts when high-score opportunities match their profile, ensuring they never miss a deadline.
+5. **Forge AI Chat** — A contextual AI assistant that generates full **Execution Plans**:
+   - Technical proposal drafts
+   - Automated strategy analysis
+   - Outcome tracking
 
 ---
 
