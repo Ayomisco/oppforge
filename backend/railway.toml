@@ -1,0 +1,14 @@
+# Railway configuration for the standalone Backend repo
+[build]
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+healthcheckPath = "/health"
+restartPolicyType = "on_failure"
+
+# Since this repo is deployed as multiple services on Railway, 
+# you can override the start command in the Railway Dashboard for the worker and beat services.
+# 1. Web Service: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+# 2. Worker Service: celery -A app.celery_config:celery_app worker --loglevel=info
+# 3. Beat Service: celery -A app.celery_config:celery_app beat --loglevel=info
