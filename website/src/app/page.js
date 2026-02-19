@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check } from 'lucide-react'
+import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check, Sparkles, ShieldCheck, Globe, Cpu } from 'lucide-react'
 import PricingSection from '@/components/PricingSection'
 
 const Navbar = () => {
@@ -71,39 +71,54 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[var(--accent-forge)]/10 blur-[120px] rounded-full pointer-events-none" />
-        <div className="container relative z-10 text-center max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-walnut)] border border-[var(--accent-forge)]/30 text-[var(--accent-forge)] text-xs font-mono mb-6">
+      <section className="relative pt-32 pb-40 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[var(--accent-forge)]/10 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[var(--accent-amber)]/5 blur-[120px] rounded-full" />
+        </div>
+
+        <div className="container relative z-10 text-center max-w-5xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-walnut)] border border-[var(--accent-forge)]/30 text-[var(--accent-forge)] text-[10px] font-mono font-bold tracking-[0.2em] uppercase mb-10">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-forge)] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-forge)]"></span>
               </span>
-              v1.0 Public Beta Live
+              v1.0 Public Beta Live // System Healthy
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-              Forge Your Next <br/>
+            
+            <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter mb-8">
+              STOP SEARCHING.<br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-forge)] via-[var(--accent-amber)] to-[var(--accent-gold)]">
-                Web3 Opportunity
+                START FORGING.
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
-              The AI-powered agent that finds, scores, and helps you win grants, airdrops, and bounties before anyone else.
+
+            <p className="text-xl md:text-2xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed font-light">
+              OppForge is the world's first <span className="text-[var(--text-primary)] font-medium">Autonomous Alpha Agent</span>. We scout, score, and forge technical proposals for the highest-yield grants and bounties across the stack.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full sm:w-auto text-lg px-8 py-4">
-                Start Hunting <Rocket size={20} />
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full sm:w-auto text-lg px-12 py-5 shadow-[0_0_40px_rgba(255,85,0,0.3)] hover:shadow-[0_0_60px_rgba(255,85,0,0.5)] transition-all uppercase tracking-widest font-black italic">
+                Enter The Forge <Rocket size={20} className="ml-2" />
               </Link>
-              <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-lg px-8 py-4 border border-[var(--border-subtle)]">
+              <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-lg px-12 py-5 border border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold">
                 View Architecture
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 p-6 glass-card border-[var(--border-subtle)]">
-              <Statistic value="20+" label="Data Sources" />
-              <Statistic value="0.4s" label="Scan Latency" />
-              <Statistic value="$50M+" label="Tracked Value" />
-              <Statistic value="100%" label="AI Powered" />
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-24 max-w-4xl mx-auto">
+              {[
+                { label: "Alpha Sources", value: "100+" },
+                { label: "Scan Latency", value: "0.2s" },
+                { label: "Value Tracked", value: "$420M+" },
+                { label: "Success Rate", value: "3.5x" }
+              ].map((stat, i) => (
+                <div key={i} className="p-6 glass-card border-white/5 group hover:border-[var(--accent-forge)]/30 transition-all">
+                  <div className="text-3xl font-black text-white mb-1 group-hover:scale-110 transition-transform">{stat.value}</div>
+                  <div className="text-[9px] font-mono uppercase tracking-[0.3em] text-[var(--text-tertiary)]">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
@@ -129,24 +144,39 @@ export default function LandingPage() {
       {/* Pricing Section - INJECTED HERE */}
       <PricingSection />
 
-      {/* Interactive Terminal Demo Preview */}
-      <section className="py-24 overflow-hidden">
+      {/* Operational Principles */}
+      <section className="py-32 relative overflow-hidden">
         <div className="container">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex flex-col lg:flex-row items-center gap-20">
             <div className="lg:w-1/2">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Built for Hunters, <br/> by Hunters.</h2>
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">1</div>
-                  <div><h3 className="text-xl font-bold mb-2">Connect Your Profile</h3><p className="text-[var(--text-secondary)]">Tell OppForge your skills (Rust, Solidity, Design) and preferred chains.</p></div>
+              <h2 className="text-4xl md:text-6xl font-black mb-10 tracking-tight leading-[0.9]">ENGINEERED FOR EXCELLENCE.</h2>
+              <div className="space-y-10">
+                <div className="flex gap-6 group">
+                  <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[var(--accent-forge)] group-hover:bg-[var(--accent-forge)] group-hover:text-white transition-all">
+                    <Search size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2 uppercase tracking-wide">Autonomous Scouting</h3>
+                    <p className="text-[var(--text-secondary)] leading-relaxed">AI agents crawl Discord, X, GitHub, and Governance forums 24/7 to find hidden opportunities before they go viral.</p>
+                  </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">2</div>
-                  <div><h3 className="text-xl font-bold mb-2">Receive Curated Alpha</h3><p className="text-[var(--text-secondary)]">Get a personalized feed of high-probability opportunities, filtered by AI.</p></div>
+                <div className="flex gap-6 group">
+                  <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[var(--accent-amber)] group-hover:bg-[var(--accent-amber)] group-hover:text-white transition-all">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2 uppercase tracking-wide">Reputation Protocol</h3>
+                    <p className="text-[var(--text-secondary)] leading-relaxed">Every contribution is recorded on-chain, building a trustless builder coefficient that investors and DAOs respect.</p>
+                  </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">3</div>
-                  <div><h3 className="text-xl font-bold mb-2">Execute & Win</h3><p className="text-[var(--text-secondary)]">Use the AI assistant to draft proposals and track your applications.</p></div>
+                <div className="flex gap-6 group">
+                  <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[var(--accent-gold)] group-hover:bg-[var(--accent-gold)] group-hover:text-white transition-all">
+                    <Rocket size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2 uppercase tracking-wide">Strategic Execution</h3>
+                    <p className="text-[var(--text-secondary)] leading-relaxed">Generate technical drafts, solve complex mission requirements, and manage payouts—all within a single terminal.</p>
+                  </div>
                 </div>
               </div>
             </div>
