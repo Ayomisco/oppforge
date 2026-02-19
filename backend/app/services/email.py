@@ -31,8 +31,8 @@ def get_email_template(title: str, body: str, cta_link: str = None, cta_text: st
                 overflow: hidden;
             }}
             .header {{
-                background: linear-gradient(90deg, #3B82F6 0%, #8B5CF6 100%);
-                padding: 24px;
+                background: linear-gradient(90deg, #FF5500 0%, #FFAA00 100%);
+                padding: 32px 24px;
                 text-align: center;
             }}
             .header h1 {{
@@ -57,16 +57,18 @@ def get_email_template(title: str, body: str, cta_link: str = None, cta_text: st
             }}
             .cta-button {{
                 display: inline-block;
-                background-color: #3B82F6;
+                background-color: #FF5500;
                 color: #FFFFFF;
                 text-decoration: none;
-                padding: 12px 24px;
-                border-radius: 6px;
-                font-weight: 600;
+                padding: 14px 28px;
+                border-radius: 8px;
+                font-weight: 700;
                 margin-top: 16px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
             }}
             .cta-button:hover {{
-                background-color: #2563EB;
+                background-color: #FF6600;
             }}
             .footer {{
                 background-color: #0F172A;

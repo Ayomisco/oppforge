@@ -1,26 +1,24 @@
-[build]
-builder = "nixpacks"
-
-[deploy]
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-healthcheckPath = "/health"
-restartPolicyType = "on_failure"
+# OppForge Railway Configuration
+# Optimized for monorepo with multiple Dockerfiles
 
 [[services]]
 name = "backend"
 root = "backend"
+# Railway will automatically use backend/Dockerfile
 
 [[services]]
 name = "ai-engine"
 root = "ai-engine"
-startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+# Railway will automatically use ai-engine/Dockerfile
 
 [[services]]
 name = "worker"
 root = "backend"
+# For the worker, we use the same backend root but override the start command
+# We use the shell command form to allow the worker to run
 startCommand = "celery -A app.celery_config:celery_app worker --loglevel=info"
 
 [[services]]
-name = "platform"
-root = "platform"
-startCommand = "npm start"
+name = "beat"
+root = "backend"
+startCommand = "celery -A app.celery_config:celery_app beat --loglevel=info"
