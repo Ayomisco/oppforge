@@ -3,12 +3,7 @@
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# We're omitting startCommand here to allow the Dockerfile's CMD ["python", "run.py"] 
+# to take control, which correctly handles the $PORT environment variable.
 healthcheckPath = "/health"
 restartPolicyType = "on_failure"
-
-# Since this repo is deployed as multiple services on Railway, 
-# you can override the start command in the Railway Dashboard for the worker and beat services.
-# 1. Web Service: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-# 2. Worker Service: celery -A app.celery_config:celery_app worker --loglevel=info
-# 3. Beat Service: celery -A app.celery_config:celery_app beat --loglevel=info

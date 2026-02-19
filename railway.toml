@@ -4,18 +4,17 @@
 [[services]]
 name = "backend"
 root = "backend"
-# Railway will automatically use backend/Dockerfile
+# Railway defaults: automatically use backend/Dockerfile
 
 [[services]]
 name = "ai-engine"
 root = "ai-engine"
-# Railway will automatically use ai-engine/Dockerfile
+# Railway defaults: automatically use ai-engine/Dockerfile
 
 [[services]]
 name = "worker"
 root = "backend"
-# For the worker, we use the same backend root but override the start command
-# We use the shell command form to allow the worker to run
+# Use the same Dockerfile but override the start command
 startCommand = "celery -A app.celery_config:celery_app worker --loglevel=info"
 
 [[services]]
