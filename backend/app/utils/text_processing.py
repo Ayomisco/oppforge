@@ -90,24 +90,50 @@ def extract_deadline(text: str):
     return None
 
 def extract_reward_pool(text: str) -> str:
-    """Extracts monetary values or token amounts."""
+    """Extracts and normalizes monetary values or token amounts."""
     if not text: return None
     
     # Matches $1000, $1k, $1.5M, 500 USDC, 10 ETH
     patterns = [
         r"\$([\d,]+(?:\.\d+)?(?:k|m|b)?)", 
-        r"([\d,]+(?:\.\d+)?)\s?(?:USDC|USDT|ETH|SOL|BTC|tokens)",
+        r"([\d,]+(?:\.\d+)?)\s?(?:USDC|USDT|ETH|SOL|BTC|tokens|DAI|ARB)",
         r"prize pool:?\s?\$?([\d,]+(?:\.\d+)?(?:k|m|b)?)",
     ]
     
     for pat in patterns:
         match = re.search(pat, text, re.IGNORECASE)
         if match:
-             # Basic formatting
-             val = match.group(0) # Returns the full match like "$5000" or "10 ETH"
-             return val.upper()
+             val = match.group(0).upper()
+             # Cleanup specific common formats
+             if val.startswith("$") and " " in val: # e.g. "$1000 USDC"
+                 return val.split(" ")[0]
+             return val
              
     return None
+
+def extract_chain(text: str) -> str:
+    """Extracts ecosystem/chain identifier."""
+    if not text: return "Multi-chain"
+    
+    chains = {
+        "Solana": [r"solana", r"sol\b"],
+        "Ethereum": [r"ethereum", r"eth\b", r"evm"],
+        "Arbitrum": [r"arbitrum", r"arb\b"],
+        "Optimism": [r"optimism", r"op\b"],
+        "Base": [r"base\b"],
+        "Polygon": [r"polygon", r"matic"],
+        "Sui": [r"sui\b"],
+        "Aptos": [r"aptos"],
+        "Avalanche": [r"avalanche", r"avax"],
+        "Bitcoin": [r"bitcoin", r"btc", r"stacks", r"ordinals"]
+    }
+    
+    text_lower = text.lower()
+    for chain, patterns in chains.items():
+        if any(re.search(p, text_lower) for p in patterns):
+            return chain
+            
+    return "Multi-chain"
 
 def extract_skills(text: str) -> list[str]:
     """Extracts skills from text based on a predefined list."""
