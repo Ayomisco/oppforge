@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap } from 'lucide-react';
+import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 
@@ -108,11 +108,11 @@ export default function SettingsPage() {
              <Shield size={16} /> Security
            </button>
            <button 
-              onClick={() => window.location.href = '/dashboard/settings/membership'}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 text-xs font-bold uppercase tracking-widest transition-colors"
-            >
-              <Zap size={16} /> Membership
-            </button>
+               onClick={() => window.location.href = '/dashboard/settings/billing'}
+               className="w-full flex items-center gap-3 px-4 py-3 rounded text-gray-400 hover:text-[#ff5500] hover:bg-[#ff5500]/5 text-xs font-bold uppercase tracking-widest transition-colors"
+             >
+               <Receipt size={16} /> Billing
+             </button>
         </div>
 
         {/* Content Area */}

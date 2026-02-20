@@ -7,40 +7,6 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "https://oppaiengine.oppforge.xyz")
-
-def check_duplicate_semantic(text: str, threshold: float = 0.85) -> List[Dict]:
-    """Check for semantically similar opportunities already in the vector DB."""
-    try:
-        # Use find-similar if available or general search
-        response = requests.post(
-            f"{AI_ENGINE_URL}/ai/semantic-search", # Or new find-similar endpoint if exposed
-            json={"query": text, "n_results": 3},
-            timeout=10
-        )
-        if response.status_code == 200:
-            results = response.json().get("results", [])
-            # In the current AI Engine, we'll just check if any top result is very similar
-            # For now, we return empty so ingestion can proceed if AI engine is down
-            return results
-        return []
-    except:
-        return []
-
-def get_risk_assessment(opportunity: dict) -> Dict:
-    """Get comprehensive risk assessment from AI Engine."""
-    try:
-        response = requests.post(
-            f"{AI_ENGINE_URL}/ai/risk-assess",
-            json={"opportunity": opportunity},
-            timeout=15
-        )
-        if response.status_code == 200:
-            return response.json()
-        return {"risk_score": 50, "risk_level": "MEDIUM", "flags": ["AI Engine timeout"]}
-    except:
-        return {"risk_score": 50, "risk_level": "MEDIUM", "flags": ["AI Engine unreachable"]}
-
 def generate_analysis(user_profile: dict, opportunity: dict) -> Dict[str, str]:
     """
     Generate "Why you should apply" and "Strategy" using Groq.

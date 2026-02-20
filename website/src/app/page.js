@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check, Sparkles, ShieldCheck, Globe, Cpu, Layers, Lock, BarChart3, Users, Network } from 'lucide-react'
+import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check } from 'lucide-react'
 import PricingSection from '@/components/PricingSection'
 
 const Navbar = () => {
@@ -19,13 +19,13 @@ const Navbar = () => {
           </span>
         </Link>
         <div className="hidden md:flex items-center gap-8">
-          <Link href="#intel-layer" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Intelligence Layer</Link>
-          <Link href="#risk-engine" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Risk Engine</Link>
+          <Link href="#features" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</Link>
+          <Link href="#how-it-works" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it Works</Link>
           <Link href="#pricing" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
         </div>
         <div className="hidden md:flex items-center gap-4">
           <Link href="https://app.oppforge.xyz" className="btn btn-primary text-sm px-6">
-            Enter The Protocol <ArrowRight size={16} />
+            Launch App <ArrowRight size={16} />
           </Link>
         </div>
         <button className="md:hidden text-[var(--text-primary)]" onClick={() => setIsOpen(!isOpen)}>
@@ -36,8 +36,8 @@ const Navbar = () => {
         {isOpen && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)] overflow-hidden">
             <div className="container py-4 flex flex-col gap-4">
-              <Link href="#intel-layer" className="text-base font-medium text-[var(--text-secondary)]">Intelligence Layer</Link>
-              <Link href="#risk-engine" className="text-base font-medium text-[var(--text-secondary)]">Risk Engine</Link>
+              <Link href="#features" className="text-base font-medium text-[var(--text-secondary)]">Features</Link>
+              <Link href="#how-it-works" className="text-base font-medium text-[var(--text-secondary)]">How it Works</Link>
               <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full justify-center">Launch App</Link>
             </div>
           </motion.div>
@@ -47,197 +47,169 @@ const Navbar = () => {
   )
 }
 
-const FeatureCard = ({ icon: Icon, title, description, badge, delay }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.5 }} viewport={{ once: true }} className="glass-card p-8 flex flex-col gap-4 group hover:bg-[var(--bg-walnut)] transition-all border-white/5 hover:border-[var(--accent-forge)]/30">
-    <div className="flex justify-between items-start">
-        <div className="w-12 h-12 rounded-lg bg-[var(--bg-mahogany)] flex items-center justify-center text-[var(--accent-forge)] group-hover:scale-110 transition-transform">
-            <Icon size={24} />
-        </div>
-        {badge && (
-            <span className="text-[9px] font-mono bg-[var(--accent-forge)]/10 text-[var(--accent-forge)] px-2 py-1 rounded border border-[var(--accent-forge)]/20 uppercase tracking-widest">{badge}</span>
-        )}
+const FeatureCard = ({ icon: Icon, title, description, delay }) => (
+  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.5 }} viewport={{ once: true }} className="glass-card p-6 flex flex-col gap-4 group hover:bg-[var(--bg-walnut)] transition-colors">
+    <div className="w-12 h-12 rounded-lg bg-[var(--bg-mahogany)] flex items-center justify-center text-[var(--accent-forge)] group-hover:scale-110 transition-transform">
+      <Icon size={24} />
     </div>
-    <h3 className="text-lg font-bold text-[var(--text-primary)] mt-2">{title}</h3>
+    <h3 className="text-lg font-bold text-[var(--text-primary)]">{title}</h3>
     <p className="text-[var(--text-secondary)] leading-relaxed text-sm">{description}</p>
   </motion.div>
 )
 
-const EcosystemBadge = ({ name }) => (
-  <div className="px-6 py-3 border border-white/5 bg-white/5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-[var(--accent-forge)]/10 hover:border-[var(--accent-forge)]/30 transition-all cursor-default flex items-center gap-2">
-    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-forge)]" />
-    {name}
+const Statistic = ({ value, label }) => (
+  <div className="text-center">
+    <div className="text-3xl md:text-4xl font-bold text-[var(--accent-forge)] font-mono mb-1">{value}</div>
+    <div className="text-xs uppercase tracking-wider text-[var(--text-tertiary)]">{label}</div>
   </div>
 )
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col pt-[var(--header-height)] bg-[var(--bg-espresso)]">
+    <div className="min-h-screen flex flex-col pt-[var(--header-height)] bg-[var(--bg-espresso)] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1A1410] via-[#0D0A07] to-[#0D0A07]">
       <div className="scanlines" />
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-40 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 bg-[radial-gradient(circle_at_center,_var(--bg-walnut)_0%,_transparent_70%)] opacity-50" />
-        
-        <div className="container relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center max-w-5xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[var(--accent-amber)] text-[10px] font-mono font-bold tracking-[0.2em] uppercase mb-10">
-              <Network size={12} />
-              The Intelligence Layer for Web3 Alpha
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[var(--accent-forge)]/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="container relative z-10 text-center max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-walnut)] border border-[var(--accent-forge)]/30 text-[var(--accent-forge)] text-xs font-mono mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-forge)] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-forge)]"></span>
+              </span>
+              v1.0 Public Beta Live
             </div>
-            
-            <h1 className="text-6xl md:text-9xl font-black leading-[0.8] tracking-tighter mb-8 italic">
-              OWN THE<br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-forge)] via-[var(--accent-gold)] to-white">
-                INFRASTRUCTURE.
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+              Forge Your Next <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-forge)] via-[var(--accent-amber)] to-[var(--accent-gold)]">
+                Web3 Opportunity
               </span>
             </h1>
-
-            <p className="text-xl md:text-2xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              OppForge is the intelligence brain between Web3 ecosystems and builders. We don't just aggregate; we <span className="text-white border-b border-[var(--accent-forge)]/50">Detect, Verify, and Assess Risk</span> for every opportunity in the space.
+            <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
+              The AI-powered agent that finds, scores, and helps you win grants, airdrops, and bounties before anyone else.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full sm:w-auto text-lg px-12 py-5 shadow-[0_0_40px_rgba(255,85,0,0.3)] transition-all uppercase tracking-widest font-black italic">
-                Initialize Protocol <Rocket size={20} className="ml-2" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full sm:w-auto text-lg px-8 py-4">
+                Start Hunting <Rocket size={20} />
               </Link>
-              <Link href="#intel-layer" className="btn btn-ghost w-full sm:w-auto text-lg px-12 py-5 border border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold">
-                Read Whitepaper
+              <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-lg px-8 py-4 border border-[var(--border-subtle)]">
+                View Architecture
               </Link>
             </div>
-
-            <div className="mt-20 pt-20 border-t border-white/5">
-                <p className="text-[10px] font-mono uppercase tracking-[0.5em] text-[var(--text-tertiary)] mb-8">Integrated Intelligence Streaming From</p>
-                <div className="flex flex-wrap justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all duration-700">
-                    {['DoraHacks', 'Devpost', 'Gitcoin', 'Gitcoin', 'Dework', 'Immunefi', 'Code4rena', 'ETHGlobal', 'Sherlock', 'Layer3'].map((name) => (
-                        <EcosystemBadge key={name} name={name} />
-                    ))}
-                </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 p-6 glass-card border-[var(--border-subtle)]">
+              <Statistic value="20+" label="Data Sources" />
+              <Statistic value="0.4s" label="Scan Latency" />
+              <Statistic value="$50M+" label="Tracked Value" />
+              <Statistic value="100%" label="AI Powered" />
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* The Intelligence Layer Section */}
-      <section id="intel-layer" className="py-32 bg-[var(--bg-espresso)] relative">
+      {/* Features Grid */}
+      <section id="features" className="py-24 bg-[var(--bg-walnut)]/30 relative">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="relative">
-                <div className="absolute inset-0 bg-[var(--accent-forge)]/20 blur-[100px] -z-10" />
-                <h2 className="text-4xl md:text-7xl font-black mb-8 leading-[0.9] tracking-tight italic">DECISION<br/>INTELLIGENCE.</h2>
-                <p className="text-lg text-[var(--text-secondary)] mb-10 leading-relaxed">
-                    Most builders fail because of analysis paralysis. OppForge processes 1,000+ data signals per hour to give you the signal you need to win.
-                </p>
-                <div className="space-y-6">
-                    {[
-                        { title: "Layer 1: Deterministic Filtering", desc: "URL normalization and canonicalization to prevent duplication." },
-                        { title: "Layer 2: Content Similarity", desc: "Cosine similarity thresholds to cluster identical ecosystem announcements." },
-                        { title: "Layer 3: Semantic Logic", desc: "Merging multi-source announcements into a single structured mission object." }
-                    ].map((step, i) => (
-                        <div key={i} className="flex gap-4 p-4 glass-card border-white/5 bg-white/5">
-                            <span className="text-[var(--accent-forge)] font-mono text-xl font-bold">0{i+1}</span>
-                            <div>
-                                <h4 className="font-bold text-white uppercase tracking-wide text-sm mb-1">{step.title}</h4>
-                                <p className="text-xs text-[var(--text-secondary)]">{step.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-            <div className="glass-card p-1 border-white/10 rounded-2xl shadow-2xl overflow-hidden shadow-[var(--accent-forge)]/5">
-                <div className="aspect-video bg-[var(--bg-walnut)] relative flex items-center justify-center group">
-                    <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
-                    <div className="relative text-center p-8">
-                        <Terminal size={48} className="mx-auto mb-6 text-[var(--accent-forge)] animate-pulse" />
-                        <p className="text-[var(--text-secondary)] font-mono text-sm">
-                            $ forge_intelligence --monitor --all-ecosystems<br/>
-                            <span className="text-green-500">[SCANNING]</span> Gitcoin Passport (New Mission Detected)<br/>
-                            <span className="text-blue-500">[AUDIT]</span> Verified Source: Immunefi (Critical Priority)<br/>
-                            <span className="text-yellow-500">[DEDUPLICATING]</span> Cluster found in devpost + github<br/>
-                            <span className="text-[var(--accent-forge)] font-bold">STATUS: ALIGNMENT ACHIEVED</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Risk Engine Section */}
-      <section id="risk-engine" className="py-32 bg-[var(--bg-walnut)]/20 border-y border-white/5">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter italic">THE SHIELD PROTOCOL.</h2>
-            <p className="text-[var(--text-secondary)] text-lg leading-relaxed">
-               In Web3, risk is the default. OppForge provides the sovereign defense layer for builders, assessing legitimacy before you even click apply.
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Intelligence, Not Just Data</h2>
+            <p className="text-[var(--text-secondary)]">
+              Most aggregators just list links. OppForge understands them, scores them, and tells you how to win.
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <FeatureCard icon={ShieldCheck} title="Scam Probability" description="ML-driven pattern matching to detect fraudulent grants and phishing mission sites." badge="Security" delay={0.1} />
-            <FeatureCard icon={Lock} title="Rug Risk Assessment" description="Analyzing liquidity depth and team transparency for ecosystem-specific rewards." badge="Risk" delay={0.2} />
-            <FeatureCard icon={Users} title="Team Legitimacy" description="Identifying anonymous or suspicious founding teams before protocol engagement." badge="Audit" delay={0.3} />
-            <FeatureCard icon={BarChart3} title="Prize Normalization" description="Evaluating prize pools for unrealistic multipliers that signal bad-faith announcements." badge="Verify" delay={0.4} />
+          <div className="grid md:grid-cols-3 gap-6">
+            <FeatureCard icon={Search} title="Autonomous Discovery" description="AI agents scan Twitter, Discord, and governance forums 24/7 to find hidden alpha before it goes viral." delay={0.1} />
+            <FeatureCard icon={Zap} title="Real-Time Scoring" description="Every opportunity is scored (0-100) based on your specific skills, preferred chains, and historical win probability." delay={0.2} />
+            <FeatureCard icon={Terminal} title="Forge AI Chat" description="Ask specific questions like 'Is this grant worth my time?' or 'Draft a proposal for this hackathon'." delay={0.3} />
           </div>
         </div>
       </section>
 
-      {/* User Segments / Roles */}
-      <section className="py-32 relative">
-        <div className="container">
-           <div className="grid md:grid-cols-3 gap-12">
-               {[
-                   { role: "For Founders", desc: "Scale your ecosystem by letting the world's best hunters find your grants. We verify talent so you don't have to.", icon: Cpu },
-                   { role: "For Builders", desc: "Stop hunting. Start building. Get a personalized feed of missions ranked by your ROI and win probability.", icon: Zap },
-                   { role: "For Investors", desc: "Early detection of emerging protocols. Track where the builders are moving before the VCs do.", icon: BarChart3 }
-               ].map((item, i) => (
-                   <div key={i} className="text-center p-10 group cursor-default">
-                       <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 text-[var(--accent-forge)] group-hover:bg-[var(--accent-forge)] group-hover:text-white group-hover:-rotate-12 transition-all">
-                           <item.icon size={32} />
-                       </div>
-                       <h3 className="text-2xl font-black mb-4 italic tracking-tight">{item.role}</h3>
-                       <p className="text-[var(--text-secondary)] leading-relaxed text-sm">{item.desc}</p>
-                   </div>
-               ))}
-           </div>
-        </div>
-      </section>
-
-      {/* Pricing Injected */}
+      {/* Pricing Section - INJECTED HERE */}
       <PricingSection />
 
-      {/* CTA Footer */}
-      <section className="py-40 relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-espresso)] via-[var(--bg-walnut)] to-transparent" />
-        <div className="container relative z-10 text-center">
-            <div className="w-24 h-24 rounded-3xl bg-[var(--accent-forge)] flex items-center justify-center mx-auto mb-10 shadow-[0_0_50px_rgba(255,85,0,0.5)] rotate-3">
-                <Sparkles size={48} className="text-white" />
+      {/* Interactive Terminal Demo Preview */}
+      <section className="py-24 overflow-hidden">
+        <div className="container">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <div className="lg:w-1/2">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Built for Hunters, <br/> by Hunters.</h2>
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">1</div>
+                  <div><h3 className="text-xl font-bold mb-2">Connect Your Profile</h3><p className="text-[var(--text-secondary)]">Tell OppForge your skills (Rust, Solidity, Design) and preferred chains.</p></div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">2</div>
+                  <div><h3 className="text-xl font-bold mb-2">Receive Curated Alpha</h3><p className="text-[var(--text-secondary)]">Get a personalized feed of high-probability opportunities, filtered by AI.</p></div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">3</div>
+                  <div><h3 className="text-xl font-bold mb-2">Execute & Win</h3><p className="text-[var(--text-secondary)]">Use the AI assistant to draft proposals and track your applications.</p></div>
+                </div>
+              </div>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black mb-8 italic tracking-tighter">FORGE YOUR<br/>EDGE TODAY.</h2>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-12">
-                <Link href="https://app.oppforge.xyz" className="btn btn-primary text-xl px-12 py-5 shadow-2xl">
-                    Launch Mainnet Alpha
-                </Link>
-                <Link href="#" className="btn btn-ghost border border-white/10 text-xl px-12 py-5">
-                    Contact Sales
-                </Link>
+            <div className="lg:w-1/2 w-full">
+               {/* Mock UI Card */}
+               <div className="glass-card p-1 border border-[var(--border-glow)] shadow-2xl shadow-[var(--accent-forge)]/10 rounded-xl overflow-hidden relative">
+                 <div className="bg-[var(--bg-walnut)] h-8 flex items-center px-4 gap-2 border-b border-[var(--border-subtle)]">
+                    <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
+                 </div>
+                 <div className="p-6 font-mono text-sm h-[320px] overflow-y-auto">
+                   <div className="mb-4 text-[var(--text-secondary)]">
+                     $ initializing forge_agent... <span className="text-green-500">done</span>
+                   </div>
+                   <div className="mb-4">
+                     <span className="text-[var(--accent-forge)]">➜</span> <span className="text-[var(--text-primary)]">scan --target solana --type grant</span>
+                   </div>
+                   <div className="mb-4 text-[var(--text-secondary)]">
+                     <span className="text-blue-400">INFO</span> Scanning 14 sources...<br/>
+                     <span className="text-blue-400">INFO</span> Found 3 new matches for profile 'Rust Developer':
+                   </div>
+                   <div className="space-y-3">
+                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
+                       <span>Solana Foundation Data Grant</span>
+                       <span className="text-[var(--accent-forge)]">98% Match</span>
+                     </div>
+                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
+                       <span>Superteam Radar Hackathon</span>
+                       <span className="text-[var(--accent-amber)]">85% Match</span>
+                     </div>
+                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
+                       <span>Anza Validator Program</span>
+                       <span className="text-[var(--accent-cyan)]">New!</span>
+                     </div>
+                   </div>
+                 </div>
+               </div>
             </div>
-            <div className="mt-12 text-[var(--text-tertiary)] font-mono text-[10px] uppercase tracking-[0.5em]">
-                System Status: Operational // 4,281 Missions Processed // $148M Secured
-            </div>
+          </div>
         </div>
       </section>
 
-      <footer className="py-12 border-t border-white/5 bg-[var(--bg-espresso)]">
-        <div className="container flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-[var(--text-tertiary)]">
-          <div className="flex items-center gap-4">
-            <img src="/logo.png" alt="OppForge" className="w-6 h-6 grayscale opacity-50" />
-            <div>© 2026 OppForge. The Opportunity Intelligence Protocol.</div>
+      {/* CTA Footer */}
+      <section className="py-24 bg-[var(--bg-walnut)] border-t border-[var(--border-subtle)]">
+        <div className="container text-center">
+          <h2 className="text-3xl md:text-5xl font-bold mb-8">Ready to Forge Your Future?</h2>
+          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-xl px-10 py-5">
+            Get Started Now
+          </Link>
+          <div className="mt-8 text-[var(--text-secondary)] text-sm">
+            No credit card required • Open Source • Built for Web3
           </div>
-          <div className="flex gap-8 font-mono uppercase tracking-widest">
-            <Link href="#" className="hover:text-[var(--accent-forge)] transition-colors">Documentation</Link>
-            <Link href="#" className="hover:text-[var(--accent-forge)] transition-colors">API Access</Link>
-            <Link href="#" className="hover:text-[var(--accent-forge)] transition-colors">Security</Link>
+        </div>
+      </section>
+
+      <footer className="py-8 border-t border-[var(--border-subtle)] bg-[var(--bg-espresso)]">
+        <div className="container flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[var(--text-tertiary)]">
+          <div>© 2026 OppForge. Open Source (MIT).</div>
+          <div className="flex gap-6">
+            <Link href="#" className="hover:text-[var(--text-primary)]">Twitter</Link>
+            <Link href="#" className="hover:text-[var(--text-primary)]">GitHub</Link>
+            <Link href="#" className="hover:text-[var(--text-primary)]">Discord</Link>
           </div>
         </div>
       </footer>

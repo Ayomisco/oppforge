@@ -182,12 +182,6 @@ def scrape_grant_platforms():
         from app.scrapers.questbook import QuestbookScraper
         from app.scrapers.hackquest import HackQuestScraper
         from app.scrapers.superteam import SuperteamScraper
-        from app.scrapers.immunefi import ImmunefiScraper
-        from app.scrapers.ethglobal import ETHGlobalScraper
-        from app.scrapers.code4rena import Code4renaScraper
-        from app.scrapers.dework import DeworkScraper
-        from app.scrapers.sherlock import SherlockScraper
-        from app.scrapers.layer3 import Layer3Scraper
         
         scrapers = [
             GitcoinScraper(),
@@ -195,12 +189,6 @@ def scrape_grant_platforms():
             QuestbookScraper(),
             HackQuestScraper(),
             SuperteamScraper(),
-            ImmunefiScraper(),
-            ETHGlobalScraper(),
-            Code4renaScraper(),
-            DeworkScraper(),
-            SherlockScraper(),
-            Layer3Scraper()
         ]
         
         for scraper in scrapers:

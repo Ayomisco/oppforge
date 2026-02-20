@@ -6,200 +6,303 @@ from ..models.notification import Notification
 from ..scrapers.twitter import TwitterScraper
 from ..scrapers.reddit import RedditScraper
 from ..scrapers.gitcoin import GitcoinScraper
-from ..scrapers.dorahacks import DoraHacksScraper
-from ..scrapers.immunefi import ImmunefiScraper
-from ..scrapers.code4rena import Code4renaScraper
-from ..scrapers.ethglobal import ETHGlobalScraper
 from .email import send_email, get_email_template
 import asyncio
-import logging
 
 from .curator import AgentCurator
 from .vector_db import VectorDBService
-from .ai import check_duplicate_semantic, get_risk_assessment
 from ..scrapers.heavy.devpost import DevpostScraper
+from ..scrapers.heavy.devfolio import DevfolioScraper
 from ..scrapers.heavy.twitter_playwright import TwitterPlaywrightScraper
-from ..utils.text_processing import normalize_url, generate_content_hash, extract_deadline, extract_reward_pool, extract_skills, is_opportunity_fresh, extract_chain
-
-logger = logging.getLogger(__name__)
+from ..utils.text_processing import normalize_url, generate_content_hash, extract_deadline, extract_reward_pool, extract_skills, is_opportunity_fresh
 
 class IngestionPipeline:
     def __init__(self):
-        # Synchronous Scrapers
         self.scrapers = [
             RedditScraper(),
-            GitcoinScraper(),
-            DoraHacksScraper(),
-            ImmunefiScraper(),
-            Code4renaScraper(),
-            ETHGlobalScraper()
+            GitcoinScraper()
         ]
         
-        # Async Scrapers (Heavy/Playwright)
+        # Async Scrapers (Heavy)
+        # Playwright Scrapers (Async)
         self.async_scrapers = [
             DevpostScraper(),
+            DevfolioScraper(),
             TwitterPlaywrightScraper()
         ]
         self.db = SessionLocal()
 
     def run(self):
-        logger.info("🚀 [Ingestion] Starting Strategic Intelligence Pipeline...")
+        print("[Ingestion] Starting pipeline (AI Augmented)...")
         total_new = 0
-        new_opps_list = []
+        new_opps_list = [] # Store for notification processing
         
         # 1. Run Synchronous Scrapers
         for scraper in self.scrapers:
             try:
-                logger.info(f"🔍 [Pipeline] Running {scraper.source_name}...")
-                raw_data = scraper.fetch()
-                opportunities = scraper.parse(raw_data)
+                opportunities = scraper.run()
                 added_opps = self._save_opportunities(opportunities)
                 new_opps_list.extend(added_opps)
                 total_new += len(added_opps)
             except Exception as e:
-                logger.error(f"❌ [Pipeline] Error running {scraper.source_name}: {e}")
+                print(f"[Ingestion] Error running {scraper.source_name}: {e}")
                 self.db.rollback()
 
         # 2. Run Asynchronous Scrapers
         if self.async_scrapers:
-            logger.info("⚡ [Pipeline] Running async heavy scrapers (Playwright)...")
+            print("[Ingestion] Running async scrapers (Playwright)...")
+            # Ensure clean state before async
             self.db.close()
             self.db = SessionLocal()
             asyncio.run(self._run_async_scrapers(new_opps_list))
-            total_new += len(new_opps_list)
+            total_new += len(new_opps_list) # Note: List extended in place? No, need to return.
 
-        # 3. Process Notifications
+        # Process Notifications async
         if new_opps_list:
-            logger.info(f"🔔 [Pipeline] Processing notifications for {len(new_opps_list)} new missions...")
+            print(f"[Ingestion] Processing notifications for {len(new_opps_list)} new items...")
             asyncio.run(self._process_notifications(new_opps_list))
 
         self.db.close()
-        logger.info(f"🏁 [Pipeline] Intelligence gathering complete. New opportunities forged: {total_new}")
+        print(f"[Ingestion] Pipeline complete. Opportunities processed.")
 
     async def _run_async_scrapers(self, new_opps_list):
         for scraper in self.async_scrapers:
             try:
-                logger.info(f"🤖 [Async] Initializing {scraper.__class__.__name__}...")
+                print(f"[Ingestion] Running async scraper: {scraper.__class__.__name__}")
                 opportunities = await scraper.run_async()
+                print(f"[Ingestion] Scraper returned {len(opportunities)} items.")
+                
                 added_opps = self._save_opportunities(opportunities)
+                print(f"[Ingestion] Saved {len(added_opps)} new items from async scraper.")
+                
                 new_opps_list.extend(added_opps)
             except Exception as e:
-                logger.error(f"❌ [Async] Error: {e}")
+                print(f"[Ingestion] Error running async scraper: {e}")
                 self.db.rollback()
 
     def _save_opportunities(self, opportunities):
         added = []
         for opp_data in opportunities:
+            # --- 0. Pre-processing & Deduplication ---
+            
+            # Normalize URL
+            raw_url = opp_data.get("url", "")
+            clean_url = normalize_url(raw_url)
+            opp_data["url"] = clean_url
+            
+            # Generate Hash (Title + Description + Source)
+            content_sig = f"{opp_data.get('title','')}{opp_data.get('description','')}{opp_data.get('source','')}"
+            content_hash = generate_content_hash(content_sig)
+            
+            # Check 1: ID constraint (Legacy check)
+            exists_id = self.db.query(Opportunity).filter(
+                Opportunity.source_id == str(opp_data["source_id"]),
+                Opportunity.source == opp_data["source"]
+            ).first()
+            if exists_id:
+                print(f"  - Exists (ID={exists_id.id}), skipping.")
+                continue
+
+            # Check 2: URL check (if URL exists)
+            if clean_url:
+                exists_url = self.db.query(Opportunity).filter(Opportunity.url == clean_url).first()
+                if exists_url:
+                    print(f"  - Exists (URL Match), skipping.")
+                    continue
+            
+            # Note: We probably want to add a `content_hash` column to DB later for faster lookup.
+            # For now, relying on Title match in step 2 is "good enough" for content dupes if titles are identical.
+
+            # --- 1. AI Triage & Refinement ---
+            # Freshness Check: Skip if deadline or created date is old (Pre-2026)
+            # Use raw data if refined not yet available
+            text_for_date = opp_data.get("description", "") + " " + opp_data.get("title", "")
+            found_deadline = extract_deadline(text_for_date)
+            
+            # If we explicitly find an old date, discard immediately
+            if found_deadline and not is_opportunity_fresh(found_deadline):
+                 print(f"  - Stale (Date: {found_deadline}), skipping.")
+                 continue
+
+            print(f"  ? Triaging: {opp_data['title'][:40]}...")
+            refined_data = AgentCurator.triage_and_refine(opp_data)
+            
+            if not refined_data:
+                print(f"  - Noise discarded.")
+                continue
+
+            # --- 2. Post-Refinement Deduplication ---
+            title_exists = self.db.query(Opportunity).filter(
+                Opportunity.title == refined_data["title"]
+            ).first()
+            if title_exists: 
+                print(f"  - Exists (Title Match), skipping.")
+                continue
+
+            # --- 3. Trust Protocol (Anti-Deception) ---
+            from ..utils.trust_engine import TrustEngine
+            trust_score = TrustEngine.calculate_score(refined_data)
+            refined_data["trust_score"] = trust_score
+            
+            if trust_score < 30:
+                print(f"  [Trust] HIGH RISK detected (Score: {trust_score}). Auto-flagging.")
+                refined_data["is_verified"] = False
+            elif trust_score > 85:
+                refined_data["is_verified"] = True
+
+            # --- 3. Enhanced Field Extraction ---
+            text_blob = (refined_data.get("description", "") or "") + " " + (refined_data.get("title", "") or "")
+            
+            # Deadline
+            current_deadline = refined_data.get("deadline")
+            extracted_deadline = extract_deadline(text_blob)
+            
+            if not current_deadline or "2024-01-01" in str(current_deadline): 
+                if extracted_deadline:
+                    refined_data["deadline"] = extracted_deadline
+                    print(f"    -> Extracted Deadline: {extracted_deadline}")
+            
+            # Reward Pool
+            if not refined_data.get("reward_pool") or refined_data.get("reward_pool") == "See Details":
+                extracted_reward = extract_reward_pool(text_blob)
+                if extracted_reward:
+                    refined_data["reward_pool"] = extracted_reward
+                    print(f"    -> Extracted Reward: {extracted_reward}")
+
+            # Skills & Tags
+            extracted_skills = extract_skills(text_blob)
+            existing_tags = refined_data.get("tags") or []
+            # Ensure List
+            if isinstance(existing_tags, str): existing_tags = [existing_tags]
+            
+            refined_data["required_skills"] = extracted_skills
+            refined_data["tags"] = list(set(existing_tags + extracted_skills))
+            
+            if extracted_skills:
+                 print(f"    -> Extracted Skills: {extracted_skills}")
+
+            print(f"  + Saving Refined: {refined_data['title'][:40]}...")
+            opp = Opportunity(**refined_data)
             try:
-                # --- Layer 1: URL-based & ID Calibration ---
-                clean_url = normalize_url(opp_data.get("url", ""))
-                opp_data["url"] = clean_url
-                
-                # Check for direct conflicts (ID or URL)
-                exists = self.db.query(Opportunity).filter(
-                    (Opportunity.source_id == str(opp_data.get("source_id"))) | 
-                    (Opportunity.url == clean_url)
-                ).first()
-                
-                if exists:
-                    # Layer 3: Semantic Clustering (Merging)
-                    # If it exists, we "enrich" if there's new data, but don't duplicate
-                    if not exists.reward_pool and opp_data.get("reward_pool"):
-                        exists.reward_pool = opp_data["reward_pool"]
-                        self.db.commit()
-                    continue
-
-                # --- Layer 2: Content-based (Embedding Similarity) ---
-                # Check if we have something semantically identical but from a different source
-                content_blob = f"{opp_data.get('title')} {opp_data.get('description', '')[:200]}"
-                duplicates = check_duplicate_semantic(content_blob)
-                if duplicates:
-                    # If high similarity (e.g. > 0.9 by observation), skip
-                    # Note: We trust the AI engine's distance/similarity logic here
-                    logger.info(f"  - Duplicate detected via Semantic Cluster: {opp_data['title']}")
-                    continue
-
-                # --- Freshness Verification ---
-                if not is_opportunity_fresh(opp_data.get("deadline")):
-                    # Re-extract
-                    text_blob = f"{opp_data.get('title')} {opp_data.get('description', '')}"
-                    deadline = extract_deadline(text_blob)
-                    if deadline and is_opportunity_fresh(deadline):
-                        opp_data["deadline"] = deadline
-                    else:
-                        continue # Skip truly stale items
-
-                # --- Intelligence Extraction ---
-                text_blob = f"{opp_data.get('title')} {opp_data.get('description', '')}"
-                
-                # 1. Chain Tagging
-                if not opp_data.get("chain") or opp_data["chain"] == "Unknown":
-                    opp_data["chain"] = extract_chain(text_blob)
-                
-                # 2. Prize Normalization
-                if not opp_data.get("reward_pool") or "TBD" in str(opp_data["reward_pool"]):
-                    opp_data["reward_pool"] = extract_reward_pool(text_blob)
-                
-                # 3. AI Triage
-                refined_data = AgentCurator.triage_and_refine(opp_data)
-                if not refined_data: continue
-
-                # 4. 🧠 AI Risk Assessment
-                logger.info(f"  🛡️ Assessing risk: {refined_data['title'][:30]}...")
-                risk_data = get_risk_assessment(refined_data)
-                refined_data["risk_score"] = risk_data.get("risk_score")
-                refined_data["risk_level"] = risk_data.get("risk_level")
-                refined_data["risk_flags"] = risk_data.get("flags", [])
-                
-                # Score adjustment: 100 - risk_score (if risk_score is high-risk in AI engine terms)
-                # Note: our AI engine returns 100 for safe, so we map it directly
-                refined_data["trust_score"] = risk_data.get("risk_score", 70)
-
-                # --- Persistence ---
-                opp = Opportunity(**refined_data)
                 self.db.add(opp)
-                self.db.commit()
+                self.db.commit() # Commit immediately to get ID
                 self.db.refresh(opp)
                 added.append(opp)
                 
-                # Vector DB Sync
-                VectorDBService.add_opportunity(opp.to_dict())
-                logger.info(f"  + Forge Complete: {opp.title[:40]}")
+                # Vector Search Integration
+                try:
+                    vector_payload = {
+                        "id": str(opp.id),
+                        "title": opp.title,
+                        "description": opp.description,
+                        "tags": opp.tags,
+                        "category": opp.category,
+                        "chain": opp.chain,
+                        "source": opp.source,
+                        "reward_pool": opp.reward_pool,
+                        "deadline": opp.deadline
+                    }
+                    VectorDBService.add_opportunity(vector_payload)
+                except Exception as ve:
+                    print(f"  [VectorDB] Creating embedding failed (skipping): {ve}")
 
             except Exception as e:
-                logger.error(f"  - Ingestion Error for {opp_data.get('title', 'Unknown')}: {e}")
+                print(f"  - Error saving item: {e}")
                 self.db.rollback()
         
         return added
 
     async def _process_notifications(self, new_opps):
+        # Fetch users who want email alerts
+        # Use a FRESH session for async notification logic or manual sync loop.
+        # But for best practices, let's keep it simple: sync data read, async send.
+        
         notify_db = SessionLocal()
         try:
             users = notify_db.query(User).all()
+            
+            # Since objects from new_opps are from self.db, they might be detached or in another session.
+            # We should re-fetch or use IDs. But simpler: just use dictionary or detached data.
+            # Convert opps to simple dicts to avoid SQLAlchemy detachment issues in async context.
+            opp_dicts = []
             for opp in new_opps:
+                opp_dicts.append({
+                    "id": opp.id,
+                    "title": opp.title,
+                    "category": opp.category,
+                    "chain": opp.chain,
+                    "reward_pool": opp.reward_pool,
+                    "description": opp.description,
+                    "url": opp.url
+                })
+
+            for opp in opp_dicts:
                 for user in users:
-                    # Simple relevance heuristic
-                    relevant = False
-                    if opp.chain.lower() in [c.lower() for c in (user.preferred_chains or [])]:
-                        relevant = True
-                    if any(s.lower() in opp.description.lower() for s in (user.skills or [])):
-                        relevant = True
+                    # Check preferences
+                    prefs = user.notification_settings or {}
+                    if not prefs.get("email_alerts", True): # Default True
+                        continue
+
+                    # Match Logic:
+                    # 1. Category Match
+                    user_cats = [c.lower() for c in (user.preferred_categories or [])]
+                    cat_match = not user_cats or (opp["category"] and opp["category"].lower() in user_cats)
                     
-                    if relevant and user.email:
-                        body_html = get_email_template(
-                            title=f"New Mission: {opp.title}",
-                            body=f"Risk Score: {opp.risk_score}/100 | {opp.description[:200]}...",
-                            cta_link=opp.url,
-                            cta_text="View Mission"
+                    # 2. Chain Match
+                    user_chains = [c.lower() for c in (user.preferred_chains or [])]
+                    chain_match = not user_chains or (opp["chain"] and opp["chain"].lower() in user_chains)
+                    
+                    # 3. Skills Match (Keyword search in description)
+                    user_skills = [s.lower() for s in (user.skills or [])]
+                    text_blob = (opp["description"] or "") + (opp["title"] or "")
+                    skill_match = not user_skills or any(s in text_blob.lower() for s in user_skills)
+                    
+                    # If matches (any of the valid criteria - usually stricter, but flexible for now)
+                    is_relevant = (cat_match and chain_match) or skill_match
+                    
+                    if is_relevant:
+                        # Create Web Notification (Sync DB write)
+                        notif = Notification(
+                            user_id=user.id,
+                            title=f"New Opportunity: {opp['title']}",
+                            message=f"A new {opp['category']} on {opp['chain']} matches your profile.",
+                            type="opportunity",
+                            link=f"/opportunities/{opp['id']}"
                         )
-                        await send_email(user.email, f"OppForge Alert: {opp.title}", body_html)
+                        notify_db.add(notif)
+                        
+                        # Send Email (Async)
+                        if user.email:
+                            body_html = get_email_template(
+                                title=f"New Match: {opp['title']}",
+                                body=f"We found a new opportunity that matches your preferences.<br><br><strong>Category:</strong> {opp['category']}<br><strong>Chain:</strong> {opp['chain']}<br><strong>Reward:</strong> {opp['reward_pool'] or 'Unspecified'}<br><br>{opp['description'][:200]}...",
+                                cta_link=opp["url"],
+                                cta_text="View Details"
+                            )
+                            # Using await here
+                            await send_email(user.email, f"New Opportunity found: {opp['title']}", body_html)
+            
             notify_db.commit()
-        except:
+        except Exception as e:
+            print(f"[Ingestion] Notification Error: {e}")
             notify_db.rollback()
         finally:
             notify_db.close()
 
+from dotenv import load_dotenv
+
+
+def ingest_opportunity(db: Session, opp_data: dict):
+    """
+    Standalone function to ingest a single opportunity.
+    Used by Celery tasks.
+    """
+    pipeline = IngestionPipeline()
+    pipeline.db = db
+    return pipeline._save_opportunities([opp_data])
+
 def run_pipeline():
+    load_dotenv()
     pipeline = IngestionPipeline()
     pipeline.run()
 

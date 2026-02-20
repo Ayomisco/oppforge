@@ -37,6 +37,11 @@ class UserUpdate(BaseModel):
     # Settings
     onboarded: Optional[bool] = None
     notification_settings: Optional[Dict[str, bool]] = None
+    
+    # Subscription
+    tier: Optional[str] = None
+    is_pro: Optional[bool] = None
+    subscription_status: Optional[str] = None
 
 class UserResponse(UserBase):
     id: uuid.UUID
@@ -59,6 +64,9 @@ class UserResponse(UserBase):
     preferred_chains: List[str] = []
     preferred_categories: List[str] = []
     onboarded: bool = False
+    subscription_status: str = "trialing"
+    trial_started_at: Optional[datetime] = None
+    subscription_expires_at: Optional[datetime] = None
     
     created_at: datetime
 

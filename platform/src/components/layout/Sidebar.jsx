@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -16,35 +16,74 @@ import {
   Cpu,
   ShieldCheck,
   PlusSquare,
-  Crown
+  Crown,
+  Lock
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../providers/AuthProvider'
+
+// Helper to compute trial/plan status
+function usePlanStatus(user) {
+  return useMemo(() => {
+    if (!user) return { label: 'SCOUT', color: 'text-gray-500', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/20', glow: '', isTrial: false, trialDaysLeft: 0, isActive: false }
+    
+    const tier = user.tier || 'scout'
+    const status = user.subscription_status || 'trialing'
+    
+    // Trial logic
+    const trialStart = user.trial_started_at ? new Date(user.trial_started_at) : (user.created_at ? new Date(user.created_at) : new Date())
+    const now = new Date()
+    const daysSinceStart = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24))
+    const trialDaysLeft = Math.max(0, 14 - daysSinceStart)
+    const isTrial = status === 'trialing' && trialDaysLeft > 0
+    const isExpired = status === 'trialing' && trialDaysLeft <= 0
+    const isActive = status === 'active' || user.is_pro
+    
+    if (tier === 'founder' && isActive) {
+      return { label: 'FOUNDER', color: 'text-[#D4AF37]', bgColor: 'bg-[#D4AF37]/10', borderColor: 'border-[#D4AF37]/20', glow: 'shadow-[0_0_12px_rgba(212,175,55,0.3)]', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false }
+    }
+    if (tier === 'hunter' && isActive) {
+      return { label: 'HUNTER', color: 'text-[#ff5500]', bgColor: 'bg-[#ff5500]/10', borderColor: 'border-[#ff5500]/20', glow: 'shadow-[0_0_12px_rgba(255,85,0,0.3)]', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false }
+    }
+    if (isTrial) {
+      return { label: 'ALPHA TRIAL', color: 'text-[#10b981]', bgColor: 'bg-[#10b981]/10', borderColor: 'border-[#10b981]/20', glow: '', isTrial: true, trialDaysLeft, isActive: true, isExpired: false }
+    }
+    if (isExpired) {
+      return { label: 'EXPIRED', color: 'text-red-400', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20', glow: '', isTrial: false, trialDaysLeft: 0, isActive: false, isExpired: true }
+    }
+    return { label: 'SCOUT', color: 'text-gray-500', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/20', glow: '', isTrial: false, trialDaysLeft: 0, isActive: false, isExpired: false }
+  }, [user])
+}
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Zap, label: 'Live Feed', href: '/dashboard/feed' },
   { icon: Target, label: 'Tracker', href: '/dashboard/tracker' },
   { icon: MessageSquare, label: 'Forge AI', href: '/dashboard/chat' },
-  { icon: Crown, label: 'Upgrades', href: '/dashboard/subscription' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 
-const SidebarItem = ({ item, isActive, isCollapsed }) => {
+const SidebarItem = ({ item, isActive, isCollapsed, locked }) => {
   return (
     <Link 
-      href={item.href}
+      href={locked ? '#' : item.href}
+      onClick={locked ? (e) => e.preventDefault() : undefined}
       className={`
         flex items-center gap-3 px-3 py-2 rounded-sm transition-all duration-200 group relative overflow-hidden text-xs font-mono tracking-wide
-        ${isActive 
+        ${locked 
+          ? 'text-gray-700 cursor-not-allowed opacity-50'
+          : isActive 
           ? 'bg-[#ff5500]/10 text-[#ff5500] border-l-2 border-[#ff5500]' 
           : 'text-gray-400 hover:text-white hover:bg-white/5'}
       `}
     >
-      <item.icon size={16} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-[#ff5500]' : 'text-gray-400 group-hover:text-white transition-colors'} />
+      <item.icon size={16} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-[#ff5500]' : locked ? 'text-gray-700' : 'text-gray-400 group-hover:text-white transition-colors'} />
       
       {!isCollapsed && (
-        <span className="uppercase">{item.label}</span>
+        <span className="uppercase flex-1">{item.label}</span>
+      )}
+      {locked && !isCollapsed && (
+        <Lock size={10} className="text-gray-700" />
       )}
     </Link>
   )
@@ -53,6 +92,7 @@ const SidebarItem = ({ item, isActive, isCollapsed }) => {
 export default function Sidebar({ isMobile, isOpen, onClose }) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
+  const plan = usePlanStatus(user)
   
   const content = (
     <div className="flex flex-col h-full bg-[#050403] border-r border-[#1a1512] w-[240px]">
@@ -66,8 +106,45 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
         </Link>
       </div>
 
+      {/* Clearance Level Badge */}
+      <div className="mx-3 mt-4 mb-2">
+        <div className={`px-3 py-2.5 rounded border ${plan.borderColor} ${plan.bgColor} ${plan.glow} transition-all`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full ${plan.isActive ? 'bg-[#10b981] animate-pulse' : plan.isExpired ? 'bg-red-500' : 'bg-gray-600'}`} />
+              <span className={`text-[9px] font-mono font-bold uppercase tracking-[0.2em] ${plan.color}`}>
+                {plan.label}
+              </span>
+            </div>
+            {plan.isTrial && (
+              <span className="text-[9px] font-mono text-[#10b981]/80">
+                {plan.trialDaysLeft}d left
+              </span>
+            )}
+          </div>
+          {plan.isTrial && (
+            <div className="mt-2">
+              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${((14 - plan.trialDaysLeft) / 14) * 100}%` }}
+                  className="h-full bg-gradient-to-r from-[#10b981] to-[#ff5500] rounded-full"
+                />
+              </div>
+            </div>
+          )}
+          {plan.isExpired && (
+            <Link href="/dashboard/subscription" className="mt-2 block">
+              <div className="text-[9px] font-mono text-red-400 hover:text-[#ff5500] transition-colors flex items-center gap-1">
+                <Zap size={8} /> Upgrade to continue →
+              </div>
+            </Link>
+          )}
+        </div>
+      </div>
+
       {/* Nav Items */}
-      <div className="flex-1 py-6 px-2 space-y-0.5 overflow-y-auto">
+      <div className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
         <div className="text-[9px] font-mono text-gray-700 uppercase mb-3 pl-3">Main Module</div>
         {menuItems.map((item) => (
           <SidebarItem 
@@ -75,15 +152,33 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
             item={item} 
             isActive={pathname === item.href} 
             isCollapsed={false}
+            locked={plan.isExpired && item.href === '/dashboard/chat'}
           />
         ))}
 
-        <div className="mt-8 text-[9px] font-mono text-gray-700 uppercase mb-3 pl-3">Database</div>
+        <div className="mt-6 text-[9px] font-mono text-gray-700 uppercase mb-3 pl-3">Database</div>
         <SidebarItem 
           item={{ icon: FolderKanban, label: 'Applications', href: '/dashboard/applications' }}
           isActive={pathname === '/dashboard/applications'}
           isCollapsed={false}
         />
+
+        {/* Upgrade CTA for non-paid users */}
+        {(!plan.isActive || plan.isTrial) && (
+          <div className="mt-6 mx-1">
+            <Link href="/dashboard/subscription">
+              <div className="p-3 rounded border border-[#ff5500]/20 bg-gradient-to-br from-[#ff5500]/5 to-transparent hover:from-[#ff5500]/10 transition-all group cursor-pointer">
+                <div className="flex items-center gap-2 mb-1">
+                  <Crown size={12} className="text-[#ff5500]" />
+                  <span className="text-[10px] font-mono font-bold text-[#ff5500] uppercase tracking-wider">Go Pro</span>
+                </div>
+                <p className="text-[9px] text-gray-500 font-mono leading-relaxed">
+                  From $2.9/mo. Unlimited AI + Priority Feed.
+                </p>
+              </div>
+            </Link>
+          </div>
+        )}
 
         {(user?.role === 'admin' || user?.role === 'ADMIN' || user?.role?.toLowerCase?.() === 'admin') && (
           <>
@@ -106,12 +201,18 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
       {/* User Profile / Footer */}
       <div className="p-3 border-t border-[#1a1512]">
         <div className="flex items-center gap-3 p-2 rounded-sm bg-[#0a0806] border border-white/5 group relative">
-          <div className="w-8 h-8 rounded-sm bg-gradient-to-br from-[#ff5500] to-[#ffaa00] flex items-center justify-center text-xs font-bold text-white shadow-lg">
+          <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-xs font-bold text-white shadow-lg ${
+            plan.isActive && !plan.isTrial 
+              ? 'bg-gradient-to-br from-[#ff5500] to-[#ffaa00]' 
+              : 'bg-gradient-to-br from-gray-600 to-gray-700'
+          }`}>
              {user?.full_name ? user.full_name.charAt(0).toUpperCase() : user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div className="flex-1 overflow-hidden">
             <div className="text-[11px] font-bold text-white truncate">{user?.full_name || user?.username || 'User'}</div>
-            <div className="text-[9px] text-[#ffaa00] truncate uppercase font-mono tracking-tighter">Pro Plan Active</div>
+            <div className={`text-[9px] truncate uppercase font-mono tracking-tighter ${plan.color}`}>
+              {plan.isActive && !plan.isTrial ? `${user?.tier?.toUpperCase()} Plan Active` : plan.isTrial ? `Trial · ${plan.trialDaysLeft}d remaining` : 'Free Tier'}
+            </div>
           </div>
           <button onClick={logout} className="p-1.5 hover:bg-white/5 rounded text-gray-500 hover:text-red-500 transition-colors">
             <LogOut size={14} />
