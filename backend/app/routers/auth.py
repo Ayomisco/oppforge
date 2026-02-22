@@ -110,7 +110,8 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
             # This allows the frontend to use a custom Google button (Implicit flow).
             res = httpx_requests.get(
                 "https://www.googleapis.com/oauth2/v3/userinfo", 
-                headers={"Authorization": f"Bearer {token}"}
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10.0
             )
             if res.status_code == 200:
                 idinfo = res.json()
