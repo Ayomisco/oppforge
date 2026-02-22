@@ -119,6 +119,18 @@ def delete_opportunity(opp_id: str):
     print(f"✅ Opportunity {opp_id} deleted.")
     db.close()
 
+def clear_opportunities():
+    db = SessionLocal()
+    try:
+        count = db.query(Opportunity).delete()
+        db.commit()
+        print(f"🔥 Purged {count} opportunities from the forge.")
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Failed to clear opportunities: {str(e)}")
+    finally:
+        db.close()
+
 def verify_opportunity(opp_id: str):
     db = SessionLocal()
     opp = db.query(Opportunity).filter(Opportunity.id == opp_id).first()
@@ -163,6 +175,8 @@ def main():
     parser_delete_opp = subparsers.add_parser("delete-opp", help="Delete an opportunity")
     parser_delete_opp.add_argument("id", help="UUID of the opportunity")
 
+    parser_clear_opps = subparsers.add_parser("clear-opps", help="Delete ALL opportunities from the database")
+
     parser_verify_opp = subparsers.add_parser("verify", help="Verify an opportunity")
     parser_verify_opp.add_argument("id", help="UUID of the opportunity")
 
@@ -184,6 +198,8 @@ def main():
         create_opportunity(args.title, args.url, args.category, args.chain)
     elif args.command == "delete-opp":
         delete_opportunity(args.id)
+    elif args.command == "clear-opps":
+        clear_opportunities()
     elif args.command == "verify":
         verify_opportunity(args.id)
     else:

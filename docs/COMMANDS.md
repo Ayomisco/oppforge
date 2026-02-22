@@ -33,6 +33,7 @@ Handle manual mission control and verification.
 | `create-opp` | Manually add a mission | `python admin.py create-opp "New Grant" "https://..." --chain Solana` |
 | `verify` | Approve a mission | `python admin.py verify <UUID>` |
 | `delete-opp` | Remove a mission | `python admin.py delete-opp <UUID>` |
+| `clear-opps` | **Wipe all opportunities** | `python admin.py clear-opps` |
 
 ---
 
