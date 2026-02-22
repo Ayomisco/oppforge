@@ -46,6 +46,32 @@ def track_opportunity(
         notes=track_data.notes
     )
     db.add(tracking)
+    
+    # --- Agentic Feedback Loop (Telemetry) ---
+    # The AI learns the user's implicit preferences based on their actions
+    opp = db.query(models.Opportunity).filter(models.Opportunity.id == track_data.opportunity_id).first()
+    if opp:
+        user_chains = set(current_user.preferred_chains or [])
+        user_skills = set(current_user.skills or [])
+        
+        updated_profile = False
+        
+        # Learn chain preference
+        if opp.chain and opp.chain != "Various" and opp.chain not in user_chains:
+            current_user.preferred_chains = list(user_chains) + [opp.chain]
+            updated_profile = True
+            
+        # Learn skill preferences (incorporate up to 2 tags/reqs to prevent noise)
+        opp_reqs = set(opp.required_skills or [])
+        opp_tags = set(opp.tags or [])
+        new_skills = (opp_reqs.union(opp_tags)) - user_skills
+        if new_skills:
+            current_user.skills = list(user_skills) + list(new_skills)[:2]
+            updated_profile = True
+            
+        if updated_profile:
+            db.add(current_user)
+            
     db.commit()
     db.refresh(tracking)
     return tracking
