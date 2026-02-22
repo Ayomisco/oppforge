@@ -53,6 +53,21 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
+def check_subscription_clearance(current_user: UserModel = Depends(get_current_user)):
+    """
+    Dependency to ensure the user has active subscription clearance.
+    Admins bypass this check.
+    """
+    if current_user.role == "admin" or current_user.role == "ADMIN":
+        return current_user
+        
+    if current_user.subscription_status not in ["active", "trialing"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forge Clearance Level: LOCKED. Upgrade your plan to restore access."
+        )
+    return current_user
+
 # --- Endpoints ---
 
 from ..schemas.auth import GoogleLoginRequest

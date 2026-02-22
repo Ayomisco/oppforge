@@ -27,6 +27,12 @@ function usePlanStatus(user) {
   return useMemo(() => {
     if (!user) return { label: 'SCOUT', color: 'text-gray-500', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/20', glow: '', isTrial: false, trialDaysLeft: 0, isActive: false }
     
+    const isAdmin = user.role === 'admin' || user.role === 'ADMIN'
+    
+    if (isAdmin) {
+      return { label: 'ADMIN_UNLOCKED', color: 'text-[#ffaa00]', bgColor: 'bg-[#ffaa00]/10', borderColor: 'border-[#ffaa00]/20', glow: 'shadow-[0_0_12px_rgba(255,170,0,0.3)]', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false }
+    }
+
     const tier = user.tier || 'scout'
     const status = user.subscription_status || 'trialing'
     
@@ -106,43 +112,6 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
         </Link>
       </div>
 
-      {/* Clearance Level Badge */}
-      <div className="mx-3 mt-4 mb-2">
-        <div className={`px-3 py-2.5 rounded border ${plan.borderColor} ${plan.bgColor} ${plan.glow} transition-all`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${plan.isActive ? 'bg-[#10b981] animate-pulse' : plan.isExpired ? 'bg-red-500' : 'bg-gray-600'}`} />
-              <span className={`text-[9px] font-mono font-bold uppercase tracking-[0.2em] ${plan.color}`}>
-                {plan.label}
-              </span>
-            </div>
-            {plan.isTrial && (
-              <span className="text-[9px] font-mono text-[#10b981]/80">
-                {plan.trialDaysLeft}d left
-              </span>
-            )}
-          </div>
-          {plan.isTrial && (
-            <div className="mt-2">
-              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${((14 - plan.trialDaysLeft) / 14) * 100}%` }}
-                  className="h-full bg-gradient-to-r from-[#10b981] to-[#ff5500] rounded-full"
-                />
-              </div>
-            </div>
-          )}
-          {plan.isExpired && (
-            <Link href="/dashboard/subscription" className="mt-2 block">
-              <div className="text-[9px] font-mono text-red-400 hover:text-[#ff5500] transition-colors flex items-center gap-1">
-                <Zap size={8} /> Upgrade to continue →
-              </div>
-            </Link>
-          )}
-        </div>
-      </div>
-
       {/* Nav Items */}
       <div className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
         <div className="text-[9px] font-mono text-gray-700 uppercase mb-3 pl-3">Main Module</div>
@@ -162,23 +131,6 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
           isActive={pathname === '/dashboard/applications'}
           isCollapsed={false}
         />
-
-        {/* Upgrade CTA for non-paid users */}
-        {(!plan.isActive || plan.isTrial) && (
-          <div className="mt-6 mx-1">
-            <Link href="/dashboard/subscription">
-              <div className="p-3 rounded border border-[#ff5500]/20 bg-gradient-to-br from-[#ff5500]/5 to-transparent hover:from-[#ff5500]/10 transition-all group cursor-pointer">
-                <div className="flex items-center gap-2 mb-1">
-                  <Crown size={12} className="text-[#ff5500]" />
-                  <span className="text-[10px] font-mono font-bold text-[#ff5500] uppercase tracking-wider">Go Pro</span>
-                </div>
-                <p className="text-[9px] text-gray-500 font-mono leading-relaxed">
-                  From $2.9/mo. Unlimited AI + Priority Feed.
-                </p>
-              </div>
-            </Link>
-          </div>
-        )}
 
         {(user?.role === 'admin' || user?.role === 'ADMIN' || user?.role?.toLowerCase?.() === 'admin') && (
           <>

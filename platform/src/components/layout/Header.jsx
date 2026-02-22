@@ -63,12 +63,6 @@ export default function Header({ onMenuClick }) {
           </button>
         ) : (
           <>
-            {/* Status */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#ff5500]/5 border border-[#ff5500]/10 shadow-inner">
-              <Sparkles size={14} className="text-[#ffaa00] animate-pulse" />
-              <span className="text-[10px] font-mono font-bold text-[#ffaa00] tracking-wider uppercase">PRO: Active</span>
-            </div>
-
             {/* Notifications */}
             <button className="p-2 relative text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
               <Bell size={18} />

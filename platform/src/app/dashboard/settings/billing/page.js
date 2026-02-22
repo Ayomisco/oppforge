@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Link from 'next/link';
 import { 
   CreditCard, Shield, Zap, Crown, ArrowRight, Clock, 
-  CheckCircle, AlertCircle, Download, Settings, User, Bell, Receipt
+  CheckCircle, AlertCircle, Download, Settings, User, Bell, Receipt, ExternalLink
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import api from '@/lib/api';
 
 const PLAN_DETAILS = {
@@ -19,20 +18,45 @@ const PLAN_DETAILS = {
 
 export default function BillingPage() {
   const { user } = useAuth();
+  const [history, setHistory] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBillingData = async () => {
+      try {
+        const [historyRes, invoicesRes] = await Promise.all([
+          api.get('/billing/history'),
+          api.get('/billing/invoices')
+        ]);
+        setHistory(historyRes.data);
+        setInvoices(invoicesRes.data);
+      } catch (err) {
+        console.error("Failed to fetch billing data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) fetchBillingData();
+  }, [user]);
 
   const trialInfo = useMemo(() => {
+    if (!user) return {};
+    const isAdmin = user.role === 'admin' || user.role === 'ADMIN';
     const trialStart = user?.trial_started_at ? new Date(user.trial_started_at) : (user?.created_at ? new Date(user.created_at) : new Date());
     const now = new Date();
     const daysUsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
     const daysLeft = Math.max(0, 14 - daysUsed);
-    const isTrialing = user?.subscription_status === 'trialing' && daysLeft > 0;
-    const isExpired = user?.subscription_status === 'trialing' && daysLeft <= 0;
-    const isActive = user?.subscription_status === 'active' || user?.is_pro;
-    return { daysLeft, daysUsed, isTrialing, isExpired, isActive };
+    const isTrialing = user?.subscription_status === 'trialing' && daysLeft > 0 && !isAdmin;
+    const isExpired = user?.subscription_status === 'trialing' && daysLeft <= 0 && !isAdmin;
+    const isActive = user?.subscription_status === 'active' || user?.is_pro || isAdmin;
+    return { daysLeft, daysUsed, isTrialing, isExpired, isActive, isAdmin };
   }, [user]);
 
   const currentPlan = PLAN_DETAILS[user?.tier || 'scout'];
-  const PlanIcon = currentPlan.icon;
+  const PlanIcon = currentPlan?.icon || Shield;
+
+  if (loading) return <div className="max-w-4xl mx-auto py-20 text-center font-mono text-gray-500 uppercase animate-pulse">Initializing Billing Module...</div>;
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -75,7 +99,7 @@ export default function BillingPage() {
           {/* Current Plan Card */}
           <div className="glass-card p-6">
             <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4 mb-6">
-              // Current Plan
+              // Protocol Access
             </h3>
 
             <div className="flex items-center justify-between">
@@ -84,7 +108,7 @@ export default function BillingPage() {
                   <PlanIcon size={24} style={{ color: currentPlan.color }} />
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-white">{currentPlan.name} Plan</h4>
+                  <h4 className="text-lg font-bold text-white lowercase tracking-tighter italic">{currentPlan.name} Plan</h4>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-2xl font-black text-white">{currentPlan.price}</span>
                     <span className="text-sm text-gray-500">{currentPlan.period}</span>
@@ -93,24 +117,27 @@ export default function BillingPage() {
               </div>
 
               <div className="text-right">
-                {trialInfo.isTrialing && (
+                {trialInfo.isAdmin ? (
+                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ffaa00]/10 border border-[#ffaa00]/20">
+                   <Crown size={12} className="text-[#ffaa00]" />
+                   <span className="text-[#ffaa00] text-sm font-bold uppercase">ADMIN</span>
+                 </div>
+                ) : trialInfo.isTrialing ? (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10b981]/10 border border-[#10b981]/20">
                     <Clock size={12} className="text-[#10b981]" />
                     <span className="text-[#10b981] text-sm font-mono font-bold">{trialInfo.daysLeft}d remaining</span>
                   </div>
-                )}
-                {trialInfo.isActive && !trialInfo.isTrialing && (
+                ) : trialInfo.isActive && !trialInfo.isTrialing ? (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10b981]/10 border border-[#10b981]/20">
                     <CheckCircle size={12} className="text-[#10b981]" />
-                    <span className="text-[#10b981] text-sm font-bold">Active</span>
+                    <span className="text-[#10b981] text-sm font-bold uppercase">Active</span>
                   </div>
-                )}
-                {trialInfo.isExpired && (
+                ) : trialInfo.isExpired ? (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20">
                     <AlertCircle size={12} className="text-red-400" />
-                    <span className="text-red-400 text-sm font-bold">Expired</span>
+                    <span className="text-red-400 text-sm font-bold uppercase">Expired</span>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
 
@@ -118,18 +145,18 @@ export default function BillingPage() {
             {trialInfo.isTrialing && (
               <div className="mt-6 pt-4 border-t border-white/5">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-mono text-gray-500 uppercase">Trial Progress</span>
+                  <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest font-bold">Trial Progress</span>
                   <span className="text-[10px] font-mono text-gray-500">Day {trialInfo.daysUsed} of 14</span>
                 </div>
-                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(trialInfo.daysUsed / 14) * 100}%` }}
-                    className="h-full bg-gradient-to-r from-[#10b981] to-[#ff5500] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#10b981] to-[#ff5500] rounded-full shadow-[0_0_8px_#10b981]"
                   />
                 </div>
-                <p className="mt-3 text-xs text-gray-500">
-                  Your trial ends in {trialInfo.daysLeft} days. <Link href="/dashboard/subscription" className="text-[#ff5500] hover:underline">Upgrade now</Link> to keep all features.
+                <p className="mt-3 text-[11px] font-mono text-gray-600">
+                  Your trial ends in {trialInfo.daysLeft} days. Upgrade now to keep full AI clearance.
                 </p>
               </div>
             )}
@@ -137,10 +164,10 @@ export default function BillingPage() {
             {trialInfo.isExpired && (
               <div className="mt-6 pt-4 border-t border-white/5">
                 <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/10">
-                  <p className="text-sm text-red-400 font-medium mb-2">Your trial has ended</p>
-                  <p className="text-xs text-gray-500 mb-4">Upgrade to Hunter ($2.9/mo) or Founder ($6/mo) to restore full access to AI features.</p>
-                  <Link href="/dashboard/subscription" className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff5500] text-white rounded-lg text-sm font-bold hover:bg-[#ff7700] transition-colors">
-                    View Plans <ArrowRight size={14} />
+                  <p className="text-sm text-red-400 font-bold mb-2 uppercase tracking-tighter">PROTOCOL_ACCESS_LOCKED</p>
+                  <p className="text-[11px] text-gray-500 mb-4 font-mono leading-relaxed">Your 14-day clearance has concluded. Upgrade to Hunter ($2.9/mo) to restore AI services.</p>
+                  <Link href="/dashboard/subscription" className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff5500] text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#ff7700] transition-colors shadow-[0_0_15px_rgba(255,85,0,0.3)]">
+                    View Access Plans <ArrowRight size={12} />
                   </Link>
                 </div>
               </div>
@@ -150,59 +177,99 @@ export default function BillingPage() {
           {/* Payment Method */}
           <div className="glass-card p-6">
             <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4 mb-6">
-              // Payment Method
+              // Encryption Key (Payment)
             </h3>
 
-            <div className="flex items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/5">
-              <div className="p-2 rounded-lg bg-[#627eea]/10">
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/5 group">
+              <div className="p-2 rounded-lg bg-[#627eea]/10 group-hover:bg-[#627eea]/20 transition-colors">
                 <CreditCard size={20} className="text-[#627eea]" />
               </div>
               <div className="flex-1">
-                <div className="text-sm font-medium text-white">Crypto Wallet (ETH)</div>
-                <div className="text-xs text-gray-500 font-mono">
+                <div className="text-sm font-bold text-white uppercase tracking-tight">On-Chain Wallet (ETH)</div>
+                <div className="text-[10px] text-gray-600 font-mono tracking-widest">
                   {user?.wallet_address 
-                    ? `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}` 
-                    : 'No wallet connected'}
+                    ? `${user.wallet_address.slice(0, 12)}...${user.wallet_address.slice(-8)}` 
+                    : 'NULL_ADDRESS_CONNECTED'}
                 </div>
               </div>
-              <Link href="/dashboard/settings" className="text-xs text-[#ff5500] hover:underline font-mono">
-                {user?.wallet_address ? 'Change' : 'Connect'}
+              <Link href="/dashboard/settings" className="px-3 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase font-bold">
+                Update
               </Link>
             </div>
 
-            <p className="mt-4 text-[11px] text-gray-600">
-              All payments are processed on-chain via direct ETH transfer. We'll add Paystack/Stripe support for fiat soon.
+            <p className="mt-4 text-[10px] text-gray-700 font-mono leading-relaxed">
+              Payments are verified on the Arbitrum network. Invoices are generated as cryptographically-signed records of your contribution to the forge.
             </p>
           </div>
 
           {/* Invoice History */}
           <div className="glass-card p-6">
             <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4 mb-6">
-              // Invoice History
+              // Transaction Records
             </h3>
 
-            {trialInfo.isActive && !trialInfo.isTrialing ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/5">
-                  <div className="flex items-center gap-3">
-                    <Receipt size={14} className="text-gray-500" />
-                    <div>
-                      <div className="text-sm text-white">{currentPlan.name} Plan — {currentPlan.price}</div>
-                      <div className="text-[10px] text-gray-500 font-mono">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
+            {invoices.length > 0 ? (
+              <div className="space-y-2">
+                {invoices.map((inv) => (
+                  <div key={inv.id} className="flex items-center justify-between p-3 rounded bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors group">
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 rounded bg-[#10b981]/10">
+                        <Receipt size={14} className="text-[#10b981]" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white uppercase">{inv.invoice_number}</div>
+                        <div className="text-[9px] text-gray-600 font-mono">{new Date(inv.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                         <div className="text-xs font-black text-white">{inv.amount} ETH</div>
+                         <div className="text-[9px] text-[#10b981] font-mono font-bold uppercase tracking-widest">Confirmed</div>
+                      </div>
+                      <button className="p-2 hover:bg-white/10 rounded transition-all text-gray-500 hover:text-white border border-transparent hover:border-white/10">
+                        <Download size={14} />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#10b981]/10 text-[#10b981] font-mono">Paid</span>
-                    <button className="p-1.5 hover:bg-white/5 rounded transition-colors text-gray-500">
-                      <Download size={12} />
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-600 text-sm font-mono">
-                No invoices yet. Subscribe to a plan to see your billing history.
+              <div className="text-center py-10 rounded border border-dashed border-white/5">
+                <Receipt className="mx-auto mb-3 text-gray-800" size={24} />
+                <div className="text-[10px] text-gray-700 font-mono uppercase tracking-[0.2em]">No_Invoices_Found</div>
+                <p className="text-[9px] text-gray-800 font-mono mt-1">Upgrade your level to generate records.</p>
               </div>
+            )}
+          </div>
+
+          {/* On-Chain History */}
+          <div className="glass-card p-6">
+             <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4 mb-6">
+              // Blockchain Events
+            </h3>
+            {history.length > 0 ? (
+                <div className="space-y-4">
+                    {history.map(tx => (
+                        <div key={tx.id} className="flex items-start justify-between">
+                            <div className="flex gap-3">
+                                <Zap size={14} className="text-[#ff5500] mt-1" />
+                                <div>
+                                    <div className="text-[11px] font-bold text-white uppercase tracking-tight">Access Level Up: {tx.tier}</div>
+                                    <a 
+                                      href={`https://arbiscan.io/tx/${tx.tx_hash}`} 
+                                      target="_blank" 
+                                      className="text-[9px] font-mono text-gray-600 hover:text-[#ff5500] flex items-center gap-1 mt-1 transition-colors"
+                                    >
+                                        TX: {tx.tx_hash.slice(0, 16)}... <ExternalLink size={8} />
+                                    </a>
+                                </div>
+                            </div>
+                            <span className="text-[10px] font-mono text-gray-600">{new Date(tx.created_at).toLocaleDateString()}</span>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center text-[9px] text-gray-800 font-mono uppercase tracking-widest py-4">No_On_Chain_Events_Detected</div>
             )}
           </div>
         </div>
