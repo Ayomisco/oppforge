@@ -16,14 +16,36 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="OppForge API", version="0.1.0")
 
-# CORS
 origins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "https://app.oppforge.xyz",
-    "https://oppforge.xyz"
+    "https://oppforge.xyz",
+    "https://oppforge-platform.vercel.app",
 ]
 
+# Allow any vercel discovery for testing
+allow_all_vercel = os.getenv("ALLOW_VERCEL_CORS", "true").lower() == "true"
+
+# Allow any vercel discovery for testing
+allow_all_vercel = os.getenv("ALLOW_VERCEL_CORS", "true").lower() == "true"
+
+from fastapi import Request
+
+@app.middleware("http")
+async def add_cors_header(request: Request, call_next):
+    origin = request.headers.get("origin")
+    response = await call_next(request)
+    
+    if origin:
+        if origin in origins or (allow_all_vercel and origin.endswith(".vercel.app")):
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "*"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
+# Standard CORSMiddleware as fallback/backup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

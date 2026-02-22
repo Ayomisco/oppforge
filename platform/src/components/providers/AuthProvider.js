@@ -47,7 +47,14 @@ export function AuthProvider({ children }) {
       const { data } = await api.post('/auth/google', { token: credential });
       console.log("Backend auth successful, received token:", !!data.access_token);
       
-      Cookies.set('token', data.access_token, { expires: 7 }); 
+      const cookieOptions = { 
+        expires: 7, 
+        path: '/', 
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+      };
+      
+      Cookies.set('token', data.access_token, cookieOptions); 
       setUser(data.user);
       console.log("User state updated in context:", data.user.email);
       
@@ -66,7 +73,14 @@ export function AuthProvider({ children }) {
       const { data } = await api.post('/auth/wallet', { address });
       console.log("Wallet auth successful, received token:", !!data.access_token);
       
-      Cookies.set('token', data.access_token, { expires: 7 }); 
+      const cookieOptions = { 
+        expires: 7, 
+        path: '/', 
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+      };
+
+      Cookies.set('token', data.access_token, cookieOptions); 
       setUser(data.user);
       
       toast.success(`Welcome back, Hunter!`);
@@ -79,7 +93,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    Cookies.remove('token');
+    Cookies.remove('token', { path: '/' });
     setUser(null);
     toast.success("Logged out successfully");
     window.location.href = '/login';

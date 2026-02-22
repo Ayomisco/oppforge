@@ -49,11 +49,16 @@ export default function OnboardingPage() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
 
-  // Guard: Redirect if already onboarded
+  // Guard: Redirect if already onboarded or is admin
   useEffect(() => {
-    if (!loading && user?.onboarded) {
-      console.log("User already onboarded, bypassing to dashboard.");
-      router.push('/dashboard');
+    if (!loading && user) {
+      const isAdmin = user.role === 'admin' || user.role === 'ADMIN';
+      const isOnboarded = user.onboarded === true || isAdmin;
+
+      if (isOnboarded) {
+        console.log("ONBOARDING_GUARD: User already onboarded or admin, bypassing to dashboard.");
+        router.push('/dashboard');
+      }
     }
   }, [user, loading, router]);
 

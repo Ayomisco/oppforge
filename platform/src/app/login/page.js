@@ -27,11 +27,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      // Use strict checking to handle potential nulls for returning users
-      const isOnboarded = user.onboarded === true;
+      // Admins ALWAYS skip onboarding
+      const isAdmin = user.role === 'admin' || user.role === 'ADMIN';
+      const isOnboarded = user.onboarded === true || isAdmin;
       
+      console.log("LOGIN_REDIRECT_DEBUG:", { 
+        email: user.email, 
+        onboarded: user.onboarded, 
+        role: user.role,
+        final_decision: isOnboarded ? 'dashboard' : 'onboarding'
+      });
+
       if (isOnboarded) {
-        console.log("Verified returning user. Redirecting to Mission Control...");
+        console.log("Verified returning user/admin. Redirecting to Mission Control...");
         router.push('/dashboard');
       } else {
         console.log("New user detected. Redirecting to Onboarding...");
