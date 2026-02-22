@@ -26,13 +26,15 @@ export default function LoginPage() {
   }, [isConnected, address, user, loginWallet]);
 
   useEffect(() => {
-    console.log("Auth State Changed:", { user, onboarded: user?.onboarded });
     if (user) {
-      if (user.onboarded) {
-        console.log("Redirecting to Dashboard...");
+      // Use strict checking to handle potential nulls for returning users
+      const isOnboarded = user.onboarded === true;
+      
+      if (isOnboarded) {
+        console.log("Verified returning user. Redirecting to Mission Control...");
         router.push('/dashboard');
       } else {
-        console.log("Redirecting to Onboarding...");
+        console.log("New user detected. Redirecting to Onboarding...");
         router.push('/onboarding');
       }
     }

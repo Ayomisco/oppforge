@@ -49,6 +49,14 @@ export default function OnboardingPage() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
 
+  // Guard: Redirect if already onboarded
+  useEffect(() => {
+    if (!loading && user?.onboarded) {
+      console.log("User already onboarded, bypassing to dashboard.");
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
   // Sync Google Data into Form
   useEffect(() => {
     if (user && !formData.fullName) {
@@ -122,6 +130,16 @@ export default function OnboardingPage() {
       toast.error("Failed to save preferences.", { id: toastId });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050403] flex items-center justify-center">
+        <div className="animate-spin text-[#ff5500]">
+          <Zap size={48} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050403] flex flex-col items-center justify-center p-6 relative overflow-hidden text-white">

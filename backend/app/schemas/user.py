@@ -75,12 +75,17 @@ class UserResponse(UserBase):
         
     @classmethod
     def model_validate(cls, obj):
-        """Override to ensure role enum is converted to string value"""
+        """Override to ensure role enum is converted to string value and boolean defaults are safe"""
+        # Ensure onboarded is never None
+        if hasattr(obj, 'onboarded') and obj.onboarded is None:
+            obj.onboarded = False
+            
         if hasattr(obj, 'role') and hasattr(obj.role, 'value'):
             # Convert enum to its string value
             obj_dict = {
                 **{k: getattr(obj, k) for k in dir(obj) if not k.startswith('_')},
-                'role': obj.role.value
+                'role': obj.role.value,
+                'onboarded': getattr(obj, 'onboarded', False) or False
             }
             return super().model_validate(obj_dict)
         return super().model_validate(obj)
