@@ -45,6 +45,45 @@ def delete_user(email: str):
     print(f"✅ User {email} deleted.")
     db.close()
 
+def add_user(email: str, username: str, role: str = "user"):
+    db = SessionLocal()
+    existing = db.query(User).filter((User.email == email) | (User.username == username)).first()
+    if existing:
+        print(f"❌ User with email {email} or username {username} already exists.")
+        return
+    
+    # Simple role mapping
+    target_role = UserRole.USER
+    if role.lower() == "admin": target_role = UserRole.ADMIN
+    elif role.lower() == "moderator": target_role = UserRole.MODERATOR
+
+    new_user = User(
+        email=email,
+        username=username,
+        role=target_role,
+        onboarded=True,
+        tier="scout"
+    )
+    db.add(new_user)
+    db.commit()
+    print(f"✅ User {username} ({email}) created with role {target_role}.")
+    db.close()
+
+def search_user(query: str):
+    db = SessionLocal()
+    # Search by email or username
+    users = db.query(User).filter(
+        (User.email.contains(query)) | (User.username.contains(query))
+    ).all()
+    
+    if not users:
+        print(f"🔍 No users found matching: {query}")
+    else:
+        print(f"\n--- Search Results ({len(users)}) ---")
+        for u in users:
+            print(f"ID: {u.id} | Email: {u.email} | Username: {u.username} | Role: {u.role}")
+    db.close()
+
 def list_opportunities():
     db = SessionLocal()
     opps = db.query(Opportunity).order_by(Opportunity.created_at.desc()).limit(20).all()
@@ -104,6 +143,14 @@ def main():
     parser_delete_user = subparsers.add_parser("delete-user", help="Delete a user")
     parser_delete_user.add_argument("email", help="Email of the user")
 
+    parser_add_user = subparsers.add_parser("add-user", help="Add a new user manually")
+    parser_add_user.add_argument("email", help="Email of the user")
+    parser_add_user.add_argument("username", help="Username for the user")
+    parser_add_user.add_argument("--role", default="user", help="Role (user, admin, moderator)")
+
+    parser_search_user = subparsers.add_parser("search-user", help="Search for a user by email or username")
+    parser_search_user.add_argument("query", help="Email or username fragment to search for")
+
     # Opportunity Management
     parser_list_opps = subparsers.add_parser("opps", help="List opportunities")
     
@@ -127,6 +174,10 @@ def main():
         list_users()
     elif args.command == "delete-user":
         delete_user(args.email)
+    elif args.command == "add-user":
+        add_user(args.email, args.username, args.role)
+    elif args.command == "search-user":
+        search_user(args.query)
     elif args.command == "opps":
         list_opportunities()
     elif args.command == "create-opp":
