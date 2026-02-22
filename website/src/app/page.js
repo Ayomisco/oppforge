@@ -13,8 +13,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)]/80 backdrop-blur-md">
       <div className="container h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-[var(--accent-forge)] rounded flex items-center justify-center text-[var(--bg-espresso)]">
-            <Terminal size={18} strokeWidth={3} />
+          <div className="w-8 h-8 rounded flex items-center justify-center">
+            <img src="/logo.png" alt="OppForge" className="w-full h-full object-contain mix-blend-screen" />
           </div>
           <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-forge)] transition-colors">
             OppForge
@@ -26,7 +26,6 @@ const Navbar = () => {
           <Link href="#pricing" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/dashboard" className="btn btn-ghost text-sm">Log In</Link>
           <Link href="/dashboard" className="btn btn-primary text-sm">
             Launch App <ArrowRight size={16} />
           </Link>
@@ -50,39 +49,29 @@ const Navbar = () => {
   )
 }
 
-const FloatingPill = ({ title, subtitle, icon: Icon, colorClass, position, delay, duration }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ 
-      opacity: 1, 
-      y: [0, -10, 0],
-      x: [0, 5, 0]
-    }}
-    transition={{ 
-      opacity: { duration: 0.8, delay },
-      y: { duration: duration || 4, repeat: Infinity, ease: "easeInOut", delay: delay || 0 },
-      x: { duration: (duration || 4) * 1.2, repeat: Infinity, ease: "easeInOut", delay: delay || 0.5 }
-    }}
-    className={`absolute ${position} hidden lg:flex items-center gap-3 bg-[var(--bg-espresso)]/90 backdrop-blur-xl border border-[var(--glass-border)] 
-                rounded-xl px-4 py-2.5 shadow-2xl z-20 hover:scale-105 transition-transform cursor-default group`}
-  >
-    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${colorClass}`}>
-      <Icon size={16} />
+const AlphaPill = ({ title, subtitle, domain }) => (
+  <div className="flex items-center gap-3 bg-[var(--bg-espresso)] border border-[var(--glass-border)] 
+                rounded-xl px-4 py-2.5 shadow-lg hover:bg-[var(--bg-mahogany)] hover:scale-105 transition-all cursor-default group">
+    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center overflow-hidden p-[2px]">
+      <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt={title} className="w-full h-full object-contain" />
     </div>
-    <div>
-      <div className="text-white text-sm font-bold font-sans tracking-tight leading-tight">{title}</div>
+    <div className="text-left">
+      <div className="text-white text-xs font-bold font-sans tracking-tight leading-tight">{title}</div>
       <div className="text-[var(--text-secondary)] text-[10px] font-mono uppercase">{subtitle}</div>
     </div>
-  </motion.div>
+  </div>
 )
 
 const MetricSymbol = () => (
    <span className="text-[var(--accent-forge)] opacity-80 animate-pulse text-lg">✥</span>
 )
 
-const SourcePill = ({ name }) => (
-  <div className="flex items-center justify-center px-6 py-2.5 rounded-full border border-[var(--glass-border)] bg-[var(--bg-espresso)]/50 
-                  hover:bg-[var(--bg-mahogany)] text-[var(--text-primary)] hover:text-[#ffaa00] transition-colors font-medium">
+const SourcePill = ({ name, domain }) => (
+  <div className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-[var(--glass-border)] bg-[var(--bg-espresso)]/50 
+                  hover:bg-[var(--bg-mahogany)] hover:border-[#ff5500]/50 text-[var(--text-primary)] hover:text-white transition-all font-medium">
+    <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-sm p-[2px]">
+       <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt={name} className="w-full h-full object-contain" />
+    </div>
     {name}
   </div>
 )
@@ -97,23 +86,9 @@ export default function LandingPage() {
       
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center items-center overflow-hidden border-b border-[var(--glass-border)] lg:pt-0 pt-20">
+        {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex flex-col justify-center items-center overflow-hidden border-b border-[var(--glass-border)] pt-24 pb-32">
         <div className="container relative z-10 flex flex-col items-center justify-center">
-          
-          {/* Floating Elements (Desktop Only) */}
-          <FloatingPill 
-             title="Ethereum Foundation" subtitle="Data Grant" icon={Terminal} 
-             colorClass="bg-blue-500/10 text-blue-400" position="top-10 left-[15%]" delay={0.2} duration={5} />
-          <FloatingPill 
-             title="Arbitrum DAO" subtitle="$50k Bounty" icon={Rocket} 
-             colorClass="bg-[#ffaa00]/10 text-[#ffaa00]" position="top-40 right-[15%]" delay={0.4} duration={4.5} />
-          <FloatingPill 
-             title="Superteam" subtitle="Validator Track" icon={Zap} 
-             colorClass="bg-green-500/10 text-green-400" position="bottom-32 left-[20%]" delay={0.6} duration={6} />
-          <FloatingPill 
-             title="Aave Protocol" subtitle="Risk Analysis" icon={Search} 
-             colorClass="bg-purple-500/10 text-purple-400" position="bottom-20 right-[25%]" delay={0.8} duration={5.5} />
 
           {/* Main Hero Content */}
           <motion.div 
@@ -122,12 +97,20 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center max-w-[800px] mx-auto z-30"
           >
-            <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl leading-[1.1] mb-8 text-[#fff] tracking-tight text-balance">
-              Alpha that doesn't exist on the timeline yet.
+            <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl leading-[1.1] mb-6 text-[#fff] tracking-tight text-balance">
+              Opportunities that don't exist on the timeline yet.
             </h1>
-            <p className="font-sans text-lg md:text-xl text-[var(--text-secondary)] mb-12 max-w-2xl mx-auto leading-relaxed text-balance">
-              We monitor thousands of governance forums, fresh foundation announcements, and obscure GitHub repos. You get multi-million dollar grants before they're crowded.
+            <p className="font-sans text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed text-balance">
+              We track fresh protocol grants, governance bounties, airdrops, testnets, and VC portfolios. You get curated alpha with 10 competitors, not 1,000.
             </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+               <AlphaPill title="Ethereum Foundation" subtitle="Data Grant" domain="ethereum.org" />
+               <AlphaPill title="Arbitrum DAO" subtitle="$50k Bounty" domain="arbitrum.foundation" />
+               <AlphaPill title="Aave Protocol" subtitle="Risk Analysis" domain="aave.com" />
+               <AlphaPill title="Superteam" subtitle="Validator Track" domain="superteam.fun" />
+            </div>
+
             <Link href="/dashboard" className="inline-flex items-center justify-center bg-[var(--bg-espresso)] hover:bg-[#ff5500] 
                                               border border-[#ff5500]/50 hover:border-[#ff5500] text-white text-lg font-bold px-10 py-5 
                                               rounded-full transition-all duration-300 shadow-[0_0_30px_rgba(255,85,0,0.15)] hover:shadow-[0_0_40px_rgba(255,85,0,0.4)]
@@ -174,12 +157,12 @@ export default function LandingPage() {
                   Developer & Builder Platforms
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <SourcePill name="Gitcoin" />
-                  <SourcePill name="Devpost" />
-                  <SourcePill name="DoraHacks" />
-                  <SourcePill name="Buidlbox" />
-                  <SourcePill name="Superteam Earn" />
-                  <SourcePill name="GitHub Issues" />
+                  <SourcePill name="Gitcoin" domain="gitcoin.co" />
+                  <SourcePill name="Devpost" domain="devpost.com" />
+                  <SourcePill name="DoraHacks" domain="dorahacks.io" />
+                  <SourcePill name="Buidlbox" domain="buidlbox.io" />
+                  <SourcePill name="Superteam Earn" domain="superteam.fun" />
+                  <SourcePill name="GitHub Issues" domain="github.com" />
                 </div>
              </div>
 
@@ -189,13 +172,13 @@ export default function LandingPage() {
                   Venture Capital Portfolios
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <SourcePill name="a16z crypto" />
-                  <SourcePill name="Paradigm" />
-                  <SourcePill name="Sequoia Capital" />
-                  <SourcePill name="Hack VC" />
-                  <SourcePill name="Variant Fund" />
-                  <SourcePill name="Electric Capital" />
-                  <SourcePill name="Framework Ventures" />
+                  <SourcePill name="a16z crypto" domain="a16zcrypto.com" />
+                  <SourcePill name="Paradigm" domain="paradigm.xyz" />
+                  <SourcePill name="Sequoia Capital" domain="sequoiacap.com" />
+                  <SourcePill name="Hack VC" domain="hack.vc" />
+                  <SourcePill name="Variant Fund" domain="variant.fund" />
+                  <SourcePill name="Electric Capital" domain="electriccapital.com" />
+                  <SourcePill name="Framework Ventures" domain="framework.ventures" />
                 </div>
              </div>
 
@@ -205,12 +188,12 @@ export default function LandingPage() {
                   Governance & Ecosystems
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <SourcePill name="Commonwealth" />
-                  <SourcePill name="Snapshot" />
-                  <SourcePill name="X (Twitter)" />
-                  <SourcePill name="Farcaster" />
-                  <SourcePill name="Discord Announcements" />
-                  <SourcePill name="Messari" />
+                  <SourcePill name="Commonwealth" domain="commonwealth.im" />
+                  <SourcePill name="Snapshot" domain="snapshot.org" />
+                  <SourcePill name="X (Twitter)" domain="twitter.com" />
+                  <SourcePill name="Farcaster" domain="farcaster.xyz" />
+                  <SourcePill name="Discord Announcements" domain="discord.com" />
+                  <SourcePill name="Messari" domain="messari.io" />
                 </div>
              </div>
           </div>
