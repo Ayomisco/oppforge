@@ -64,9 +64,9 @@ html, body {
 
 /* Typography Overrides */
 h1, h2, h3, .font-heading {
-  font-family: var(--font-sans);
-  letter-spacing: -0.03em;
-  font-weight: 700;
+  font-family: var(--font-serif), var(--font-sans);
+  letter-spacing: -0.01em;
+  font-weight: 500;
 }
 
 /* --- Component Systems --- */

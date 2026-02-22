@@ -1,4 +1,4 @@
-import { JetBrains_Mono, Space_Grotesk } from 'next/font/google'
+import { JetBrains_Mono, Space_Grotesk, Playfair_Display } from 'next/font/google'
 import './globals.css'
 
 const jetbrainsMono = JetBrains_Mono({ 
@@ -10,6 +10,12 @@ const jetbrainsMono = JetBrains_Mono({
 const spaceGrotesk = Space_Grotesk({ 
   subsets: ['latin'], 
   variable: '--font-sans',
+  display: 'swap',
+})
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
   display: 'swap',
 })
 
@@ -28,7 +34,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${playfair.variable} antialiased`}>
         {children}
       </body>
     </html>
