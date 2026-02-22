@@ -27,22 +27,22 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      // Admins ALWAYS skip onboarding
-      const isAdmin = user.role === 'admin' || user.role === 'ADMIN';
+      // Admins ALWAYS skip onboarding - case-insensitive check
+      const userRole = (user.role || '').toLowerCase();
+      const isAdmin = userRole === 'admin';
       const isOnboarded = user.onboarded === true || isAdmin;
       
-      console.log("LOGIN_REDIRECT_DEBUG:", { 
+      console.log("LOGIN_REDIRECT_DECISION:", { 
         email: user.email, 
         onboarded: user.onboarded, 
         role: user.role,
-        final_decision: isOnboarded ? 'dashboard' : 'onboarding'
+        isAdmin,
+        final_destination: isOnboarded ? 'dashboard' : 'onboarding'
       });
 
       if (isOnboarded) {
-        console.log("Verified returning user/admin. Redirecting to Mission Control...");
         router.push('/dashboard');
       } else {
-        console.log("New user detected. Redirecting to Onboarding...");
         router.push('/onboarding');
       }
     }

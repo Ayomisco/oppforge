@@ -74,18 +74,51 @@ class UserResponse(UserBase):
         from_attributes = True
         
     @classmethod
-    def model_validate(cls, obj):
-        """Override to ensure role enum is converted to string value and boolean defaults are safe"""
-        # Ensure onboarded is never None
-        if hasattr(obj, 'onboarded') and obj.onboarded is None:
-            obj.onboarded = False
-            
-        if hasattr(obj, 'role') and hasattr(obj.role, 'value'):
-            # Convert enum to its string value
-            obj_dict = {
-                **{k: getattr(obj, k) for k in dir(obj) if not k.startswith('_')},
-                'role': obj.role.value,
-                'onboarded': getattr(obj, 'onboarded', False) or False
-            }
-            return super().model_validate(obj_dict)
-        return super().model_validate(obj)
+    def model_validate(cls, obj, from_attributes: bool = True):
+        """Override to ensure role enum and onboarded status are safely converted"""
+        # Ensure obj is not None
+        if not obj: return None
+        
+        # If it's already a dict, we can just fix it
+        if isinstance(obj, dict):
+            if 'role' in obj and hasattr(obj['role'], 'value'):
+                obj['role'] = obj['role'].value
+            if 'onboarded' in obj and obj['onboarded'] is None:
+                obj['onboarded'] = False
+            return super().model_validate(obj)
+
+        # It's an object (SQLAlchemy model)
+        # Create a proxy dict with fixed values
+        # We only need to fix role and onboarded
+        role_val = getattr(obj, 'role', 'user')
+        if hasattr(role_val, 'value'):
+            role_val = role_val.value
+        
+        onboarded_val = bool(getattr(obj, 'onboarded', False))
+        
+        # Use a dict to avoid triggering Pydantic's dir() logic on the proxy
+        data = {
+            "id": getattr(obj, "id"),
+            "email": getattr(obj, "email"),
+            "username": getattr(obj, "username", None),
+            "full_name": getattr(obj, "full_name", None),
+            "avatar_url": getattr(obj, "avatar_url", None),
+            "wallet_address": getattr(obj, "wallet_address", None),
+            "role": str(role_val),
+            "xp": getattr(obj, "xp", 0),
+            "level": getattr(obj, "level", 1),
+            "rank_title": getattr(obj, "rank_title", "Novice Scout"),
+            "badges": getattr(obj, "badges", []),
+            "tier": getattr(obj, "tier", "scout"),
+            "is_pro": getattr(obj, "is_pro", False),
+            "onboarded": onboarded_val,
+            "subscription_status": getattr(obj, "subscription_status", "trialing"),
+            "trial_started_at": getattr(obj, "trial_started_at", None),
+            "subscription_expires_at": getattr(obj, "subscription_expires_at", None),
+            "skills": getattr(obj, "skills", []),
+            "preferred_chains": getattr(obj, "preferred_chains", []),
+            "preferred_categories": getattr(obj, "preferred_categories", []),
+            "created_at": getattr(obj, "created_at", datetime.utcnow())
+        }
+        
+        return super().model_validate(data)

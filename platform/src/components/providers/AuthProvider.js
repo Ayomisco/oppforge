@@ -18,21 +18,21 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const checkSession = async () => {
       const token = Cookies.get('token');
-      const guestCookie = Cookies.get('isGuest');
+      console.log("AUTH_PROVIDER: Mounting. Token found:", !!token);
 
       if (token) {
         try {
           const { data } = await api.get('/auth/me');
+          console.log("AUTH_PROVIDER: Session check success. User:", data.email, "Role:", data.role);
           setUser(data);
           setIsGuest(false);
         } catch (error) {
-          console.error("Session check failed:", error);
-          Cookies.remove('token');
-          // Fallback to guest if token invalid
+          console.error("AUTH_PROVIDER: Session check failed:", error.response?.status, error.message);
+          Cookies.remove('token', { path: '/' });
           setIsGuest(true);
         }
       } else {
-        // No token = Guest
+        console.log("AUTH_PROVIDER: No token, starting as guest.");
         setIsGuest(true);
       }
       setLoading(false);

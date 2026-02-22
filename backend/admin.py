@@ -84,6 +84,25 @@ def search_user(query: str):
             print(f"ID: {u.id} | Email: {u.email} | Username: {u.username} | Role: {u.role}")
     db.close()
 
+def user_details(email: str):
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        print(f"❌ User {email} not found.")
+        return
+    
+    print(f"\n--- User Profile: {user.email} ---")
+    print(f"ID: {user.id}")
+    print(f"Username: {user.username}")
+    print(f"Role: {user.role}")
+    print(f"Onboarded: {user.onboarded}")
+    print(f"Tier: {user.tier}")
+    print(f"Is Pro: {user.is_pro}")
+    print(f"Subscription: {user.subscription_status}")
+    print(f"Skills: {user.skills}")
+    print(f"Chains: {user.preferred_chains}")
+    db.close()
+
 def list_opportunities():
     db = SessionLocal()
     opps = db.query(Opportunity).order_by(Opportunity.created_at.desc()).limit(20).all()
@@ -163,6 +182,9 @@ def main():
     parser_search_user = subparsers.add_parser("search-user", help="Search for a user by email or username")
     parser_search_user.add_argument("query", help="Email or username fragment to search for")
 
+    parser_user_details = subparsers.add_parser("user-details", help="Inspect all fields for a user")
+    parser_user_details.add_argument("email", help="Full email of the user")
+
     # Opportunity Management
     parser_list_opps = subparsers.add_parser("opps", help="List opportunities")
     
@@ -192,6 +214,8 @@ def main():
         add_user(args.email, args.username, args.role)
     elif args.command == "search-user":
         search_user(args.query)
+    elif args.command == "user-details":
+        user_details(args.email)
     elif args.command == "opps":
         list_opportunities()
     elif args.command == "create-opp":
