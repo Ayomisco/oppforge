@@ -152,23 +152,47 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
 
       {/* User Profile / Footer */}
       <div className="p-3 border-t border-[#1a1512]">
-        <div className="flex items-center gap-3 p-2 rounded-sm bg-[#0a0806] border border-white/5 group relative">
-          <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-xs font-bold text-white shadow-lg ${
+        <div className="flex items-center gap-3 p-2 rounded-sm bg-[#0a0806] border border-white/5 group relative overflow-hidden">
+          {/* Avatar */}
+          <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-[10px] font-black text-white shadow-lg shrink-0 ${
             plan.isActive && !plan.isTrial 
               ? 'bg-gradient-to-br from-[#ff5500] to-[#ffaa00]' 
               : 'bg-gradient-to-br from-gray-600 to-gray-700'
           }`}>
              {user?.full_name ? user.full_name.charAt(0).toUpperCase() : user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
+
           <div className="flex-1 overflow-hidden">
-            <div className="text-[11px] font-bold text-white truncate">{user?.full_name || user?.username || 'User'}</div>
-            <div className={`text-[9px] truncate uppercase font-mono tracking-tighter ${plan.color}`}>
-              {plan.isActive && !plan.isTrial ? `${user?.tier?.toUpperCase()} Plan Active` : plan.isTrial ? `Trial · ${plan.trialDaysLeft}d remaining` : 'Free Tier'}
+            <div className="text-[11px] font-bold text-white truncate lowercase tracking-tighter italic">
+              {user?.full_name || user?.username || 'Pilot'}
+            </div>
+            
+            <div className="flex items-center gap-1.5 mt-0.5">
+               <span className={`text-[8px] font-mono font-bold px-1 rounded-[2px] ${plan.bgColor} ${plan.color} border ${plan.borderColor} tracking-tighter`}>
+                 {plan.label}
+               </span>
+               {plan.isTrial && (
+                 <span className="text-[8px] font-mono text-gray-600">
+                   {plan.trialDaysLeft}d
+                 </span>
+               )}
             </div>
           </div>
-          <button onClick={logout} className="p-1.5 hover:bg-white/5 rounded text-gray-500 hover:text-red-500 transition-colors">
+
+          <button onClick={logout} className="p-1.5 hover:bg-white/5 rounded text-gray-700 hover:text-red-500 transition-colors">
             <LogOut size={14} />
           </button>
+
+          {/* Minimalist Trial Progress Line (Bottom Edge of profile) */}
+          {plan.isTrial && (
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/5 overflow-hidden">
+               <motion.div 
+                 initial={{ width: 0 }}
+                 animate={{ width: `${((14 - plan.trialDaysLeft) / 14) * 100}%` }}
+                 className="h-full bg-[#10b981]"
+               />
+            </div>
+          )}
         </div>
       </div>
     </div>

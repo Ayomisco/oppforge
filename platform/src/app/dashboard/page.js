@@ -129,28 +129,7 @@ export default function DashboardPage() {
           <div className="hidden xl:block xl:col-span-3 space-y-4 sticky top-6">
             <TestnetTracker />
             
-            {/* Forge AI Teaser - Compact */}
-            <div className="glass-card p-4 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 bg-[var(--accent-forge)]/10 blur-xl rounded-full pointer-events-none" />
-              <div className="flex items-center gap-2 mb-2 text-[var(--accent-forge)] font-bold text-xs uppercase tracking-wider">
-                <Zap size={12} /> AI Insight
-              </div>
-              {loading ? (
-                <div className="space-y-2">
-                  <div className="h-4 w-full bg-white/5 animate-pulse rounded" />
-                  <div className="h-8 w-full bg-white/5 animate-pulse rounded mt-3" />
-                </div>
-              ) : (
-                <>
-                  <p className="text-xs text-gray-400 mb-3 leading-relaxed">
-                    Your profile matches <span className="text-white font-bold">{opportunities?.[0]?.ai_score || 92}%</span> with the top opportunity.
-                  </p>
-                  <button className="w-full btn btn-primary py-1.5 text-[10px]">
-                    Generate Proposal
-                  </button>
-                </>
-              )}
-            </div>
+            {/* Dashboard AI Teaser Removed for Clean/Minimalist UI */}
 
             {/* Trending - Compact */}
             <div className="glass-card p-4">

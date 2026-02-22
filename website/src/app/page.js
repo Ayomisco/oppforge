@@ -12,8 +12,10 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)]/80 backdrop-blur-md">
       <div className="container h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <img src="/logo.png" alt="OppForge" className="w-8 h-8 object-contain filter drop-shadow-[0_0_8px_rgba(255,85,0,0.3)] group-hover:scale-110 transition-transform" />
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 bg-[var(--accent-forge)] rounded flex items-center justify-center text-[var(--bg-espresso)]">
+            <Terminal size={18} strokeWidth={3} />
+          </div>
           <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-forge)] transition-colors">
             OppForge
           </span>
@@ -24,7 +26,8 @@ const Navbar = () => {
           <Link href="#pricing" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-sm px-6">
+          <Link href="/dashboard" className="btn btn-ghost text-sm">Log In</Link>
+          <Link href="/dashboard" className="btn btn-primary text-sm">
             Launch App <ArrowRight size={16} />
           </Link>
         </div>
@@ -38,7 +41,7 @@ const Navbar = () => {
             <div className="container py-4 flex flex-col gap-4">
               <Link href="#features" className="text-base font-medium text-[var(--text-secondary)]">Features</Link>
               <Link href="#how-it-works" className="text-base font-medium text-[var(--text-secondary)]">How it Works</Link>
-              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full justify-center">Launch App</Link>
+              <Link href="/dashboard" className="btn btn-primary w-full justify-center">Launch App</Link>
             </div>
           </motion.div>
         )}
@@ -92,7 +95,7 @@ export default function LandingPage() {
               The AI-powered agent that finds, scores, and helps you win grants, airdrops, and bounties before anyone else.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full sm:w-auto text-lg px-8 py-4">
+              <Link href="/dashboard" className="btn btn-primary w-full sm:w-auto text-lg px-8 py-4">
                 Start Hunting <Rocket size={20} />
               </Link>
               <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-lg px-8 py-4 border border-[var(--border-subtle)]">
@@ -194,7 +197,7 @@ export default function LandingPage() {
       <section className="py-24 bg-[var(--bg-walnut)] border-t border-[var(--border-subtle)]">
         <div className="container text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-8">Ready to Forge Your Future?</h2>
-          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-xl px-10 py-5">
+          <Link href="/dashboard" className="btn btn-primary text-xl px-10 py-5">
             Get Started Now
           </Link>
           <div className="mt-8 text-[var(--text-secondary)] text-sm">
