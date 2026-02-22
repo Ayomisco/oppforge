@@ -142,7 +142,7 @@ export default function LoginPage() {
           className="w-full max-w-md bg-[#0a0806]/90 backdrop-blur-xl p-8 rounded-2xl border border-[#1a1512] shadow-2xl relative z-10"
         >
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 filter drop-shadow-[0_0_12px_rgba(255,85,0,0.4)] rounded-full overflow-hidden mix-blend-screen">
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full overflow-hidden mix-blend-screen">
               <img src="/logo.png" alt="OppForge Logo" className="w-full h-full object-contain scale-125" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Welcome to OppForge</h2>
@@ -152,8 +152,7 @@ export default function LoginPage() {
           <div className="space-y-5">
             {/* Google */}
             <div className="group relative">
-               <div className="absolute -inset-0.5 bg-gradient-to-r from-[#ff5500] to-[#ffaa00] rounded-lg opacity-0 group-hover:opacity-75 transition duration-500 blur-sm"></div>
-               <div className="relative bg-transparent border border-white/5 p-6 rounded-lg transition-colors">
+               <div className="relative bg-transparent border border-white/5 p-6 rounded-lg hover:border-white/10 transition-colors">
                   <div className="flex justify-between items-center mb-4">
                      <span className="text-white font-medium flex items-center gap-2">
                         Institutional Access
@@ -182,7 +181,7 @@ export default function LoginPage() {
             </div>
 
             {/* Wallet */}
-            <div className="bg-transparent border border-white/5 p-6 rounded-lg hover:border-[#ff5500]/30 transition-colors flex flex-col items-center gap-3">
+            <div className="bg-transparent border border-white/5 p-6 rounded-lg hover:border-white/10 transition-colors flex flex-col items-center gap-3">
                <div className="text-center mb-1">
                  <span className="text-white font-medium block">Web3 Connection</span>
                  <span className="text-xs text-gray-500 block">Sign transactions & claim rewards</span>
