@@ -6,7 +6,7 @@ from sqlalchemy import or_, desc
 from typing import List, Optional
 from .. import database, schemas
 from ..models.opportunity import Opportunity
-from .auth import get_current_user
+from .auth import get_current_user, get_optional_user
 
 from ..models.enums import UserRole
 
@@ -100,7 +100,7 @@ def get_trending(db: Session = Depends(database.get_db)):
 @router.get("/priority", response_model=List[schemas.OpportunityResponse])
 def get_priority_stream(
     db: Session = Depends(database.get_db), 
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_optional_user)
 ):
     """
     Personalized stream based on user skills and preferred chains.
@@ -123,12 +123,14 @@ def get_priority_stream(
     ).all()
     
     # Build User Profile for AI Engine
-    user_profile = {
-        "skills": current_user.skills,
-        "experience_level": current_user.experience_level,
-        "preferred_chains": current_user.preferred_chains,
-        "bio": current_user.bio
-    }
+    user_profile = None
+    if current_user:
+        user_profile = {
+            "skills": current_user.skills,
+            "experience_level": current_user.experience_level,
+            "preferred_chains": current_user.preferred_chains,
+            "bio": current_user.bio
+        }
     
     AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
     
@@ -161,19 +163,22 @@ def get_priority_stream(
             opp.ai_score = semantic_score
         else:
             # Fallback to manual match scoring (Heuristic)
-            user_skills = set(current_user.skills or [])
-            user_chains = set(current_user.preferred_chains or [])
-            match_bonus = 0
-            opp_tags = set(opp.tags or [])
-            opp_reqs = set(opp.required_skills or [])
-            
-            skill_matches = user_skills.intersection(opp_tags.union(opp_reqs))
-            match_bonus += len(skill_matches) * 5
-            if opp.chain in user_chains:
-                match_bonus += 10
+            if current_user:
+                user_skills = set(current_user.skills or [])
+                user_chains = set(current_user.preferred_chains or [])
+                match_bonus = 0
+                opp_tags = set(opp.tags or [])
+                opp_reqs = set(opp.required_skills or [])
                 
-            opp.ai_score = min(opp.ai_score + match_bonus, 100)
-            
+                skill_matches = user_skills.intersection(opp_tags.union(opp_reqs))
+                match_bonus += len(skill_matches) * 5
+                if opp.chain in user_chains:
+                    match_bonus += 10
+                    
+                opp.ai_score = min(opp.ai_score + match_bonus, 100)
+            else:
+                pass # Baseline scores for guests
+                
         scored_opps.append(opp)
         
     scored_opps.sort(key=lambda x: x.ai_score, reverse=True)

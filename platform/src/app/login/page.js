@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/components/providers/AuthProvider';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useAccount } from 'wagmi';
@@ -48,15 +48,20 @@ export default function LoginPage() {
     }
   }, [user, router]);
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    const success = await loginGoogle(credentialResponse);
-    if (success) {
-      // The user state in AuthProvider might take a tick to update,
-      // but the loginGoogle function has already set the user state.
-      // We can check the token to be extra sure or just rely on the next tick.
-      toast.success("Syncing Mission Control...");
+  const handleGoogleSuccess = async (response) => {
+    // response.access_token will be used here instead of credential
+    if (response.access_token) {
+      const success = await loginGoogle({ credential: response.access_token });
+      if (success) {
+        toast.success("Syncing Mission Control...");
+      }
     }
   };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => toast.error('Google Sign In Failed')
+  });
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#050403]">
@@ -137,8 +142,8 @@ export default function LoginPage() {
           className="w-full max-w-md bg-[#0a0806]/90 backdrop-blur-xl p-8 rounded-2xl border border-[#1a1512] shadow-2xl relative z-10"
         >
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 filter drop-shadow-[0_0_12px_rgba(255,85,0,0.4)]">
-              <img src="/logo.png" alt="OppForge Logo" className="w-full h-full object-contain" />
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 filter drop-shadow-[0_0_12px_rgba(255,85,0,0.4)] rounded-full overflow-hidden mix-blend-screen">
+              <img src="/logo.png" alt="OppForge Logo" className="w-full h-full object-contain scale-125" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Welcome to OppForge</h2>
             <p className="text-gray-400 text-sm">Sign in to access your command center</p>
@@ -148,7 +153,7 @@ export default function LoginPage() {
             {/* Google */}
             <div className="group relative">
                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#ff5500] to-[#ffaa00] rounded-lg opacity-0 group-hover:opacity-75 transition duration-500 blur-sm"></div>
-               <div className="relative bg-[#1a1512] border border-[#2a1a12] p-6 rounded-lg hover:bg-[#201a15] transition-colors">
+               <div className="relative bg-transparent border border-white/5 p-6 rounded-lg transition-colors">
                   <div className="flex justify-between items-center mb-4">
                      <span className="text-white font-medium flex items-center gap-2">
                         Institutional Access
@@ -156,13 +161,17 @@ export default function LoginPage() {
                      <span className="text-[10px] uppercase bg-[#ff5500]/10 text-[#ff5500] px-2 py-0.5 rounded border border-[#ff5500]/20">Recommended</span>
                   </div>
                   <div className="flex justify-center w-full">
-                    <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={() => console.log('Login Failed')}
-                        theme="filled_black"
-                        shape="rect"
-                        width="300"
-                    />
+                    <button
+                        onClick={() => loginWithGoogle()}
+                        className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 active:bg-white/5 text-white font-medium py-3 px-4 rounded-lg border border-white/10 transition-all"
+                    >
+                        <img 
+                            src="https://www.google.com/favicon.ico" 
+                            alt="Google" 
+                            className="w-5 h-5 bg-white rounded-full p-0.5"
+                        />
+                        Continue with Google
+                    </button>
                   </div>
                </div>
             </div>
@@ -173,7 +182,7 @@ export default function LoginPage() {
             </div>
 
             {/* Wallet */}
-            <div className="bg-[#1a1512] border border-[#2a1a12] p-6 rounded-lg hover:border-[#ff5500]/30 transition-colors flex flex-col items-center gap-3">
+            <div className="bg-transparent border border-white/5 p-6 rounded-lg hover:border-[#ff5500]/30 transition-colors flex flex-col items-center gap-3">
                <div className="text-center mb-1">
                  <span className="text-white font-medium block">Web3 Connection</span>
                  <span className="text-xs text-gray-500 block">Sign transactions & claim rewards</span>

@@ -4,15 +4,24 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { LogIn, Wallet } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
+import toast from 'react-hot-toast';
 
 export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
   const { loginGoogle, loginWallet } = useAuth();
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    const success = await loginGoogle(credentialResponse);
-    if (success) onClose();
+  const handleGoogleSuccess = async (response) => {
+    if (response.access_token) {
+      const success = await loginGoogle({ credential: response.access_token });
+      if (success) onClose();
+    }
   };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => toast.error('Google Sign In Failed')
+  });
+
 
   const handleWalletLogin = async () => {
     // Mock wallet connection for now
@@ -36,13 +45,17 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
         <div className="flex flex-col gap-4 py-4">
           {/* Google Login */}
           <div className="w-full flex justify-center">
-             <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => console.log('Login Failed')}
-                theme="filled_black"
-                shape="pill"
-                width="100%"
-              />
+             <button
+                 onClick={() => loginWithGoogle()}
+                 className="w-full flex items-center justify-center gap-3 bg-[#1a1a1a] hover:bg-[#222] text-white font-medium py-2.5 px-4 rounded-full border border-[#333] transition-all"
+             >
+                 <img 
+                     src="https://www.google.com/favicon.ico" 
+                     alt="Google" 
+                     className="w-4 h-4 bg-white rounded-full p-0.5"
+                 />
+                 Continue with Google
+             </button>
           </div>
 
           <div className="relative">

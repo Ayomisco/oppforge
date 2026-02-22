@@ -53,6 +53,22 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
+def get_optional_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+    """
+    Optional auth dependency. Returns User model if token valid, else None.
+    Does NOT throw 401 for anonymous users.
+    """
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        return db.query(UserModel).filter(UserModel.email == email).first()
+    except (JWTError, Exception):
+        return None
+
 def check_subscription_clearance(current_user: UserModel = Depends(get_current_user)):
     """
     Dependency to ensure the user has active subscription clearance.
@@ -83,10 +99,29 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
     
     try:
         # 1. Verify Google Token
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        import requests as httpx_requests
         
-        google_id = idinfo['sub']
-        email = idinfo['email']
+        idinfo = None
+        try:
+            # Try parsing as an id_token first
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        except ValueError:
+            # If it's not a valid id_token, it might be an access_token. Let's fetch user info.
+            # This allows the frontend to use a custom Google button (Implicit flow).
+            res = httpx_requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo", 
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            if res.status_code == 200:
+                idinfo = res.json()
+            else:
+                raise ValueError("Invalid Google access token")
+                
+        if not idinfo:
+            raise ValueError("Could not extract user information from Google.")
+        
+        google_id = idinfo.get('sub')
+        email = idinfo.get('email')
         name = idinfo.get('name')
         first_name = idinfo.get('given_name')
         last_name = idinfo.get('family_name')

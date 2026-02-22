@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from .. import database, models
-from .auth import get_current_user
+from .auth import get_optional_user
 
 router = APIRouter(
     prefix="/stats",
@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 @router.get("/dashboard")
-def get_dashboard_stats(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+def get_dashboard_stats(db: Session = Depends(database.get_db), current_user = Depends(get_optional_user)):
     """
     Returns real Mission Control stats based on DB data.
     """
@@ -30,9 +30,12 @@ def get_dashboard_stats(db: Session = Depends(database.get_db), current_user = D
     
     # 3. Dynamic Win Probability 
     # Logic: Base 70% + 2% per level + 5% if wallet connected + 1% per skill (max 99%)
-    skill_bonus = len(current_user.skills or [])
-    wallet_bonus = 5 if current_user.wallet_address else 0
-    win_prob = min(70 + (current_user.level * 2) + wallet_bonus + skill_bonus, 99)
+    if current_user:
+        skill_bonus = len(current_user.skills or [])
+        wallet_bonus = 5 if current_user.wallet_address else 0
+        win_prob = min(70 + (current_user.level * 2) + wallet_bonus + skill_bonus, 99)
+    else:
+        win_prob = 70 # Baseline for guests
     
     # 4. Total Pool Estimate
     # Real logic: sum estimated_value_usd if present, otherwise ignore

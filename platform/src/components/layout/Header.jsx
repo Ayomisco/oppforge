@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Search, Bell, Sparkles, Zap } from 'lucide-react'
+import { Search, Bell, Sparkles, Zap, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { LoginModal } from '@/components/auth/LoginModal'
@@ -56,9 +56,9 @@ export default function Header({ onMenuClick }) {
         {isGuest ? (
           <button 
             onClick={() => setIsLoginOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#ff5500] hover:bg-[#ff6600] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_#ff5500]/40"
+            className="flex flex-row items-center gap-2 px-4 py-2 bg-[#ff5500] hover:bg-[#ff6600] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_#ff5500]/40"
           >
-            <img src="/logo.png" alt="logo" className="w-4 h-4 object-contain brightness-0 invert" />
+            <Wallet className="w-4 h-4" />
             Connect_Wallet
           </button>
         ) : (
