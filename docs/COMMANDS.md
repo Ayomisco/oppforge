@@ -6,15 +6,22 @@ This document outlines the available commands for managing and testing the OppFo
 
 All administrative actions are handled by the `admin.py` CLI tool located in the `backend/` directory.
 
-### **User Management**
+### **Key Administrative Action: Promote to Admin**
+This is the most critical command for establishing control. It grants a user full access to the Admin Dashboard and bypasses subscription checks.
+
+```bash
+python admin.py promote <user_email>
+```
+
+### **Full User Management Commands**
 Manage users, roles, and search findings.
 
 | Command | Description | Example |
 |---------|-------------|---------|
+| `promote` | **Grant ADMIN privileges** | `python admin.py promote pilot@forge.xyz` |
 | `users` | List all registered users | `python admin.py users` |
 | `add-user` | Create a user manually | `python admin.py add-user pilot@forge.xyz skyhunter` |
 | `search-user` | Search by email or username | `python admin.py search-user pilot@` |
-| `promote` | Grant ADMIN privileges | `python admin.py promote pilot@forge.xyz` |
 | `delete-user` | Permanent account removal | `python admin.py delete-user pilot@forge.xyz` |
 
 ### **Opportunity Management**
