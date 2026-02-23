@@ -108,7 +108,7 @@ export default function LandingPage() {
             </h1>
             
             <p className="text-lg md:text-2xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed">
-              Discover <span className="text-white font-medium">$10K-$500K Grants</span>, <span className="text-white font-medium">$1K-$50K Airdrops</span>, and elite Hackathons. Our autonomous AI scans Twitter, Discord, and governance forums 24/7—scoring every opportunity and drafting your winning proposals.
+              Discover <span className="text-white font-medium">$10K-$500K Grants</span>, <span className="text-white font-medium">$1K-$50K Airdrops</span>, and elite Hackathons. Our autonomous AI monitors X (Twitter), direct ecosystems, and other trusted platforms 24/7—providing verifiable opportunities, scoring every drop, and drafting your winning proposals.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -134,14 +134,14 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[var(--bg-walnut)]/40 backdrop-blur-md -z-10" />
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Intelligence, Not Just Data</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Intelligence & Verifiable Alpha</h2>
             <p className="text-xl text-[var(--text-secondary)] leading-relaxed">
-              Anyone can scrape data. OppForge uses LangChain AI agents to <span className="text-white">score opportunities out of 100</span> based on your skills, parse submission requirements, and generate draft proposals that win.
+              Anyone can aggregate links. OppForge uses LangChain AI agents to strictly monitor trusted platforms, <span className="text-white">scoring verified opportunities out of 100</span> based on your skills, parsing submission requirements, and generating draft proposals that win.
             </p>
           </motion.div>
           
           <div className="grid lg:grid-cols-3 gap-8">
-            <FeatureCard icon={Search} title="Autonomous Alpha Discovery" description="AI agents monitor official protocol blogs, Reddit, Superteam Earn, Gitcoin, and 100+ Discord channels. It catches alpha the second it drops." delay={0.1} />
+            <FeatureCard icon={Search} title="Autonomous Alpha Monitoring" description="AI agents continuously monitor official protocol blogs, X (Twitter), direct ecosystems, and trusted ecosystem forums. We surface verifiable, high-signal alpha the second it drops." delay={0.1} />
             <FeatureCard icon={Zap} title="Hyper-Personalized Scoring" description="Stop sifting through irrelevant noise. Your dashboard ranks opportunities precisely for your technical stack (Rust, Solidity, Python) and ecosystem." delay={0.2} />
             <FeatureCard icon={Terminal} title="Forge AI Chat Assistant" description="A context-aware chat interface. Ask 'Give me a step-by-step farming plan for this testnet' or 'Draft a 500-word grant proposal' and get it instantly." delay={0.3} />
           </div>
