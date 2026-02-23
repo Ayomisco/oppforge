@@ -13,8 +13,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)]/80 backdrop-blur-md">
       <div className="container h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded flex items-center justify-center">
-            <img src="/logo.png" alt="OppForge" className="w-full h-full object-contain mix-blend-screen" />
+          <div className="w-8 h-8 bg-[var(--accent-forge)] rounded flex items-center justify-center text-[var(--bg-espresso)]">
+            <Terminal size={18} strokeWidth={3} />
           </div>
           <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-forge)] transition-colors">
             OppForge
@@ -26,6 +26,7 @@ const Navbar = () => {
           <Link href="#pricing" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
         </div>
         <div className="hidden md:flex items-center gap-4">
+          <Link href="/dashboard" className="btn btn-ghost text-sm">Log In</Link>
           <Link href="/dashboard" className="btn btn-primary text-sm">
             Launch App <ArrowRight size={16} />
           </Link>
@@ -49,153 +50,145 @@ const Navbar = () => {
   )
 }
 
-const AlphaPill = ({ title, subtitle, domain }) => (
-  <div className="flex items-center gap-3 bg-[var(--bg-espresso)] border border-[var(--glass-border)] 
-                rounded-xl px-4 py-2.5 shadow-lg hover:bg-[var(--bg-mahogany)] hover:scale-105 transition-all cursor-default group">
-    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center overflow-hidden p-[2px]">
-      <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt={title} className="w-full h-full object-contain" />
+const FeatureCard = ({ icon: Icon, title, description, delay }) => (
+  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.5 }} viewport={{ once: true }} className="glass-card p-6 flex flex-col gap-4 group hover:bg-[var(--bg-walnut)] transition-colors">
+    <div className="w-12 h-12 rounded-lg bg-[var(--bg-mahogany)] flex items-center justify-center text-[var(--accent-forge)] group-hover:scale-110 transition-transform">
+      <Icon size={24} />
     </div>
-    <div className="text-left">
-      <div className="text-white text-xs font-bold font-sans tracking-tight leading-tight">{title}</div>
-      <div className="text-[var(--text-secondary)] text-[10px] font-mono uppercase">{subtitle}</div>
-    </div>
-  </div>
+    <h3 className="text-lg font-bold text-[var(--text-primary)]">{title}</h3>
+    <p className="text-[var(--text-secondary)] leading-relaxed text-sm">{description}</p>
+  </motion.div>
 )
 
-const MetricSymbol = () => (
-   <span className="text-[var(--accent-forge)] opacity-80 animate-pulse text-lg">✥</span>
-)
-
-const SourcePill = ({ name, domain }) => (
-  <div className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-[var(--glass-border)] bg-[var(--bg-espresso)]/50 
-                  hover:bg-[var(--bg-mahogany)] hover:border-[#ff5500]/50 text-[var(--text-primary)] hover:text-white transition-all font-medium">
-    <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-sm p-[2px]">
-       <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt={name} className="w-full h-full object-contain" />
-    </div>
-    {name}
+const Statistic = ({ value, label }) => (
+  <div className="text-center">
+    <div className="text-3xl md:text-4xl font-bold text-[var(--accent-forge)] font-mono mb-1">{value}</div>
+    <div className="text-xs uppercase tracking-wider text-[var(--text-tertiary)]">{label}</div>
   </div>
 )
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col pt-[var(--header-height)] bg-[var(--bg-void)] relative overflow-hidden">
-      {/* Dynamic Background Noise & Gradients */}
-      <div className="absolute inset-0 z-0 bg-[url('/assets/images/noise.png')] opacity-20 mix-blend-overlay pointer-events-none" />
-      <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-[#ff5500]/5 rounded-full blur-[150px] pointer-events-none z-0" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-[#ffaa00]/5 rounded-full blur-[150px] pointer-events-none z-0" />
-      
+    <div className="min-h-screen flex flex-col pt-[var(--header-height)] bg-[var(--bg-espresso)] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1A1410] via-[#0D0A07] to-[#0D0A07]">
+      <div className="scanlines" />
       <Navbar />
 
-        {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center items-center overflow-hidden border-b border-[var(--glass-border)] pt-24 pb-32">
-        <div className="container relative z-10 flex flex-col items-center justify-center">
-
-          {/* Main Hero Content */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center max-w-[800px] mx-auto z-30"
-          >
-            <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl leading-[1.1] mb-6 text-[#fff] tracking-tight text-balance">
-              Opportunities that don't exist on the timeline yet.
-            </h1>
-            <p className="font-sans text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed text-balance">
-              We track fresh protocol grants, governance bounties, airdrops, testnets, and VC portfolios. You get curated alpha with 10 competitors, not 1,000.
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-               <AlphaPill title="Ethereum Foundation" subtitle="Data Grant" domain="ethereum.org" />
-               <AlphaPill title="Arbitrum DAO" subtitle="$50k Bounty" domain="arbitrum.foundation" />
-               <AlphaPill title="Aave Protocol" subtitle="Risk Analysis" domain="aave.com" />
-               <AlphaPill title="Superteam" subtitle="Validator Track" domain="superteam.fun" />
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[var(--accent-forge)]/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="container relative z-10 text-center max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-walnut)] border border-[var(--accent-forge)]/30 text-[var(--accent-forge)] text-xs font-mono mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-forge)] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-forge)]"></span>
+              </span>
+              v1.0 Public Beta Live
             </div>
-
-            <Link href="/dashboard" className="inline-flex items-center justify-center bg-[var(--bg-espresso)] hover:bg-[#ff5500] 
-                                              border border-[#ff5500]/50 hover:border-[#ff5500] text-white text-lg font-bold px-10 py-5 
-                                              rounded-full transition-all duration-300 shadow-[0_0_30px_rgba(255,85,0,0.15)] hover:shadow-[0_0_40px_rgba(255,85,0,0.4)]
-                                              font-sans group">
-              Launch Mission Control <ArrowRight className="ml-3 group-hover:translate-x-1 transition-transform" size={20} />
-            </Link>
-            <div className="mt-8 text-sm font-mono text-[var(--text-tertiary)] uppercase tracking-widest">
-              Available now - Starting at $0/mo
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+              Forge Your Next <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-forge)] via-[var(--accent-amber)] to-[var(--accent-gold)]">
+                Web3 Opportunity
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
+              The AI-powered agent that finds, scores, and helps you win grants, airdrops, and bounties before anyone else.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/dashboard" className="btn btn-primary w-full sm:w-auto text-lg px-8 py-4">
+                Start Hunting <Rocket size={20} />
+              </Link>
+              <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-lg px-8 py-4 border border-[var(--border-subtle)]">
+                View Architecture
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 p-6 glass-card border-[var(--border-subtle)]">
+              <Statistic value="20+" label="Data Sources" />
+              <Statistic value="0.4s" label="Scan Latency" />
+              <Statistic value="$50M+" label="Tracked Value" />
+              <Statistic value="100%" label="AI Powered" />
             </div>
           </motion.div>
         </div>
+      </section>
 
-        {/* Bottom Metrics Bar */}
-        <div className="absolute bottom-0 left-0 w-full bg-[var(--bg-void)]/80 backdrop-blur-md border-t border-[var(--glass-border)] py-4 overflow-hidden z-20">
-          <div className="container flex flex-wrap items-center justify-center gap-6 md:gap-12 lg:gap-16 text-sm md:text-base font-sans font-medium text-[var(--text-secondary)]">
-            <div className="flex items-center gap-2"><span className="text-white text-lg font-heading italic">&lt;5</span> competitors per listing</div>
-            <MetricSymbol />
-            <div className="flex items-center gap-2"><span className="text-white text-lg font-heading italic">2k+</span> sources monitored</div>
-            <MetricSymbol />
-            <div className="flex items-center gap-2"><span className="text-white text-lg font-heading italic">94%</span> semantic match accuracy</div>
-            <MetricSymbol />
-            <div className="flex items-center gap-2"><span className="text-white text-lg font-heading italic">24/7</span> autonomous scanning</div>
+      {/* Features Grid */}
+      <section id="features" className="py-24 bg-[var(--bg-walnut)]/30 relative">
+        <div className="container">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Intelligence, Not Just Data</h2>
+            <p className="text-[var(--text-secondary)]">
+              Most aggregators just list links. OppForge understands them, scores them, and tells you how to win.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <FeatureCard icon={Search} title="Autonomous Discovery" description="AI agents scan Twitter, Discord, and governance forums 24/7 to find hidden alpha before it goes viral." delay={0.1} />
+            <FeatureCard icon={Zap} title="Real-Time Scoring" description="Every opportunity is scored (0-100) based on your specific skills, preferred chains, and historical win probability." delay={0.2} />
+            <FeatureCard icon={Terminal} title="Forge AI Chat" description="Ask specific questions like 'Is this grant worth my time?' or 'Draft a proposal for this hackathon'." delay={0.3} />
           </div>
         </div>
       </section>
 
-      {/* Where We Look Section */}
-      <section className="py-24 md:py-32 relative z-10 bg-[var(--bg-void)]">
-        <div className="container max-w-5xl">
-          <div className="mb-16">
-             <div className="text-[#ff5500] text-xs font-mono font-bold uppercase tracking-[0.2em] mb-4">Where we look</div>
-             <h2 className="font-heading text-4xl md:text-6xl text-white leading-[1.1] mb-6 tracking-tight max-w-2xl">
-               We monitor everything.<br/>So you don't have to.
-             </h2>
-             <p className="font-sans text-xl text-[var(--text-secondary)] leading-relaxed max-w-3xl">
-               Every block, every day, our AI agents scan GitHub repos, commonwealth governance boards, VC portfolio updates, discord announcements, and hackathon platforms to find the bounties that just launched and are about to start hiring.
-             </p>
-          </div>
+      {/* Pricing Section - INJECTED HERE */}
+      <PricingSection />
 
-          <div className="space-y-16">
-             {/* Category 1 */}
-             <div>
-                <div className="text-[var(--text-tertiary)] text-xs font-mono uppercase tracking-widest border-b border-[var(--glass-border)] pb-2 mb-6">
-                  Developer & Builder Platforms
+      {/* Interactive Terminal Demo Preview */}
+      <section className="py-24 overflow-hidden">
+        <div className="container">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <div className="lg:w-1/2">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Built for Hunters, <br/> by Hunters.</h2>
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">1</div>
+                  <div><h3 className="text-xl font-bold mb-2">Connect Your Profile</h3><p className="text-[var(--text-secondary)]">Tell OppForge your skills (Rust, Solidity, Design) and preferred chains.</p></div>
                 </div>
-                <div className="flex flex-wrap gap-4">
-                  <SourcePill name="Gitcoin" domain="gitcoin.co" />
-                  <SourcePill name="Devpost" domain="devpost.com" />
-                  <SourcePill name="DoraHacks" domain="dorahacks.io" />
-                  <SourcePill name="Buidlbox" domain="buidlbox.io" />
-                  <SourcePill name="Superteam Earn" domain="superteam.fun" />
-                  <SourcePill name="GitHub Issues" domain="github.com" />
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">2</div>
+                  <div><h3 className="text-xl font-bold mb-2">Receive Curated Alpha</h3><p className="text-[var(--text-secondary)]">Get a personalized feed of high-probability opportunities, filtered by AI.</p></div>
                 </div>
-             </div>
-
-             {/* Category 2 */}
-             <div>
-                <div className="text-[var(--text-tertiary)] text-xs font-mono uppercase tracking-widest border-b border-[var(--glass-border)] pb-2 mb-6">
-                  Venture Capital Portfolios
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">3</div>
+                  <div><h3 className="text-xl font-bold mb-2">Execute & Win</h3><p className="text-[var(--text-secondary)]">Use the AI assistant to draft proposals and track your applications.</p></div>
                 </div>
-                <div className="flex flex-wrap gap-4">
-                  <SourcePill name="a16z crypto" domain="a16zcrypto.com" />
-                  <SourcePill name="Paradigm" domain="paradigm.xyz" />
-                  <SourcePill name="Sequoia Capital" domain="sequoiacap.com" />
-                  <SourcePill name="Hack VC" domain="hack.vc" />
-                  <SourcePill name="Variant Fund" domain="variant.fund" />
-                  <SourcePill name="Electric Capital" domain="electriccapital.com" />
-                  <SourcePill name="Framework Ventures" domain="framework.ventures" />
-                </div>
-             </div>
-
-             {/* Category 3 */}
-             <div>
-                <div className="text-[var(--text-tertiary)] text-xs font-mono uppercase tracking-widest border-b border-[var(--glass-border)] pb-2 mb-6">
-                  Governance & Ecosystems
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  <SourcePill name="Commonwealth" domain="commonwealth.im" />
-                  <SourcePill name="Snapshot" domain="snapshot.org" />
-                  <SourcePill name="X (Twitter)" domain="twitter.com" />
-                  <SourcePill name="Farcaster" domain="farcaster.xyz" />
-                  <SourcePill name="Discord Announcements" domain="discord.com" />
-                  <SourcePill name="Messari" domain="messari.io" />
-                </div>
-             </div>
+              </div>
+            </div>
+            <div className="lg:w-1/2 w-full">
+               {/* Mock UI Card */}
+               <div className="glass-card p-1 border border-[var(--border-glow)] shadow-2xl shadow-[var(--accent-forge)]/10 rounded-xl overflow-hidden relative">
+                 <div className="bg-[var(--bg-walnut)] h-8 flex items-center px-4 gap-2 border-b border-[var(--border-subtle)]">
+                    <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
+                 </div>
+                 <div className="p-6 font-mono text-sm h-[320px] overflow-y-auto">
+                   <div className="mb-4 text-[var(--text-secondary)]">
+                     $ initializing forge_agent... <span className="text-green-500">done</span>
+                   </div>
+                   <div className="mb-4">
+                     <span className="text-[var(--accent-forge)]">➜</span> <span className="text-[var(--text-primary)]">scan --target solana --type grant</span>
+                   </div>
+                   <div className="mb-4 text-[var(--text-secondary)]">
+                     <span className="text-blue-400">INFO</span> Scanning 14 sources...<br/>
+                     <span className="text-blue-400">INFO</span> Found 3 new matches for profile 'Rust Developer':
+                   </div>
+                   <div className="space-y-3">
+                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
+                       <span>Solana Foundation Data Grant</span>
+                       <span className="text-[var(--accent-forge)]">98% Match</span>
+                     </div>
+                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
+                       <span>Superteam Radar Hackathon</span>
+                       <span className="text-[var(--accent-amber)]">85% Match</span>
+                     </div>
+                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
+                       <span>Anza Validator Program</span>
+                       <span className="text-[var(--accent-cyan)]">New!</span>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+            </div>
           </div>
         </div>
       </section>
