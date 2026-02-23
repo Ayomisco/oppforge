@@ -13,9 +13,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)]/80 backdrop-blur-md">
       <div className="container h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-[var(--accent-forge)] rounded flex items-center justify-center text-[var(--bg-espresso)]">
-            <Terminal size={18} strokeWidth={3} />
-          </div>
+          <img src="/logo.png" alt="OppForge Logo" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
           <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-forge)] transition-colors">
             OppForge
           </span>
@@ -26,8 +24,7 @@ const Navbar = () => {
           <Link href="#pricing" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/dashboard" className="btn btn-ghost text-sm">Log In</Link>
-          <Link href="/dashboard" className="btn btn-primary text-sm">
+          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-sm shadow-[0_0_15px_rgba(255,85,0,0.4)] hover:shadow-[0_0_25px_rgba(255,85,0,0.6)]">
             Launch App <ArrowRight size={16} />
           </Link>
         </div>
@@ -41,7 +38,7 @@ const Navbar = () => {
             <div className="container py-4 flex flex-col gap-4">
               <Link href="#features" className="text-base font-medium text-[var(--text-secondary)]">Features</Link>
               <Link href="#how-it-works" className="text-base font-medium text-[var(--text-secondary)]">How it Works</Link>
-              <Link href="/dashboard" className="btn btn-primary w-full justify-center">Launch App</Link>
+              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full justify-center">Launch App</Link>
             </div>
           </motion.div>
         )}
@@ -74,57 +71,79 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[var(--accent-forge)]/10 blur-[120px] rounded-full pointer-events-none" />
-        <div className="container relative z-10 text-center max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-walnut)] border border-[var(--accent-forge)]/30 text-[var(--accent-forge)] text-xs font-mono mb-6">
-              <span className="relative flex h-2 w-2">
+      <section className="relative pt-20 pb-32 overflow-hidden flex flex-col justify-center min-h-[90vh]">
+        {/* Galaxy Video Background */}
+        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-30 mix-blend-screen pointer-events-none filter sepia-[0.3] hue-rotate-[320deg]">
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Additional Galaxy Overlay to make it rich */}
+        <motion.div 
+          animate={{ rotate: 360, scale: [1, 1.05, 1] }} 
+          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 z-0 opacity-20 mix-blend-screen pointer-events-none"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')", backgroundSize: "cover", backgroundPosition: "center" }}
+        />
+
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[var(--accent-forge)]/15 blur-[150px] rounded-full pointer-events-none" />
+        <div className="container relative z-10 text-center max-w-5xl mx-auto mt-10">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+            <motion.div 
+              animate={{ y: [0, -10, 0] }} 
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-walnut)]/80 border border-[var(--accent-forge)]/30 text-[var(--accent-forge)] text-xs lg:text-sm font-mono mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(255,85,0,0.2)]"
+            >
+              <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-forge)] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-forge)]"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#ffaa00]"></span>
               </span>
-              v1.0 Public Beta Live
-            </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+              OppForge AI Agent — v1.0 Public Beta is Live
+            </motion.div>
+            
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.1] mb-8 tracking-tight drop-shadow-2xl">
               Forge Your Next <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-forge)] via-[var(--accent-amber)] to-[var(--accent-gold)]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-forge)] via-[#ffaa00] to-[var(--accent-gold)] filter drop-shadow-[0_0_15px_rgba(255,85,0,0.3)]">
                 Web3 Opportunity
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
-              The AI-powered agent that finds, scores, and helps you win grants, airdrops, and bounties before anyone else.
+            
+            <p className="text-lg md:text-2xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed">
+              Discover <span className="text-white font-medium">$10K-$500K Grants</span>, <span className="text-white font-medium">$1K-$50K Airdrops</span>, and elite Hackathons. Our autonomous AI scans Twitter, Discord, and governance forums 24/7—scoring every opportunity and drafting your winning proposals.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/dashboard" className="btn btn-primary w-full sm:w-auto text-lg px-8 py-4">
-                Start Hunting <Rocket size={20} />
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full sm:w-auto text-xl px-10 py-5 group shadow-[0_0_30px_rgba(255,85,0,0.3)] hover:shadow-[0_0_50px_rgba(255,85,0,0.5)]">
+                Launch Mission Control <Rocket size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </Link>
-              <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-lg px-8 py-4 border border-[var(--border-subtle)]">
+              <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-xl px-10 py-5 border border-[var(--glass-border)] hover:bg-[var(--glass-border)] backdrop-blur-md">
                 View Architecture
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 p-6 glass-card border-[var(--border-subtle)]">
-              <Statistic value="20+" label="Data Sources" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-24 p-8 glass-card border-[var(--border-subtle)] bg-[var(--bg-espesso)]/50 backdrop-blur-xl">
+              <Statistic value="50+" label="Supported Chains" />
               <Statistic value="0.4s" label="Scan Latency" />
               <Statistic value="$50M+" label="Tracked Value" />
-              <Statistic value="100%" label="AI Powered" />
+              <Statistic value="98%" label="AI Match Accuracy" />
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="py-24 bg-[var(--bg-walnut)]/30 relative">
+      <section id="features" className="py-32 relative border-y border-[var(--glass-border)] overflow-hidden">
+        <div className="absolute inset-0 bg-[var(--bg-walnut)]/40 backdrop-blur-md -z-10" />
         <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Intelligence, Not Just Data</h2>
-            <p className="text-[var(--text-secondary)]">
-              Most aggregators just list links. OppForge understands them, scores them, and tells you how to win.
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Intelligence, Not Just Data</h2>
+            <p className="text-xl text-[var(--text-secondary)] leading-relaxed">
+              Anyone can scrape data. OppForge uses LangChain AI agents to <span className="text-white">score opportunities out of 100</span> based on your skills, parse submission requirements, and generate draft proposals that win.
             </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard icon={Search} title="Autonomous Discovery" description="AI agents scan Twitter, Discord, and governance forums 24/7 to find hidden alpha before it goes viral." delay={0.1} />
-            <FeatureCard icon={Zap} title="Real-Time Scoring" description="Every opportunity is scored (0-100) based on your specific skills, preferred chains, and historical win probability." delay={0.2} />
-            <FeatureCard icon={Terminal} title="Forge AI Chat" description="Ask specific questions like 'Is this grant worth my time?' or 'Draft a proposal for this hackathon'." delay={0.3} />
+          </motion.div>
+          
+          <div className="grid lg:grid-cols-3 gap-8">
+            <FeatureCard icon={Search} title="Autonomous Alpha Discovery" description="AI agents monitor official protocol blogs, Reddit, Superteam Earn, Gitcoin, and 100+ Discord channels. It catches alpha the second it drops." delay={0.1} />
+            <FeatureCard icon={Zap} title="Hyper-Personalized Scoring" description="Stop sifting through irrelevant noise. Your dashboard ranks opportunities precisely for your technical stack (Rust, Solidity, Python) and ecosystem." delay={0.2} />
+            <FeatureCard icon={Terminal} title="Forge AI Chat Assistant" description="A context-aware chat interface. Ask 'Give me a step-by-step farming plan for this testnet' or 'Draft a 500-word grant proposal' and get it instantly." delay={0.3} />
           </div>
         </div>
       </section>
@@ -194,11 +213,15 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Footer */}
-      <section className="py-24 bg-[var(--bg-walnut)] border-t border-[var(--border-subtle)]">
-        <div className="container text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-8">Ready to Forge Your Future?</h2>
-          <Link href="/dashboard" className="btn btn-primary text-xl px-10 py-5">
-            Get Started Now
+      <section className="py-32 bg-[var(--bg-walnut)] border-t border-[var(--border-subtle)] relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent-forge)]/5 blur-[100px] rounded-full pointer-events-none" />
+        <div className="container text-center relative z-10">
+          <h2 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight">Ready to Forge Your Future?</h2>
+          <p className="text-xl text-[var(--text-secondary)] mb-12 max-w-2xl mx-auto">
+            Join the elite builders capturing the web3 opportunities everyone else is missing.
+          </p>
+          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-2xl px-12 py-6 shadow-[0_0_40px_rgba(255,85,0,0.3)] hover:scale-105">
+            Launch Platform
           </Link>
           <div className="mt-8 text-[var(--text-secondary)] text-sm">
             No credit card required • Open Source • Built for Web3
