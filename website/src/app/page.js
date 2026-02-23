@@ -10,7 +10,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)]/80 backdrop-blur-md">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--glass-border)] bg-transparent backdrop-blur-md">
       <div className="container h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           <img src="/logo.png" alt="OppForge Logo" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
@@ -66,26 +66,28 @@ const Statistic = ({ value, label }) => (
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col pt-[var(--header-height)] bg-[var(--bg-espresso)] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1A1410] via-[#0D0A07] to-[#0D0A07]">
-      <div className="scanlines" />
+    <div className="min-h-screen flex flex-col pt-[var(--header-height)] bg-[var(--bg-espresso)] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1A1410] via-[#0D0A07] to-[#0D0A07] relative">
+      
+      {/* Fixed Galaxy Video Background for Entire Page */}
+      <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-full h-full object-cover z-0 opacity-30 mix-blend-screen pointer-events-none filter sepia-[0.3] hue-rotate-[320deg]">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4" />
+      </video>
+      
+      {/* Fixed Additional Galaxy Overlay */}
+      <motion.div 
+        animate={{ rotate: 360, scale: [1, 1.05, 1] }} 
+        transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
+        className="fixed top-0 left-0 w-[150vw] h-[150vh] -translate-x-[25vw] -translate-y-[25vh] z-0 opacity-20 mix-blend-screen pointer-events-none"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')", backgroundSize: "cover", backgroundPosition: "center" }}
+      />
+      
+      <div className="fixed inset-0 pointer-events-none scanlines z-10" />
+
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden flex flex-col justify-center min-h-[90vh]">
-        {/* Galaxy Video Background */}
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-30 mix-blend-screen pointer-events-none filter sepia-[0.3] hue-rotate-[320deg]">
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Additional Galaxy Overlay to make it rich */}
-        <motion.div 
-          animate={{ rotate: 360, scale: [1, 1.05, 1] }} 
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 z-0 opacity-20 mix-blend-screen pointer-events-none"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')", backgroundSize: "cover", backgroundPosition: "center" }}
-        />
-
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[var(--accent-forge)]/15 blur-[150px] rounded-full pointer-events-none" />
+      <section className="relative pt-20 pb-32 overflow-hidden flex flex-col justify-center min-h-[90vh] z-10 border-b border-[var(--glass-border)]">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[var(--accent-forge)]/15 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="container relative z-10 text-center max-w-5xl mx-auto mt-10">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease: "easeOut" }}>
             <motion.div 
@@ -108,7 +110,7 @@ export default function LandingPage() {
             </h1>
             
             <p className="text-lg md:text-2xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed">
-              Discover <span className="text-white font-medium">$10K-$500K Grants</span>, <span className="text-white font-medium">$1K-$50K Airdrops</span>, and elite Hackathons. Our autonomous AI monitors X (Twitter), direct ecosystems, and other trusted platforms 24/7—providing verifiable opportunities, scoring every drop, and drafting your winning proposals.
+              Discover <span className="text-white font-medium">Grants, Elite Hackathons, Bounties, Jobs, Testnets,</span> and <span className="text-white font-medium">Early Alphas</span>. The ultimate command center for <span className="text-[var(--accent-forge)] font-semibold">every Web3 individual</span>. Our autonomous AI monitors X (Twitter), direct ecosystems, and other trusted platforms 24/7—providing verifiable opportunities, scoring every drop, and drafting your winning proposals.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -130,8 +132,8 @@ export default function LandingPage() {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="py-32 relative border-y border-[var(--glass-border)] overflow-hidden">
-        <div className="absolute inset-0 bg-[var(--bg-walnut)]/40 backdrop-blur-md -z-10" />
+      <section id="features" className="py-32 relative border-y border-[var(--glass-border)] overflow-hidden z-10">
+        <div className="absolute inset-0 bg-[var(--bg-walnut)]/60 backdrop-blur-md -z-10" />
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Intelligence & Verifiable Alpha</h2>
