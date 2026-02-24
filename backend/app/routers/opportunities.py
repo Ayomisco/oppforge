@@ -163,6 +163,7 @@ def get_priority_stream(
             opp.ai_score = semantic_score
         else:
             # Fallback to manual match scoring (Heuristic)
+            current_ai_score = opp.ai_score or 0
             if current_user:
                 user_skills = set(current_user.skills or [])
                 user_chains = set(current_user.preferred_chains or [])
@@ -175,13 +176,13 @@ def get_priority_stream(
                 if opp.chain in user_chains:
                     match_bonus += 10
                     
-                opp.ai_score = min(opp.ai_score + match_bonus, 100)
+                opp.ai_score = min(current_ai_score + match_bonus, 100)
             else:
                 pass # Baseline scores for guests
                 
         scored_opps.append(opp)
         
-    scored_opps.sort(key=lambda x: x.ai_score, reverse=True)
+    scored_opps.sort(key=lambda x: (x.ai_score or 0), reverse=True)
     return scored_opps[:20]
 
 @router.get("/testnets", response_model=List[schemas.OpportunityResponse])

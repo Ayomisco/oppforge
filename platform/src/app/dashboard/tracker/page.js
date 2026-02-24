@@ -26,7 +26,10 @@ const StatusBadge = ({ status }) => {
   )
 }
 
+import { useRouter } from 'next/navigation'
+
 export default function TrackerPage() {
+  const router = useRouter()
   const { data: applications, error, mutate } = useSWR('/tracker', fetcher)
   const [view, setView] = useState('kanban') // 'table' or 'kanban'
   const [selectedMission, setSelectedMission] = useState(null)
@@ -38,6 +41,15 @@ export default function TrackerPage() {
       <TableSkeleton />
     </div>
   )
+
+  if (error) return (
+    <div className="glass-card p-12 text-center border-red-500/10 bg-red-500/5 mt-8">
+      <p className="text-red-500 font-mono text-sm tracking-widest uppercase">Sync Error</p>
+      <p className="text-gray-500 text-xs mt-2">Failed to load mission tracker. Please refresh your forge.</p>
+    </div>
+  )
+
+  const apps = applications || []
 
   const openDrafter = (mission) => {
     router.push(`/dashboard/forge/workspace/${mission.opportunity_id || mission.id}`)
@@ -68,7 +80,7 @@ export default function TrackerPage() {
         </div>
       </div>
 
-      {applications.length === 0 ? (
+      {apps.length === 0 ? (
         <div className="glass-card p-12 text-center space-y-4">
             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
                <Zap size={32} className="text-gray-700" />
@@ -80,7 +92,7 @@ export default function TrackerPage() {
         </div>
       ) : view === 'kanban' ? (
         <KanbanBoard 
-          initialApplications={applications} 
+          initialApplications={apps} 
           onRefresh={mutate} 
           onOpenDrafter={openDrafter}
         />
@@ -96,7 +108,7 @@ export default function TrackerPage() {
               </tr>
             </thead>
             <tbody>
-              {applications.map((app) => (
+              {apps.map((app) => (
                 <tr key={app.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
                   <td className="p-4 text-sm font-bold text-white">{app.title}</td>
                   <td className="p-4 text-xs text-gray-500 font-mono uppercase">{app.category || app.type}</td>
