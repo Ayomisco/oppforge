@@ -55,8 +55,9 @@ export function AuthProvider({ children }) {
       };
       
       Cookies.set('token', data.access_token, cookieOptions); 
-      setUser(data.user);
-      console.log("User state updated in context:", data.user.email);
+      const updatedUser = { ...data.user, is_new_user: data.is_new_user };
+      setUser(updatedUser);
+      console.log("User state updated in context:", updatedUser.email);
       
       toast.success(`Welcome back, ${data.user.first_name || 'Partner'}!`);
       return true;
@@ -81,7 +82,8 @@ export function AuthProvider({ children }) {
       };
 
       Cookies.set('token', data.access_token, cookieOptions); 
-      setUser(data.user);
+      const updatedUser = { ...data.user, is_new_user: data.is_new_user };
+      setUser(updatedUser);
       
       toast.success(`Welcome back, Hunter!`);
       return true;

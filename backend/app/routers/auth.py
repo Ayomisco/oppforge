@@ -130,8 +130,10 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
 
         # 2. Logic: Find or Create User
         user = db.query(UserModel).filter(UserModel.email == email).first()
+        is_new_user = False
         
         if not user:
+            is_new_user = True
             # Generate a simple username from email if not provided
             base_username = email.split('@')[0]
             # Simple dedup for username (could be improved)
@@ -175,7 +177,8 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
         return {
             "access_token": access_token, 
             "token_type": "bearer",
-            "user": schemas.UserResponse.model_validate(user)
+            "user": schemas.UserResponse.model_validate(user),
+            "is_new_user": is_new_user
         }
 
     except ValueError as e:
@@ -192,8 +195,10 @@ def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depe
     
     # Logic: Find or Create User by Wallet
     user = db.query(UserModel).filter(UserModel.wallet_address == address).first()
+    is_new_user = False
     
     if not user:
+        is_new_user = True
         # Create a new Web3 user
         user = UserModel(
             email=f"{address[:10]}@web3.internal", # Placeholder email for unique constraint
@@ -222,7 +227,8 @@ def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depe
     return {
         "access_token": access_token, 
         "token_type": "bearer",
-        "user": schemas.UserResponse.model_validate(user)
+        "user": schemas.UserResponse.model_validate(user),
+        "is_new_user": is_new_user
     }
 
 @router.get("/me", response_model=schemas.UserResponse)

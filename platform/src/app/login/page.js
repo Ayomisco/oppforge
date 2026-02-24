@@ -45,11 +45,14 @@ export default function LoginPage() {
     if (user) {
       const userRole = (user.role || '').toLowerCase();
       const isAdmin  = userRole === 'admin';
+      const isNewUser = user.is_new_user === true;
       const isOnboarded = user.onboarded === true || isAdmin;
-      if (isOnboarded) {
-        router.push('/dashboard');
-      } else {
+      
+      // If returning user, skip onboarding entirely. Only explicit new users see it.
+      if (isNewUser && !isOnboarded) {
         router.push('/onboarding');
+      } else {
+        router.push('/dashboard');
       }
     }
   }, [user, router]);
@@ -67,10 +70,10 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#050403] flex items-center justify-center overflow-hidden relative">
+    <div className="min-h-screen bg-[#050403] flex items-start lg:items-center justify-center relative overflow-x-hidden py-10 lg:py-0">
 
       {/* ── Ambient background orbs ── */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <motion.div
           animate={{ x: [0, 60, 0], y: [0, -40, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}

@@ -166,21 +166,23 @@ export default function OnboardingPage() {
   const currentSetSelected = currentStep === 2 ? setSelectedSkills : setSelectedChains;
 
   return (
-    <div className="min-h-screen bg-[#050403] flex items-center justify-center relative overflow-hidden p-4">
+    <div className="min-h-screen bg-[#050403] flex items-start lg:items-center justify-center relative overflow-x-hidden p-4 py-8 lg:py-4">
 
       {/* ── Ambient orbs ── */}
-      <motion.div
-        style={{ background: `radial-gradient(circle, ${stepColor}18 0%, transparent 70%)` }}
-        animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-[-20%] left-[-15%] w-[600px] h-[600px] rounded-full blur-[80px] pointer-events-none transition-all duration-1000"
-      />
-      <motion.div
-        animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute bottom-[-20%] right-[-15%] w-[500px] h-[500px] bg-[#ffaa00]/10 rounded-full blur-[100px] pointer-events-none"
-      />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,85,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,85,0,0.02)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div
+          style={{ background: `radial-gradient(circle, ${stepColor}18 0%, transparent 70%)` }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-[-20%] left-[-15%] w-[600px] h-[600px] rounded-full blur-[80px] pointer-events-none transition-all duration-1000"
+        />
+        <motion.div
+          animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute bottom-[-20%] right-[-15%] w-[500px] h-[500px] bg-[#ffaa00]/10 rounded-full blur-[100px] pointer-events-none"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,85,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,85,0,0.02)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
+      </div>
 
       <div className="relative z-10 w-full max-w-2xl">
 
