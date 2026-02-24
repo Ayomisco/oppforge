@@ -5,12 +5,14 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'], 
   variable: '--font-mono',
   display: 'swap',
+  preload: false,
 })
 
 const spaceGrotesk = Space_Grotesk({ 
   subsets: ['latin'], 
   variable: '--font-sans',
   display: 'swap',
+  preload: false,
 })
 
 export const metadata = {
