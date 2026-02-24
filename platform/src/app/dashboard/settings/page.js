@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
+import FeatureGate from '@/components/ui/FeatureGate';
 
 export default function SettingsPage() {
   const { user, loading: authLoading, setUser } = useAuth();
@@ -77,10 +78,9 @@ export default function SettingsPage() {
     </div>
   )
 
-  if (!user) return <div className="p-20 text-center font-mono text-gray-500">SESSION_EXPIRED // PLEASE LOGIN</div>
-
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
+    <FeatureGate featureName="Identity Settings" requirePremium={false}>
+      <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight">Identity Settings</h1>
@@ -227,5 +227,6 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+    </FeatureGate>
   );
 }

@@ -125,12 +125,7 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
           />
         ))}
 
-        <div className="mt-6 text-[9px] font-mono text-gray-700 uppercase mb-3 pl-3">Database</div>
-        <SidebarItem 
-          item={{ icon: FolderKanban, label: 'Applications', href: '/dashboard/applications' }}
-          isActive={pathname === '/dashboard/applications'}
-          isCollapsed={false}
-        />
+
 
         {(user?.role === 'admin' || user?.role === 'ADMIN' || user?.role?.toLowerCase?.() === 'admin') && (
           <>
