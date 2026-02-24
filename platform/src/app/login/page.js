@@ -66,8 +66,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#050403]">
       
-      {/* LEFT: Hero Visual (7 columns) */}
-      <div className="hidden lg:relative lg:col-span-7 lg:flex flex-col justify-end p-12 overflow-hidden">
+      {/* LEFT: Hero Visual */}
+      <div className="hidden lg:relative lg:col-span-6 lg:flex flex-col justify-end items-end p-16 overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -79,7 +79,7 @@ export default function LoginPage() {
           />
           {/* Gradient Overlay for Text Readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#050403] via-[#050403]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#050403]/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050403]/90 via-[#050403]/30 to-[#050403]/90" />
         </div>
 
         {/* Hero Content */}
@@ -87,39 +87,39 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative z-10 max-w-2xl"
+          className="relative z-10 max-w-xl text-right"
         >
-          <div className="mb-6 flex items-center gap-3">
-             <div className="h-[1px] w-12 bg-[#ff5500]" />
+          <div className="mb-6 flex items-center justify-end gap-3">
              <span className="text-[#ff5500] font-mono text-sm tracking-[0.2em] uppercase">The Agentic Era</span>
+             <div className="h-[1px] w-12 bg-[#ff5500]" />
           </div>
           
-          <h1 className="text-6xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
+          <h1 className="text-5xl xl:text-6xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
             Forge Your <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff5500] to-[#ffaa00]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-l from-[#ff5500] to-[#ffaa00]">
               Web3 Destiny
             </span>
           </h1>
           
-          <p className="text-lg text-gray-300 font-light leading-relaxed mb-8 max-w-lg">
+          <p className="text-lg text-gray-300 font-light leading-relaxed mb-8 max-w-lg ml-auto">
             Stop chasing noise. Our AI Agent scans thousands of on-chain signals to deliver the highest-value grants, bounties, and airdrops directly to your dashboard.
           </p>
 
-          <div className="flex gap-8">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+          <div className="flex flex-col gap-6 items-end">
+            <div className="flex items-center gap-4 flex-row-reverse">
+              <div className="p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                 <Shield className="w-5 h-5 text-[#ff5500]" />
               </div>
-              <div>
+              <div className="text-right">
                 <div className="text-white font-medium text-sm">Verified Opportunities</div>
                 <div className="text-gray-500 text-xs">AI-filtered for safety</div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+            <div className="flex items-center gap-4 flex-row-reverse">
+              <div className="p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                 <Zap className="w-5 h-5 text-[#ffaa00]" />
               </div>
-              <div>
+              <div className="text-right">
                 <div className="text-white font-medium text-sm">Instant Matching</div>
                 <div className="text-gray-500 text-xs">Personalized to your skills</div>
               </div>
@@ -128,8 +128,8 @@ export default function LoginPage() {
         </motion.div>
       </div>
 
-      {/* RIGHT: Login Interface (5 columns) */}
-      <div className="lg:col-span-5 flex flex-col justify-center items-center p-8 bg-[#050403] border-l border-[#1a1512] relative">
+      {/* RIGHT: Login Interface */}
+      <div className="lg:col-span-6 flex flex-col justify-center items-center lg:items-start p-8 lg:p-16 bg-[#050403] relative lg:border-l border-[#1a1512]">
         {/* Mobile Background (Subtle) */}
         <div className="absolute inset-0 z-0 lg:hidden opacity-20">
              <Image src="/assets/images/login-hero.png" alt="bg" fill className="object-cover" />

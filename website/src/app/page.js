@@ -10,7 +10,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--glass-border)] bg-transparent backdrop-blur-md">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--glass-border)] bg-transparent">
       <div className="container h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           <img src="/logo.png" alt="OppForge Logo" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
@@ -75,9 +75,9 @@ export default function LandingPage() {
       
       {/* Fixed Additional Galaxy Overlay */}
       <motion.div 
-        animate={{ rotate: 360, scale: [1, 1.05, 1] }} 
-        transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
-        className="fixed top-0 left-0 w-[150vw] h-[150vh] -translate-x-[25vw] -translate-y-[25vh] z-0 opacity-20 mix-blend-screen pointer-events-none"
+        animate={{ scale: [1, 1.05, 1] }} 
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        className="fixed top-0 left-0 w-[110vw] h-[110vh] -translate-x-[5vw] -translate-y-[5vh] z-0 opacity-20 mix-blend-screen pointer-events-none"
         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')", backgroundSize: "cover", backgroundPosition: "center" }}
       />
       

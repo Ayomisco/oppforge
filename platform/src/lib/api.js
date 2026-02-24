@@ -29,7 +29,13 @@ api.interceptors.response.use(
       Cookies.remove('token');
       // Only redirect if not already on login page to avoid loops
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-         window.location.href = '/login';
+         const isProtectedRoute = window.location.pathname.startsWith('/tracker') || 
+                                  window.location.pathname.startsWith('/settings') ||
+                                  window.location.pathname.startsWith('/profile');
+         
+         if (isProtectedRoute) {
+            window.location.href = '/login';
+         }
       }
     }
     return Promise.reject(error);
