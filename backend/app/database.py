@@ -6,16 +6,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Get DB URL — switching to local SQLite for stability during dev
-# SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
-SQLALCHEMY_DATABASE_URL = "sqlite:///./oppforge_dev.db"
+# Get DB URL from environment (PostgreSQL on Railway)
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+if not SQLALCHEMY_DATABASE_URL:
+    # Fallback to SQLite for local dev only
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./oppforge_dev.db"
 
 # SQLite needs special connect_args
 connect_args = {}
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
