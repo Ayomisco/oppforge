@@ -60,6 +60,36 @@ class AgentCurator:
                         deadline_dt = datetime.strptime(refined["deadline"], "%Y-%m-%d")
                     except: pass
 
+                # --- Execute AI Risk Assessment ---
+                risk_score = None
+                risk_level = None
+                risk_flags = []
+                try:
+                    print(f"[Curator] Calling AI-Engine Risk-Assess for: {title[:30]}...")
+                    opp_data_for_risk = {
+                        "title": refined.get("title", title),
+                        "description": text, # Raw text gives better context for scams
+                        "category": refined.get("category", "Uncategorized"),
+                        "source": raw_item.get("source", "Unknown"),
+                        "url": raw_item.get("url", ""),
+                        "reward_pool": refined.get("reward_pool", "")
+                    }
+                    risk_resp = requests.post(
+                        f"{AI_ENGINE_URL}/ai/risk-assess",
+                        json={
+                            "opportunity": opp_data_for_risk,
+                            "ecosystem": None
+                        },
+                        timeout=30
+                    )
+                    if risk_resp.status_code == 200:
+                        risk_data = risk_resp.json().get("data", {})
+                        risk_score = risk_data.get("risk_score")
+                        risk_level = risk_data.get("risk_level")
+                        risk_flags = risk_data.get("flags", [])
+                except Exception as risk_e:
+                    print(f"  [Curator] Risk Assess Error: {risk_e}")
+
                 raw_item.update({
                     "title": refined.get("title", title),
                     "category": refined.get("category", "Uncategorized"),
@@ -71,7 +101,10 @@ class AgentCurator:
                     "difficulty": refined.get("difficulty", "Intermediate"),
                     "ai_summary": refined.get("ai_summary"),
                     "ai_strategy": refined.get("strategy_tip"),
-                    "ai_score": (90 if refined.get("win_probability") == "High" else 70) + (len(refined.get("required_skills", [])) * 2)
+                    "ai_score": (90 if refined.get("win_probability") == "High" else 70) + (len(refined.get("required_skills", [])) * 2),
+                    "risk_score": risk_score,
+                    "risk_level": risk_level,
+                    "risk_flags": risk_flags
                 })
                 return raw_item
             else:

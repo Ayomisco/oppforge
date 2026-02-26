@@ -42,6 +42,11 @@ class OpportunityResponse(OpportunityBase):
     mission_requirements: List[str] = [] # Real field from DB
     trust_score: int = 70
     
+    # Risk Assessment
+    risk_score: Optional[int] = None
+    risk_level: Optional[str] = None
+    risk_flags: List[str] = []
+    
     is_verified: bool = False
     views_count: int = 0
     created_at: Optional[datetime] = None

@@ -6,7 +6,7 @@ from ..models.notification import Notification
 from ..scrapers.twitter import TwitterScraper
 from ..scrapers.reddit import RedditScraper
 from ..scrapers.gitcoin import GitcoinScraper
-from .email import send_email, get_email_template
+from .email_service import send_email, get_email_template
 import asyncio
 
 from .curator import AgentCurator

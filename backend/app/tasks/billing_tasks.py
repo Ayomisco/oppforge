@@ -5,7 +5,7 @@ import logging
 
 from app.database import SessionLocal
 from app.models.user import User
-from app.services.email import send_email, get_email_template
+from app.services.email_service import send_email, get_email_template
 
 logger = logging.getLogger(__name__)
 

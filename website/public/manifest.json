@@ -1,0 +1,25 @@
+{
+  "name": "OppForge - Web3 Opportunity Agent",
+  "short_name": "OppForge",
+  "description": "AI-powered agent that discovers, scores, and helps you win Web3 grants, hackathons, airdrops, and bounties.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D0A07",
+  "theme_color": "#0D0A07",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["productivity", "finance", "utilities"],
+  "lang": "en-US"
+}

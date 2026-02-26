@@ -88,6 +88,15 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
           >
              <ShieldCheck size={10} /> {trust.label}
           </div>
+          {opp.risk_level && (
+            <div className={`flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-sm border ${
+              opp.risk_level.toUpperCase() === 'LOW' ? 'text-green-500 bg-green-500/10 border-green-500/20' :
+              opp.risk_level.toUpperCase() === 'MEDIUM' ? 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20' :
+              'text-red-500 bg-red-500/10 border-red-500/20'
+            }`}>
+               <ShieldCheck size={10} /> RISK: {opp.risk_level.toUpperCase()}
+            </div>
+          )}
           <span className="text-[10px] text-gray-700 font-mono">
              {opp.source}
           </span>

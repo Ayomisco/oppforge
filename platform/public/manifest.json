@@ -1,0 +1,25 @@
+{
+  "name": "OppForge - Mission Control",
+  "short_name": "OppForge",
+  "description": "Your Web3 mission control center. Track grants, hackathons, airdrops, and bounties with AI-powered insights.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0D0A07",
+  "theme_color": "#0D0A07",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["productivity", "finance", "utilities"],
+  "lang": "en-US"
+}

@@ -1,0 +1,11 @@
+# OppForge Website Robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://oppforge.xyz/sitemap.xml
+
+# Block common bot traps
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/

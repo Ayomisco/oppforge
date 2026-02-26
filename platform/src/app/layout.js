@@ -16,15 +16,72 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata = {
-  title: 'OppForge | Web3 Opportunity Agent',
-  description: 'AI-powered agent to find, score, and win Web3 grants, airdrops, and bounties.',
+  title: {
+    default: 'OppForge | Mission Control',
+    template: '%s | OppForge',
+  },
+  description: 'Your Web3 mission control center. Track grants, hackathons, airdrops, and bounties with AI-powered insights and scoring.',
+  keywords: ['Web3', 'grants', 'hackathons', 'airdrops', 'bounties', 'crypto', 'blockchain', 'AI', 'opportunities', 'dashboard'],
+  authors: [{ name: 'OppForge' }],
+  creator: 'OppForge',
+  publisher: 'OppForge',
+  metadataBase: new URL('https://app.oppforge.xyz'),
+  alternates: {
+    canonical: '/',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: '/logo.png',
+    shortcut: '/favicon.ico',
+  },
+  manifest: '/manifest.json',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://app.oppforge.xyz',
+    siteName: 'OppForge',
+    title: 'OppForge | Mission Control',
+    description: 'Your Web3 mission control center. Track grants, hackathons, airdrops, and bounties with AI-powered insights.',
+    images: [
+      {
+        url: '/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'OppForge Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'OppForge | Mission Control',
+    description: 'Your Web3 mission control center. Track grants, hackathons, airdrops, and bounties with AI-powered insights.',
+    images: ['/logo.png'],
+    creator: '@oppforge',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  themeColor: '#0D0A07',
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F5F0EB' },
+    { media: '(prefers-color-scheme: dark)', color: '#0D0A07' },
+  ],
 }
 
 import { Providers } from '../components/providers/Providers';

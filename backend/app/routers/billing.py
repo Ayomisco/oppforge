@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from .. import database, schemas, models
 from .auth import get_current_user
-from ..services.email import send_email, get_email_template
+from ..services.email_service import send_email, get_email_template
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
