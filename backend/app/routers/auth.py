@@ -22,6 +22,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days persistence
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
 # --- JWT Helpers ---
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -53,7 +54,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
-def get_optional_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+def get_optional_user(token: Optional[str] = Depends(oauth2_scheme_optional), db: Session = Depends(database.get_db)):
     """
     Optional auth dependency. Returns User model if token valid, else None.
     Does NOT throw 401 for anonymous users.
