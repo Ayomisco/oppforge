@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from .. import database, schemas
 from ..models.chat import ChatMessage
-from .auth import get_current_user, check_subscription_clearance
+from .auth import get_current_user
 import os
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -22,7 +22,7 @@ class ChatResponse(BaseModel):
 async def send_message(
     req: ChatRequest,
     db: Session = Depends(database.get_db),
-    current_user = Depends(check_subscription_clearance)
+    current_user = Depends(get_current_user)
 ):
     """
     Send a message to Forge AI. Uses Groq API for fast LLM inference.
