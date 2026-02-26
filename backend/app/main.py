@@ -65,23 +65,3 @@ def read_root():
 @app.get("/health")
 def check_health():
     return {"status": "ok", "database": "connected"}
-
-@app.get("/debug/db")
-def debug_database():
-    """Temporary debug endpoint - remove after fixing"""
-    from sqlalchemy.orm import Session
-    from .database import SessionLocal, SQLALCHEMY_DATABASE_URL
-    from .models.opportunity import Opportunity
-    db = SessionLocal()
-    try:
-        count = db.query(Opportunity).count()
-        open_count = db.query(Opportunity).filter(Opportunity.is_open == True).count()
-        db_type = "postgres" if "postgres" in SQLALCHEMY_DATABASE_URL else "sqlite"
-        return {
-            "db_type": db_type,
-            "total_opportunities": count,
-            "open_opportunities": open_count,
-            "db_url_prefix": SQLALCHEMY_DATABASE_URL[:30] + "..." if len(SQLALCHEMY_DATABASE_URL) > 30 else SQLALCHEMY_DATABASE_URL
-        }
-    finally:
-        db.close()
