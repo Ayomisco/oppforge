@@ -2,9 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageSquare, X, Send, Sparkles, AlertCircle, Bot } from 'lucide-react'
+import { MessageSquare, X, Send, Sparkles, AlertCircle, Bot, Lock, Crown } from 'lucide-react'
 import api from '@/lib/api'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '../providers/AuthProvider'
 
 const SUGGESTED_PROMPTS = [
@@ -15,9 +15,16 @@ const SUGGESTED_PROMPTS = [
 ]
 
 export default function ChatPanel() {
-  const { isGuest } = useAuth()
+  const { user, isGuest } = useAuth()
+  const router = useRouter()
   const params = useParams()
   const opportunity_id = params?.id
+
+  // Check if user has active subscription
+  const hasActiveSubscription = user?.subscription_status === 'active' || 
+                                 user?.subscription_status === 'trialing' ||
+                                 user?.role === 'admin' ||
+                                 user?.role === 'ADMIN'
 
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
@@ -40,8 +47,14 @@ export default function ChatPanel() {
   const handleSend = async (forcedText = null) => {
     const textToSend = forcedText || input
     if (!textToSend.trim() || isTyping) return
+    
     if (isGuest) {
-      setMessages(prev => [...prev, { id: Date.now(), role: 'system', content: 'Please Connect Wallet or Sign In to use Forge AI features.' }])
+      setMessages(prev => [...prev, { id: Date.now(), role: 'system', content: 'Please sign in to use Forge AI features.' }])
+      return
+    }
+    
+    if (!hasActiveSubscription) {
+      setMessages(prev => [...prev, { id: Date.now(), role: 'system', content: 'Upgrade to a paid plan to unlock unlimited AI assistance.' }])
       return
     }
 
@@ -65,15 +78,24 @@ export default function ChatPanel() {
       setMessages(prev => [...prev, aiResponse])
     } catch (error) {
       console.error('Chat Error:', error)
+      let errorMessage = 'Forge AI Engine is currently offline. Please try again.'
+      if (error.response?.status === 403) {
+        errorMessage = 'Subscription required. Please upgrade your plan to use Forge AI.'
+      }
       const errorMsg = { 
         id: Date.now() + 1, 
         role: 'system', 
-        content: 'Forge AI Engine is currently offline or busy. Please try again in secondary relay.' 
+        content: errorMessage
       }
       setMessages(prev => [...prev, errorMsg])
     } finally {
       setIsTyping(false)
     }
+  }
+
+  // Don't show chat button for guests - they need to sign in first
+  if (isGuest) {
+    return null
   }
 
   return (
@@ -86,13 +108,19 @@ export default function ChatPanel() {
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         className={`
-          fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[var(--accent-forge)] text-[var(--bg-espresso)] shadow-[0_4px_20px_rgba(255,107,26,0.4)] flex items-center justify-center z-50
+          fixed bottom-6 right-6 w-14 h-14 rounded-full ${hasActiveSubscription ? 'bg-[var(--accent-forge)]' : 'bg-gray-600'} text-[var(--bg-espresso)] shadow-[0_4px_20px_rgba(255,107,26,0.4)] flex items-center justify-center z-50
           ${isOpen ? 'hidden' : 'flex'}
         `}
       >
-        <MessageSquare size={24} fill="currentColor" />
+        {hasActiveSubscription ? (
+          <MessageSquare size={24} fill="currentColor" />
+        ) : (
+          <Lock size={24} />
+        )}
         {/* Notification Dot */}
-        <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-[var(--status-success)] border-2 border-[var(--bg-espresso)]"></span>
+        {hasActiveSubscription && (
+          <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-[var(--status-success)] border-2 border-[var(--bg-espresso)]"></span>
+        )}
       </motion.button>
 
       {/* Chat Panel */}
@@ -114,8 +142,10 @@ export default function ChatPanel() {
                 <div>
                   <h3 className="font-bold text-sm">Forge AI</h3>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-success)] animate-pulse"></span>
-                    <span className="text-[10px] text-[var(--text-secondary)] font-mono uppercase">Online</span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${hasActiveSubscription ? 'bg-[var(--status-success)] animate-pulse' : 'bg-yellow-500'}`}></span>
+                    <span className="text-[10px] text-[var(--text-secondary)] font-mono uppercase">
+                      {hasActiveSubscription ? 'Online' : 'Locked'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -127,78 +157,99 @@ export default function ChatPanel() {
               </button>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-[var(--bg-mahogany)]">
-              {messages.map((msg) => (
-                <div 
-                  key={msg.id} 
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div 
-                    className={`
-                      max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed
-                      ${msg.role === 'user' 
-                        ? 'bg-[var(--accent-forge)] text-[var(--bg-espresso)] rounded-tr-sm' 
-                        : 'bg-[var(--bg-espresso)] border border-[var(--border-subtle)] text-[var(--text-primary)] rounded-tl-sm'}
-                    `}
-                  >
-                    {msg.role === 'system' && (
-                       <div className="flex items-center gap-1.5 text-[var(--accent-forge)] text-xs font-bold mb-1 opacity-80">
-                         <Sparkles size={10} /> AI AGENT
-                       </div>
-                    )}
-                    {msg.content}
-                  </div>
+            {/* Subscription Gate */}
+            {!hasActiveSubscription ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-16 h-16 rounded-full bg-[var(--accent-forge)]/10 flex items-center justify-center mb-4">
+                  <Crown size={32} className="text-[var(--accent-forge)]" />
                 </div>
-              ))}
-              
-              {isTyping && (
-                <div className="flex justify-start">
-                   <div className="bg-[var(--bg-espresso)] border border-[var(--border-subtle)] p-3 rounded-2xl rounded-tl-sm flex gap-1">
-                     <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce delay-0"></span>
-                     <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce delay-100"></span>
-                     <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce delay-200"></span>
-                   </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-espresso)]/50">
-              {/* Suggestions */}
-              {messages.length < 3 && (
-                <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-none">
-                  {SUGGESTED_PROMPTS.map((prompt, i) => (
-                    <button 
-                      key={i}
-                      onClick={() => handleSend(prompt)}
-                      className="whitespace-nowrap px-3 py-1.5 rounded-full bg-[var(--bg-walnut)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] hover:border-[var(--accent-forge)] hover:text-[var(--text-primary)] transition-colors"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="relative">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="Ask about this opportunity..."
-                  className="w-full bg-[var(--bg-walnut)] border border-[var(--border-subtle)] rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[var(--accent-forge)] transition-colors"
-                />
+                <h3 className="text-lg font-bold mb-2">Unlock Forge AI</h3>
+                <p className="text-sm text-[var(--text-secondary)] mb-6">
+                  Get unlimited AI-powered opportunity analysis, proposal drafting, and personalized recommendations.
+                </p>
                 <button 
-                  onClick={handleSend}
-                  disabled={!input.trim()}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--accent-forge)] text-[var(--bg-espresso)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#ff8547] transition-colors"
+                  onClick={() => router.push('/dashboard/settings/billing')}
+                  className="btn btn-primary"
                 >
-                  <Send size={16} />
+                  Upgrade Now
                 </button>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Messages Area */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-[var(--bg-mahogany)]">
+                  {messages.map((msg) => (
+                    <div 
+                      key={msg.id} 
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div 
+                        className={`
+                          max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed
+                          ${msg.role === 'user' 
+                            ? 'bg-[var(--accent-forge)] text-[var(--bg-espresso)] rounded-tr-sm' 
+                            : 'bg-[var(--bg-espresso)] border border-[var(--border-subtle)] text-[var(--text-primary)] rounded-tl-sm'}
+                        `}
+                      >
+                        {msg.role === 'system' && (
+                           <div className="flex items-center gap-1.5 text-[var(--accent-forge)] text-xs font-bold mb-1 opacity-80">
+                             <Sparkles size={10} /> AI AGENT
+                           </div>
+                        )}
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {isTyping && (
+                    <div className="flex justify-start">
+                       <div className="bg-[var(--bg-espresso)] border border-[var(--border-subtle)] p-3 rounded-2xl rounded-tl-sm flex gap-1">
+                         <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce delay-0"></span>
+                         <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce delay-100"></span>
+                         <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce delay-200"></span>
+                       </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input Area */}
+                <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-espresso)]/50">
+                  {/* Suggestions */}
+                  {messages.length < 3 && (
+                    <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-none">
+                      {SUGGESTED_PROMPTS.map((prompt, i) => (
+                        <button 
+                          key={i}
+                          onClick={() => handleSend(prompt)}
+                          className="whitespace-nowrap px-3 py-1.5 rounded-full bg-[var(--bg-walnut)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] hover:border-[var(--accent-forge)] hover:text-[var(--text-primary)] transition-colors"
+                        >
+                          {prompt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                      placeholder="Ask about this opportunity..."
+                      className="w-full bg-[var(--bg-walnut)] border border-[var(--border-subtle)] rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[var(--accent-forge)] transition-colors"
+                    />
+                    <button 
+                      onClick={() => handleSend()}
+                      disabled={!input.trim()}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--accent-forge)] text-[var(--bg-espresso)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#ff8547] transition-colors"
+                    >
+                      <Send size={16} />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
