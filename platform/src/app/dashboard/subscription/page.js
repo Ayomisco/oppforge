@@ -55,28 +55,6 @@ const TIERS = [
     border: 'border-[#ff5500]/30',
     popular: true,
   },
-  {
-    id: 'founder',
-    name: 'Founder',
-    tagline: 'For Teams & Power Users',
-    price: '$6',
-    priceDetail: '/month',
-    ethPrice: '0.0025', // ~$6 in ETH
-    icon: Crown,
-    description: 'Maximum intelligence. Built for teams that ship.',
-    features: [
-      'Everything in Hunter',
-      'Team Collaboration (3 seats)',
-      'Custom Scraper Integration',
-      'API Access (Coming Soon)',
-      'On-Chain Reputation Badge',
-      'Exclusive Alpha Calls',
-      'White-Glove Onboarding',
-    ],
-    accent: '#D4AF37',
-    bg: 'from-[#D4AF37]/8 to-transparent',
-    border: 'border-[#D4AF37]/30',
-  },
 ];
 
 export default function SubscriptionPage() {
@@ -203,7 +181,7 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {TIERS.map((tier, idx) => {
           const btn = getButtonState(tier);
           const TierIcon = tier.icon;

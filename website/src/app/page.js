@@ -20,6 +20,7 @@ const Navbar = () => {
         </Link>
         <div className="hidden md:flex items-center gap-8">
           <Link href="#features" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</Link>
+          <Link href="#use-cases" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Use Cases</Link>
           <Link href="#how-it-works" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it Works</Link>
           <Link href="#pricing" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
         </div>
@@ -37,6 +38,7 @@ const Navbar = () => {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)] overflow-hidden">
             <div className="container py-4 flex flex-col gap-4">
               <Link href="#features" className="text-base font-medium text-[var(--text-secondary)]">Features</Link>
+              <Link href="#use-cases" className="text-base font-medium text-[var(--text-secondary)]">Use Cases</Link>
               <Link href="#how-it-works" className="text-base font-medium text-[var(--text-secondary)]">How it Works</Link>
               <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full justify-center">Launch App</Link>
             </div>
@@ -153,8 +155,47 @@ export default function LandingPage() {
       {/* Pricing Section - INJECTED HERE */}
       <PricingSection />
 
+      {/* Target Audiences / Use Cases */}
+      <section id="use-cases" className="py-24 relative z-10 border-t border-[var(--glass-border)] bg-[var(--bg-espresso)]/80">
+        <div className="container">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Who Forges With Us?</h2>
+            <p className="text-[var(--text-secondary)] text-lg">
+              OppForge is designed to give you an unfair advantage, no matter what part of Web3 you operate in.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="glass-card p-6 border-t-2 border-[#10b981] hover:-translate-y-2 transition-transform">
+              <h3 className="text-xl font-bold text-white mb-3">Bounty Hunters</h3>
+              <p className="text-[var(--text-secondary)] text-sm mb-4">
+                Stop checking 14 different tracking boards. Get pinged the second a bug bounty or developer task matches your tech stack (Rust, Solidity, etc.).
+              </p>
+            </div>
+            <div className="glass-card p-6 border-t-2 border-[var(--accent-forge)] hover:-translate-y-2 transition-transform">
+              <h3 className="text-xl font-bold text-white mb-3">Hackathon Devs</h3>
+              <p className="text-[var(--text-secondary)] text-sm mb-4">
+                Discover under-the-radar global and local hackathons. Use our AI assistant to instantly structure winning architectures and submission formats.
+              </p>
+            </div>
+            <div className="glass-card p-6 border-t-2 border-[#3b82f6] hover:-translate-y-2 transition-transform">
+              <h3 className="text-xl font-bold text-white mb-3">Testnet Degens</h3>
+              <p className="text-[var(--text-secondary)] text-sm mb-4">
+                Never fall for a fake RPC or rug-pull node again. Our Risk Assessment AI verifies protocol authenticity before you ever sign a transaction.
+              </p>
+            </div>
+            <div className="glass-card p-6 border-t-2 border-[var(--accent-gold)] hover:-translate-y-2 transition-transform">
+              <h3 className="text-xl font-bold text-white mb-3">Ecosystem DAOs</h3>
+              <p className="text-[var(--text-secondary)] text-sm mb-4">
+                Monitor where builders are migrating to. Track volume of grants passing through other networks, and structure proposals to fund your own missions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Interactive Terminal Demo Preview */}
-      <section className="py-24 overflow-hidden">
+      <section id="how-it-works" className="py-24 border-t border-[var(--glass-border)] overflow-hidden bg-[#0A0705]">
         <div className="container">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
