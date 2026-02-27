@@ -17,7 +17,9 @@ router = APIRouter(
 
 # Configuration
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_change_me_prod")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("FATAL ERROR: 'SECRET_KEY' environment variable must be set for secure JWT signing in production.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days persistence
 
@@ -185,15 +187,48 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")
 
+import re
+from eth_account import Account
+from eth_account.messages import encode_defunct
+
 @router.post("/wallet", response_model=dict)
 def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depends(database.get_db)):
     """
-    Finds or creates a user by wallet address. Returns JWT.
+    Finds or creates a user by wallet address after validating EIP-191 signature. Returns JWT.
     """
     address = login_data.address.lower()
-    if not address:
-        raise HTTPException(status_code=400, detail="Wallet address required")
-    
+    if not address or not login_data.signature or not login_data.message:
+        raise HTTPException(status_code=400, detail="Wallet address, signature, and message required")
+
+    # 1. Verify Timestamp (prevent replay attacks, +/- 5 minutes)
+    try:
+        match = re.search(r"Timestamp:\s*(\d+)", login_data.message, re.IGNORECASE)
+        if not match:
+            raise ValueError("No timestamp found in message")
+        
+        msg_time_ms = int(match.group(1))
+        now_ms = int(datetime.utcnow().timestamp() * 1000)
+        age_ms = now_ms - msg_time_ms
+        
+        if age_ms < -300000 or age_ms > 300000: # 5 minutes threshold
+            raise ValueError("Signature expired or invalid timestamp")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid message format: {str(e)}")
+
+    # 2. Verify Address Context
+    if address not in login_data.message.lower():
+        raise HTTPException(status_code=400, detail="Address in message does not match provider")
+
+    # 3. Cryptographic Signature Verification
+    try:
+        signable_message = encode_defunct(text=login_data.message)
+        recovered_address = Account.recover_message(signable_message, signature=login_data.signature)
+        
+        if recovered_address.lower() != address:
+            raise HTTPException(status_code=401, detail="Signature verification failed: unauthorized signer")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid cryptographic signature: {e}")
+
     # Logic: Find or Create User by Wallet
     user = db.query(UserModel).filter(UserModel.wallet_address == address).first()
     is_new_user = False

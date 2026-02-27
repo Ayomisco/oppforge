@@ -57,7 +57,6 @@ class UserResponse(UserBase):
     # Status
     tier: str
     is_pro: bool
-    subscription_status: str
     
     # Arrays
     skills: List[str] = []

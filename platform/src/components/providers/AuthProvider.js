@@ -68,10 +68,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const loginWallet = async (address) => {
+  const loginWallet = async (address, signature, message) => {
     console.log("Executing loginWallet with address:", address);
     try {
-      const { data } = await api.post('/auth/wallet', { address });
+      const { data } = await api.post('/auth/wallet', { address, signature, message });
       console.log("Wallet auth successful, received token:", !!data.access_token);
       
       const cookieOptions = { 
@@ -89,7 +89,7 @@ export function AuthProvider({ children }) {
       return true;
     } catch (error) {
       console.error("Wallet login failed:", error);
-      toast.error("Wallet authentication failed.");
+      toast.error("Wallet authentication failed. Please verify the signature.");
       return false;
     }
   };

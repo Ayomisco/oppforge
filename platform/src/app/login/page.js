@@ -5,7 +5,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Zap, Search, TrendingUp, Award, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const { user, loginGoogle, loginWallet } = useAuth();
   const router = useRouter();
   const { address, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const loginAttempted = useRef(false);
   const [activeFeature, setActiveFeature] = useState(0);
 
@@ -32,13 +33,32 @@ export default function LoginPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Wallet auto-login
+  // Wallet auto-login with SIWE
   useEffect(() => {
     if (isConnected && address && !user && !loginAttempted.current) {
       loginAttempted.current = true;
-      loginWallet(address);
+      
+      const handleSiweLogin = async () => {
+        try {
+            const timestamp = Date.now();
+            const message = `Sign in to OppForge\n\nWelcome back, Hunter. Sign this message to authenticate your wallet. This costs zero gas.\n\nAddress: ${address}\nTimestamp: ${timestamp}`;
+            
+            const signature = await signMessageAsync({ message });
+            
+            const success = await loginWallet(address, signature, message);
+            if (!success) {
+              loginAttempted.current = false; // allow retry if backend failed
+            }
+        } catch (err) {
+            console.error("Signature rejected or failed:", err);
+            toast.error("Signature required to authenticate");
+            loginAttempted.current = false; // allow retry
+        }
+      };
+
+      handleSiweLogin();
     }
-  }, [isConnected, address, user, loginWallet]);
+  }, [isConnected, address, user, loginWallet, signMessageAsync]);
 
   // Redirect after login — returning users go straight to dashboard
   useEffect(() => {

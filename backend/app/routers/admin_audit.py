@@ -17,7 +17,7 @@ def read_audit_logs(
     """
     Admin Only: Fetch system audit logs.
     """
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role not in [UserRole.ADMIN, 'admin', 'ADMIN']:
         raise HTTPException(status_code=403, detail="Unauthorized access to forensic logs.")
     
     return db.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit).all()
@@ -28,7 +28,7 @@ def read_audit_detail(
     db: Session = Depends(database.get_db),
     current_user = Depends(get_current_user)
 ):
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role not in [UserRole.ADMIN, 'admin', 'ADMIN']:
         raise HTTPException(status_code=403, detail="Unauthorized.")
     
     log = db.query(AuditLog).filter(AuditLog.id == id).first()

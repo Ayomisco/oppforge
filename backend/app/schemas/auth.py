@@ -5,3 +5,5 @@ class GoogleLoginRequest(BaseModel):
 
 class WalletLoginRequest(BaseModel):
     address: str
+    signature: str
+    message: str

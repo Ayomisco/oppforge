@@ -10,6 +10,12 @@ from ..services.email_service import send_email, get_email_template
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
+from web3 import Web3
+
+# OppForge Master Wallet on Arbitrum
+MASTER_WALLET = "0x15f79927627448e89E90f6FCE0e5f22E42Ead1a6"
+RPC_URL = "https://arb1.arbitrum.io/rpc"
+
 @router.post("/verify-payment", response_model=schemas.billing.PaymentHistoryResponse)
 async def verify_payment(
     request: schemas.billing.PaymentVerifyRequest,
@@ -18,20 +24,39 @@ async def verify_payment(
     current_user: models.User = Depends(get_current_user)
 ):
     """
-    Verify an on-chain payment and upgrade the user's tier.
-    In production, this would use an RPC call to verify the tx_hash.
+    Verify an on-chain payment on Arbitrum and upgrade the user's tier.
     """
-    # 1. Check if tx_hash already exists
+    # 1. Check if tx_hash already exists (prevent double-spending the same tx)
     existing = db.query(models.billing.SubscriptionPayment).filter(
         models.billing.SubscriptionPayment.tx_hash == request.tx_hash
     ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Transaction already processed")
 
-    # 2. Mock Verification (In a real app, you'd call web3.eth.get_transaction(tx_hash))
-    # For now, we trust the hash if it's the right format
-    if not request.tx_hash.startswith("0x") or len(request.tx_hash) < 60:
-         raise HTTPException(status_code=400, detail="Invalid Transaction Hash")
+    # 2. Cryptographic On-Chain Verification
+    try:
+        w3 = Web3(Web3.HTTPProvider(RPC_URL, request_kwargs={'timeout': 10}))
+        
+        # Ensure hash is formatted correctly
+        if not request.tx_hash.startswith('0x'):
+            raise ValueError("tx_hash must start with 0x")
+            
+        tx = w3.eth.get_transaction(request.tx_hash)
+        receipt = w3.eth.get_transaction_receipt(request.tx_hash)
+        
+        if receipt.status != 1:
+            raise HTTPException(status_code=400, detail="Transaction failed on-chain")
+            
+        if tx.to.lower() != MASTER_WALLET.lower():
+            raise HTTPException(status_code=400, detail="Transaction recipient is not the OppForge master wallet")
+            
+        # Verify amount sent (permit slight dust discrepancies but must be >= requested)
+        expected_wei = w3.to_wei(request.amount, 'ether')
+        if tx.value < expected_wei:
+            raise HTTPException(status_code=400, detail=f"Insufficient funds sent. Expected {expected_wei}, got {tx.value}")
+            
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Verification failed: {str(e)}")
 
     # 3. Create Payment Record
     payment = models.billing.SubscriptionPayment(

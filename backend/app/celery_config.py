@@ -44,23 +44,24 @@ celery_app.conf.update(
 
 # Periodic task schedule
 celery_app.conf.beat_schedule = {
-    # TIER 1 - Every 6 hours (high priority)
-    "scrape-tier1-ecosystems": {
-        "task": "app.tasks.scraping_tasks.scrape_tier1_ecosystems",
-        "schedule": crontab(minute=0, hour="*/6"),  # Every 6 hours
-    },
+    # --- DISABLED PENDING IMPLEMENTATION ---
+    # The scrape_ecosystem_grants task is currently a TODO stub.
+    # Leaving these disabled so we don't spam logs and artificially 
+    # inflate the last_scraped_at timestamps with 0 actual results.
     
-    # TIER 2 - Every 12 hours (medium priority)
-    "scrape-tier2-ecosystems": {
-        "task": "app.tasks.scraping_tasks.scrape_tier2_ecosystems",
-        "schedule": crontab(minute=0, hour="*/12"),  # Every 12 hours
-    },
-    
-    # TIER 3 - Daily (low priority)
-    "scrape-tier3-ecosystems": {
-        "task": "app.tasks.scraping_tasks.scrape_tier3_ecosystems",
-        "schedule": crontab(minute=0, hour=2),  # 2 AM daily
-    },
+    # "scrape-tier1-ecosystems": {
+    #     "task": "app.tasks.scraping_tasks.scrape_tier1_ecosystems",
+    #     "schedule": crontab(minute=0, hour="*/6"),
+    # },
+    # "scrape-tier2-ecosystems": {
+    #     "task": "app.tasks.scraping_tasks.scrape_tier2_ecosystems",
+    #     "schedule": crontab(minute=0, hour="*/12"),
+    # },
+    # "scrape-tier3-ecosystems": {
+    #     "task": "app.tasks.scraping_tasks.scrape_tier3_ecosystems",
+    #     "schedule": crontab(minute=0, hour=2),
+    # },
+    # ---------------------------------------
     
     # Twitter/Social - Every 3 hours
     "scrape-twitter": {

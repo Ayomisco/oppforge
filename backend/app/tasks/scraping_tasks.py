@@ -256,28 +256,85 @@ def scrape_ecosystem_grants(ecosystem_id: str):
         db.close()
 
 
+
 @shared_task
 def cleanup_old_opportunities():
     """
-    Remove expired/old opportunities.
-    Runs daily at 3 AM.
+    2-Phase opportunity lifecycle management. Runs daily at 3 AM.
+
+    Phase 1 — ARCHIVE (Soft Close):
+        Opportunities whose deadline has passed but are still marked is_open=True
+        get flipped to is_open=False. They are removed from the Priority Stream
+        and live feed but remain fully browseable in the database (search,
+        opportunity detail page, tracker history).
+
+    Phase 2 — PURGE (Hard Delete):
+        Opportunities that have been archived (is_open=False) for over 90 days
+        AND have no active tracked applications are permanently deleted to keep
+        the database lean.
+
+    Note: We intentionally NEVER hard-delete opportunities that have active
+    tracker entries (users are still referencing them in their Mission Control).
     """
     db = SessionLocal()
+    now = datetime.utcnow()
+
     try:
-        # Remove opportunities older than 90 days with status "closed"
-        cutoff_date = datetime.utcnow() - timedelta(days=90)
-        
-        deleted = db.query(Opportunity).filter(
-            Opportunity.deadline < cutoff_date,
-            Opportunity.status == "closed"
-        ).delete()
-        
+        # ── Phase 1: Auto-Archive Expired Opportunities ──────────────────────
+        # Any opportunity with a passed deadline that is still showing as open
+        expired_opps = db.query(Opportunity).filter(
+            Opportunity.is_open == True,
+            Opportunity.deadline != None,
+            Opportunity.deadline < now
+        ).all()
+
+        archived_count = 0
+        for opp in expired_opps:
+            opp.is_open = False
+            archived_count += 1
+
+        if archived_count:
+            db.commit()
+            logger.info(f"📁 Archived {archived_count} expired opportunities (hidden from feed, kept in DB)")
+
+        # ── Phase 2: Hard-Purge Very Old Archived Opportunities ──────────────
+        # Only permanently delete opportunities that:
+        #   • Are already closed (is_open=False)
+        #   • Deadline expired more than 90 days ago
+        #   • Have NO tracked applications from any user (safe to wipe)
+        cutoff = now - timedelta(days=90)
+
+        from app.models.tracking import TrackedApplication
+        from sqlalchemy import not_, exists
+
+        # Subquery: IDs that have at least one tracked application
+        has_trackers = exists().where(
+            TrackedApplication.opportunity_id == Opportunity.id
+        )
+
+        stale_opps = db.query(Opportunity).filter(
+            Opportunity.is_open == False,
+            Opportunity.deadline != None,
+            Opportunity.deadline < cutoff,
+            not_(has_trackers)
+        ).all()
+
+        purged_count = 0
+        for opp in stale_opps:
+            db.delete(opp)
+            purged_count += 1
+
         db.commit()
-        logger.info(f"🗑️ Cleaned up {deleted} old opportunities")
-        return {"deleted": deleted}
-        
+
+        logger.info(f"🗑️ Purged {purged_count} stale opportunities (90+ days old, no trackers)")
+        return {
+            "archived": archived_count,
+            "purged": purged_count,
+            "timestamp": now.isoformat()
+        }
+
     except Exception as e:
-        logger.error(f"Cleanup failed: {e}")
+        logger.error(f"Cleanup task failed: {e}")
         db.rollback()
         return {"error": str(e)}
     finally:

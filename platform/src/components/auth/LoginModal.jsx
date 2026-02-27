@@ -6,27 +6,45 @@ import { Button } from '@/components/ui/button';
 import { LogIn, Wallet, Shield, Zap } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 
 export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
   const { loginGoogle, loginWallet, user } = useAuth();
   const { address, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const loginAttempted = useRef(false);
 
   // Auto-login when wallet connects
   useEffect(() => {
     if (isConnected && address && !user && !loginAttempted.current) {
       loginAttempted.current = true;
-      loginWallet(address).then(success => {
-        if (success) {
-          onClose();
-          toast.success('Wallet connected successfully!');
+      
+      const handleSiweLogin = async () => {
+        try {
+            const timestamp = Date.now();
+            const message = `Sign in to OppForge\n\nWelcome back, Hunter. Sign this message to authenticate your wallet. This costs zero gas.\n\nAddress: ${address}\nTimestamp: ${timestamp}`;
+            
+            const signature = await signMessageAsync({ message });
+            
+            const success = await loginWallet(address, signature, message);
+            if (success) {
+              onClose();
+              toast.success('Wallet verified securely!');
+            } else {
+              loginAttempted.current = false; // allow retry if backend failed
+            }
+        } catch (err) {
+            console.error("Signature rejected or failed:", err);
+            toast.error("Signature required to authenticate");
+            loginAttempted.current = false; // allow retry
         }
-      });
+      };
+
+      handleSiweLogin();
     }
-  }, [isConnected, address, user, loginWallet, onClose]);
+  }, [isConnected, address, user, loginWallet, onClose, signMessageAsync]);
 
   // Reset ref when modal closes
   useEffect(() => {
