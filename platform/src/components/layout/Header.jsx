@@ -1,16 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Search, Bell, Sparkles, Zap, Wallet } from 'lucide-react'
+import React from 'react'
+import { Search, Bell, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/providers/AuthProvider'
-import { LoginModal } from '@/components/auth/LoginModal'
+import { useState } from 'react'
 
 export default function Header({ onMenuClick }) {
   const router = useRouter()
-  const { isGuest } = useAuth()
+  const { isGuest, openLoginModal } = useAuth()
   const [query, setQuery] = useState('')
-  const [isLoginOpen, setIsLoginOpen] = useState(false)
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && query.trim()) {
@@ -55,8 +54,8 @@ export default function Header({ onMenuClick }) {
       <div className="flex items-center gap-3">
         {isGuest ? (
           <button 
-            onClick={() => setIsLoginOpen(true)}
-            className="flex flex-row items-center gap-2 px-4 py-2 bg-[#ff5500] hover:bg-[#ff6600] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_#ff5500]/40"
+            onClick={openLoginModal}
+            className="flex flex-row items-center gap-2 px-4 py-2 bg-[#ff5500] hover:bg-[#ff6600] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_rgba(255,85,0,0.4)] hover:shadow-[0_0_25px_rgba(255,85,0,0.6)] hover:scale-105"
           >
             <Wallet className="w-4 h-4" />
             Connect_Wallet
@@ -76,12 +75,7 @@ export default function Header({ onMenuClick }) {
           <Search size={20} />
         </button>
       </div>
-
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        triggerText="Access The Forge"
-      />
     </header>
   )
 }
+

@@ -11,8 +11,8 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [isGuest, setIsGuest] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   // Check for session on mount
   useEffect(() => {
@@ -103,7 +103,12 @@ export function AuthProvider({ children }) {
 
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-      <AuthContext.Provider value={{ user, loading, isGuest, loginGoogle, loginWallet, logout, setUser }}>
+      <AuthContext.Provider value={{ 
+        user, loading, isGuest, loginGoogle, loginWallet, logout, setUser,
+        loginModalOpen,
+        openLoginModal: () => setLoginModalOpen(true),
+        closeLoginModal: () => setLoginModalOpen(false),
+      }}>
         {children}
       </AuthContext.Provider>
     </GoogleOAuthProvider>

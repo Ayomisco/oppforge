@@ -4,9 +4,12 @@ import React, { useState } from 'react'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 import ChatPanel from '@/components/chat/ChatPanel'
+import { LoginModal } from '@/components/auth/LoginModal'
+import { useAuth } from '@/components/providers/AuthProvider'
 
-export default function DashboardLayout({ children }) {
+function DashboardContent({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { loginModalOpen, closeLoginModal } = useAuth()
 
   return (
     <div className="flex h-screen bg-[var(--bg-espresso)] overflow-hidden">
@@ -37,6 +40,17 @@ export default function DashboardLayout({ children }) {
         {/* Floating Chat Assistant */}
         <ChatPanel />
       </div>
+
+      {/* Global Login Modal — controlled by AuthContext */}
+      <LoginModal 
+        isOpen={loginModalOpen} 
+        onClose={closeLoginModal}
+        triggerText="Access The Forge"
+      />
     </div>
   )
+}
+
+export default function DashboardLayout({ children }) {
+  return <DashboardContent>{children}</DashboardContent>
 }
