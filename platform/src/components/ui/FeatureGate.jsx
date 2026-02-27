@@ -46,27 +46,33 @@ export default function FeatureGate({ children, featureName = "This feature", re
 
   if (requirePremium && !isAdmin && !isSubscriber) {
     return (
-      <div className="glass-card p-12 text-center max-w-xl mx-auto mt-12 space-y-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#ffaa00]/5 pointer-events-none" />
-        
-        <div className="w-16 h-16 bg-[#ffaa00]/10 rounded-2xl flex items-center justify-center mx-auto border border-[#ffaa00]/20">
-          <ShieldAlert size={32} className="text-[#ffaa00]" />
-        </div>
-        
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Premium Intel Required</h2>
-          <p className="text-gray-400 text-sm">
-            {featureName} requires an active Forge Pass. Upgrade your rank to unlock advanced tracking, AI drafting, and personalized algorithms.
-          </p>
+      <div className="relative overflow-hidden rounded-xl border border-[var(--glass-border)]">
+        {/* Blurred App Background */}
+        <div className="blur-[8px] opacity-30 pointer-events-none select-none transition-all duration-700">
+          {children}
         </div>
 
-        <div className="flex justify-center pt-4 border-t border-white/5">
-           <a 
-             href="/dashboard/settings/billing" 
-             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ff5500] to-[#ffaa00] text-black font-bold rounded-xl hover:scale-105 transition-transform"
-           >
-             <Zap size={16} /> Upgrade Forge Pass
-           </a>
+        {/* Lock Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--bg-espresso)]/60 backdrop-blur-sm p-4 text-center z-10 transition-all duration-700">
+          <div className="glass-card p-8 text-center max-w-md w-full shadow-2xl relative border-t-2 border-[var(--accent-forge)]">
+            <div className="absolute inset-0 bg-[var(--accent-forge)]/5 pointer-events-none" />
+            
+            <div className="w-16 h-16 bg-[var(--accent-forge)]/10 rounded-2xl flex items-center justify-center mx-auto border border-[var(--accent-forge)]/20 shadow-[0_0_20px_rgba(255,85,0,0.2)] mb-4">
+              <ShieldAlert size={32} className="text-[var(--accent-forge)]" />
+            </div>
+            
+            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Access Locked</h2>
+            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+              Your 14-day trial has concluded. {featureName} is now locked. Upgrade to Hunter to restore your intelligence dashboard and unblur premium opportunities.
+            </p>
+
+            <a 
+              href="/dashboard/subscription" 
+              className="flex items-center justify-center gap-2 px-6 py-3 w-full bg-[var(--accent-forge)] text-white font-bold rounded shadow-[0_0_20px_rgba(255,85,0,0.3)] hover:scale-105 transition-all"
+            >
+              <Zap size={16} /> Secure Premium Access
+            </a>
+          </div>
         </div>
       </div>
     );

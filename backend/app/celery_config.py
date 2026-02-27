@@ -98,6 +98,12 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.notification_tasks.send_daily_digests",
         "schedule": crontab(minute=0, hour=9),
     },
+    
+    # Check Trial Expirations & Reminders - Daily at 8 AM
+    "check-trial-expirations": {
+        "task": "app.tasks.notification_tasks.check_trial_expirations",
+        "schedule": crontab(minute=0, hour=8),
+    },
 }
 
 # Task routing

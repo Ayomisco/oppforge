@@ -165,7 +165,7 @@ export default function LandingPage() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="glass-card p-6 border-t-2 border-[#10b981] hover:-translate-y-2 transition-transform">
               <h3 className="text-xl font-bold text-white mb-3">Bounty Hunters</h3>
               <p className="text-[var(--text-secondary)] text-sm mb-4">
@@ -188,6 +188,18 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-white mb-3">Ecosystem DAOs</h3>
               <p className="text-[var(--text-secondary)] text-sm mb-4">
                 Monitor where builders are migrating to. Track volume of grants passing through other networks, and structure proposals to fund your own missions.
+              </p>
+            </div>
+            <div className="glass-card p-6 border-t-2 border-[#a855f7] hover:-translate-y-2 transition-transform">
+              <h3 className="text-xl font-bold text-white mb-3">Community Managers</h3>
+              <p className="text-[var(--text-secondary)] text-sm mb-4">
+                Find protocols actively hiring or granting funds for growth, marketing, and community moderation. Get matched directly with ecosystem leads.
+              </p>
+            </div>
+            <div className="glass-card p-6 border-t-2 border-[#ec4899] hover:-translate-y-2 transition-transform">
+              <h3 className="text-xl font-bold text-white mb-3">Web3 Ambassadors</h3>
+              <p className="text-[var(--text-secondary)] text-sm mb-4">
+                Discover brand ambassador and DevRel programs early. Use the Forge AI to instantly draft high-converting applications based on your past experience.
               </p>
             </div>
           </div>
