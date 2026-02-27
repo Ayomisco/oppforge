@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check } from 'lucide-react'
+import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check, Bug, Code2, FlaskConical, Building2, Megaphone, Star, ShieldCheck, Wallet, Crown } from 'lucide-react'
 import PricingSection from '@/components/PricingSection'
 
 const Navbar = () => {
@@ -166,40 +166,75 @@ export default function LandingPage() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="glass-card p-6 border-t-2 border-[#10b981] hover:-translate-y-2 transition-transform">
-              <h3 className="text-xl font-bold text-white mb-3">Bounty Hunters</h3>
-              <p className="text-[var(--text-secondary)] text-sm mb-4">
-                Stop checking 14 different tracking boards. Get pinged the second a bug bounty or developer task matches your tech stack (Rust, Solidity, etc.).
+            {/* Bounty Hunters */}
+            <div className="glass-card p-6 border-t-2 border-[#10b981] hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-xl bg-[#10b981]/10 flex items-center justify-center mb-4 border border-[#10b981]/20 group-hover:scale-110 transition-transform">
+                <Bug size={22} className="text-[#10b981]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Bounty Hunters</h3>
+              <p className="text-[10px] uppercase font-mono text-[#10b981] tracking-widest mb-3">Bug Bounties · Dev Tasks</p>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                Stop checking 14 different boards. Get pinged the second a bounty or dev task matches your stack (Rust, Solidity, etc.).
               </p>
             </div>
-            <div className="glass-card p-6 border-t-2 border-[var(--accent-forge)] hover:-translate-y-2 transition-transform">
-              <h3 className="text-xl font-bold text-white mb-3">Hackathon Devs</h3>
-              <p className="text-[var(--text-secondary)] text-sm mb-4">
-                Discover under-the-radar global and local hackathons. Use our AI assistant to instantly structure winning architectures and submission formats.
+
+            {/* Hackathon Devs */}
+            <div className="glass-card p-6 border-t-2 border-[var(--accent-forge)] hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-xl bg-[var(--accent-forge)]/10 flex items-center justify-center mb-4 border border-[var(--accent-forge)]/20 group-hover:scale-110 transition-transform">
+                <Code2 size={22} className="text-[var(--accent-forge)]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Hackathon Devs</h3>
+              <p className="text-[10px] uppercase font-mono text-[var(--accent-forge)] tracking-widest mb-3">ETHGlobal · Superteam</p>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                Discover under-the-radar global and local hackathons. Use our AI to instantly draft winning architectures and submissions.
               </p>
             </div>
-            <div className="glass-card p-6 border-t-2 border-[#3b82f6] hover:-translate-y-2 transition-transform">
-              <h3 className="text-xl font-bold text-white mb-3">Testnet Degens</h3>
-              <p className="text-[var(--text-secondary)] text-sm mb-4">
-                Never fall for a fake RPC or rug-pull node again. Our Risk Assessment AI verifies protocol authenticity before you ever sign a transaction.
+
+            {/* Testnet Degens */}
+            <div className="glass-card p-6 border-t-2 border-[#3b82f6] hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-xl bg-[#3b82f6]/10 flex items-center justify-center mb-4 border border-[#3b82f6]/20 group-hover:scale-110 transition-transform">
+                <FlaskConical size={22} className="text-[#3b82f6]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Testnet Degens</h3>
+              <p className="text-[10px] uppercase font-mono text-[#3b82f6] tracking-widest mb-3">Airdrops · Node Running</p>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                Never fall for a fake RPC again. Our Risk AI verifies protocol authenticity before you sign a single transaction.
               </p>
             </div>
-            <div className="glass-card p-6 border-t-2 border-[var(--accent-gold)] hover:-translate-y-2 transition-transform">
-              <h3 className="text-xl font-bold text-white mb-3">Ecosystem DAOs</h3>
-              <p className="text-[var(--text-secondary)] text-sm mb-4">
-                Monitor where builders are migrating to. Track volume of grants passing through other networks, and structure proposals to fund your own missions.
+
+            {/* Ecosystem DAOs */}
+            <div className="glass-card p-6 border-t-2 border-[var(--accent-gold)] hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-xl bg-[var(--accent-gold)]/10 flex items-center justify-center mb-4 border border-[var(--accent-gold)]/20 group-hover:scale-110 transition-transform">
+                <Building2 size={22} className="text-[var(--accent-gold)]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Ecosystem DAOs</h3>
+              <p className="text-[10px] uppercase font-mono text-[var(--accent-gold)] tracking-widest mb-3">Grants · Governance</p>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                Monitor where builders are migrating. Track grant volumes across chains and structure funding proposals for your missions.
               </p>
             </div>
-            <div className="glass-card p-6 border-t-2 border-[#a855f7] hover:-translate-y-2 transition-transform">
-              <h3 className="text-xl font-bold text-white mb-3">Community Managers</h3>
-              <p className="text-[var(--text-secondary)] text-sm mb-4">
-                Find protocols actively hiring or granting funds for growth, marketing, and community moderation. Get matched directly with ecosystem leads.
+
+            {/* Community Managers */}
+            <div className="glass-card p-6 border-t-2 border-[#a855f7] hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-xl bg-[#a855f7]/10 flex items-center justify-center mb-4 border border-[#a855f7]/20 group-hover:scale-110 transition-transform">
+                <Megaphone size={22} className="text-[#a855f7]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Community Managers</h3>
+              <p className="text-[10px] uppercase font-mono text-[#a855f7] tracking-widest mb-3">Growth · Moderation · Ops</p>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                Find protocols actively granting funds for growth and community moderation roles. Get matched directly with ecosystem leads.
               </p>
             </div>
-            <div className="glass-card p-6 border-t-2 border-[#ec4899] hover:-translate-y-2 transition-transform">
-              <h3 className="text-xl font-bold text-white mb-3">Web3 Ambassadors</h3>
-              <p className="text-[var(--text-secondary)] text-sm mb-4">
-                Discover brand ambassador and DevRel programs early. Use the Forge AI to instantly draft high-converting applications based on your past experience.
+
+            {/* Web3 Ambassadors */}
+            <div className="glass-card p-6 border-t-2 border-[#ec4899] hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-xl bg-[#ec4899]/10 flex items-center justify-center mb-4 border border-[#ec4899]/20 group-hover:scale-110 transition-transform">
+                <Star size={22} className="text-[#ec4899]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Web3 Ambassadors</h3>
+              <p className="text-[10px] uppercase font-mono text-[#ec4899] tracking-widest mb-3">DevRel · Brand Programs</p>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                Discover brand ambassador and DevRel programs early. Forge AI drafts high-converting applications based on your past wins.
               </p>
             </div>
           </div>
