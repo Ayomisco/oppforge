@@ -29,3 +29,5 @@ chromadb
 sentence-transformers
 numpy
 tqdm
+eth-account
+web3
