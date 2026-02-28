@@ -16,7 +16,7 @@ export default function FeatureGate({ children, featureName = "This feature", re
   // 1. Not logged in — blur the content and prompt sign-in
   if (isGuest || !user) {
     return (
-      <div className="relative overflow-hidden rounded-xl border border-[var(--glass-border)]">
+      <div className="relative overflow-hidden rounded-xl border border-[var(--glass-border)] min-h-[70vh] flex flex-col">
         {/* Blurred preview of the actual page */}
         <div className="blur-[6px] opacity-20 pointer-events-none select-none">
           {children}
@@ -56,7 +56,7 @@ export default function FeatureGate({ children, featureName = "This feature", re
 
   if (requirePremium && !isAdmin && !isSubscriber) {
     return (
-      <div className="relative overflow-hidden rounded-xl border border-[var(--glass-border)]">
+      <div className="relative overflow-hidden rounded-xl border border-[var(--glass-border)] min-h-[70vh]">
         {/* Blurred App Background */}
         <div className="blur-[8px] opacity-30 pointer-events-none select-none transition-all duration-700">
           {children}
