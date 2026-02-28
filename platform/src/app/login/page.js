@@ -60,15 +60,13 @@ export default function LoginPage() {
     }
   }, [isConnected, address, user, loginWallet, signMessageAsync]);
 
-  // Redirect after login — returning users go straight to dashboard
+  // Redirect after login
   useEffect(() => {
     if (user) {
-      const userRole = (user.role || '').toLowerCase();
-      const isAdmin  = userRole === 'admin';
+      const isAdmin = (user.role || '').toLowerCase() === 'admin';
       const isNewUser = user.is_new_user === true;
       const isOnboarded = user.onboarded === true || isAdmin;
       
-      // If returning user, skip onboarding entirely. Only explicit new users see it.
       if (isNewUser && !isOnboarded) {
         router.push('/onboarding');
       } else {
@@ -79,8 +77,14 @@ export default function LoginPage() {
 
   const handleGoogleSuccess = async (response) => {
     if (response.access_token) {
-      const success = await loginGoogle({ credential: response.access_token });
-      if (success) toast.success('Welcome back, Hunter!');
+      const result = await loginGoogle({ credential: response.access_token });
+      if (result?.success) {
+        if (result.isNewUser) {
+          router.push('/onboarding');
+        } else {
+          router.push('/dashboard');
+        }
+      }
     }
   };
 

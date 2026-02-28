@@ -57,14 +57,15 @@ export function AuthProvider({ children }) {
       Cookies.set('token', data.access_token, cookieOptions); 
       const updatedUser = { ...data.user, is_new_user: data.is_new_user };
       setUser(updatedUser);
-      console.log("User state updated in context:", updatedUser.email);
+      setIsGuest(false); // ← CRITICAL: unlock FeatureGate immediately
+      console.log("User state updated in context:", updatedUser.email, "is_new_user:", data.is_new_user);
       
-      toast.success(`Welcome back, ${data.user.first_name || 'Partner'}!`);
-      return true;
+      toast.success(`Welcome${data.is_new_user ? '' : ' back'}, ${data.user.first_name || 'Hunter'}!`);
+      return { success: true, isNewUser: data.is_new_user, user: updatedUser };
     } catch (error) {
       console.error("Login process failed at some step:", error);
       toast.error("Login failed. Check console for details.");
-      return false;
+      return { success: false };
     }
   };
 
@@ -84,13 +85,14 @@ export function AuthProvider({ children }) {
       Cookies.set('token', data.access_token, cookieOptions); 
       const updatedUser = { ...data.user, is_new_user: data.is_new_user };
       setUser(updatedUser);
+      setIsGuest(false); // ← CRITICAL: unlock FeatureGate immediately
       
-      toast.success(`Welcome back, Hunter!`);
-      return true;
+      toast.success(`Welcome${data.is_new_user ? '' : ' back'}, Hunter!`);
+      return { success: true, isNewUser: data.is_new_user, user: updatedUser };
     } catch (error) {
       console.error("Wallet login failed:", error);
       toast.error("Wallet authentication failed. Please verify the signature.");
-      return false;
+      return { success: false };
     }
   };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { Lock, Zap, ShieldAlert, Wallet, LogIn } from 'lucide-react';
+import { Lock, Zap, ShieldAlert, Wallet } from 'lucide-react';
 
 export default function FeatureGate({ children, featureName = "This feature", requirePremium = true }) {
   const { user, isGuest, loading, openLoginModal } = useAuth();
@@ -49,12 +49,15 @@ export default function FeatureGate({ children, featureName = "This feature", re
     );
   }
 
-  // 2. Logged-in user whose trial has expired — blur with upgrade CTA
+  // 2. Check if subscription is explicitly expired/cancelled
+  //    Scout users (onboarded, free tier within trial window) should ALWAYS pass through.
+  //    Only block users whose subscription has explicitly been marked expired/cancelled.
   const role = (user.role || '').toLowerCase();
   const isAdmin = role === 'admin';
-  const isSubscriber = ['active', 'trialing'].includes((user.subscription_status || '').toLowerCase()) || user.is_pro;
+  const subscriptionStatus = (user.subscription_status || '').toLowerCase();
+  const isExpired = ['expired', 'cancelled', 'canceled', 'past_due'].includes(subscriptionStatus);
 
-  if (requirePremium && !isAdmin && !isSubscriber) {
+  if (requirePremium && !isAdmin && isExpired) {
     return (
       <div className="relative overflow-hidden rounded-xl border border-[var(--glass-border)] min-h-[70vh]">
         {/* Blurred App Background */}
@@ -71,16 +74,16 @@ export default function FeatureGate({ children, featureName = "This feature", re
               <ShieldAlert size={32} className="text-[var(--accent-forge)]" />
             </div>
             
-            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Access Locked</h2>
+            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Trial Ended</h2>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              Your 14-day trial has concluded. {featureName} is now locked. Upgrade to Hunter to restore your intelligence dashboard and unblur premium opportunities.
+              Your 14-day Scout trial has concluded. {featureName} is now locked. Upgrade to Hunter to restore full access to your intelligence dashboard.
             </p>
 
             <a 
               href="/dashboard/subscription" 
               className="flex items-center justify-center gap-2 px-6 py-3 w-full bg-[var(--accent-forge)] text-white font-bold rounded shadow-[0_0_20px_rgba(255,85,0,0.3)] hover:scale-105 transition-all"
             >
-              <Zap size={16} /> Secure Premium Access
+              <Zap size={16} /> Upgrade to Hunter
             </a>
           </div>
         </div>
@@ -88,7 +91,8 @@ export default function FeatureGate({ children, featureName = "This feature", re
     );
   }
 
-  // 3. User is authorized — render children freely
+  // 3. User is authenticated (Scout trial active, or paid subscriber, or admin) — full access
   return <>{children}</>;
 }
+
 
