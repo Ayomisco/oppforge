@@ -58,18 +58,19 @@ def create_opportunity(
 @router.get("/", response_model=List[schemas.OpportunityResponse])
 def read_opportunities(
     skip: int = 0, 
-    limit: int = 20, 
+    limit: int = 50, 
     category: Optional[str] = None,
     chain: Optional[str] = None,
     db: Session = Depends(database.get_db)
 ):
-    query = db.query(Opportunity).filter(Opportunity.is_open == True)
+    # is_open != False includes both True AND NULL (scraped items that haven't been explicitly closed)
+    query = db.query(Opportunity).filter(Opportunity.is_open != False)
     
-    if category and category != "All":
-        query = query.filter(Opportunity.category == category)
+    if category and category.lower() not in ("all", ""):
+        query = query.filter(Opportunity.category.ilike(category))
     
-    if chain and chain != "All":
-        query = query.filter(Opportunity.chain == chain)
+    if chain and chain.lower() not in ("all", ""):
+        query = query.filter(Opportunity.chain.ilike(chain))
         
     return query.order_by(desc(Opportunity.created_at)).offset(skip).limit(limit).all()
 

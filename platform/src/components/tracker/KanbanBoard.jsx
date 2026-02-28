@@ -34,11 +34,11 @@ export default function KanbanBoard({ initialApplications, onRefresh, onOpenDraf
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar min-h-[600px]">
+    <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto pb-4 custom-scrollbar min-h-[400px] md:min-h-[600px]">
       {COLUMNS.map(col => {
         const columnApps = getColumnData(col.id)
         return (
-          <div key={col.id} className="flex-1 min-w-[280px] flex flex-col gap-4">
+          <div key={col.id} className="flex-1 md:min-w-[260px] flex flex-col gap-4">
             {/* Column Header */}
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-2">
