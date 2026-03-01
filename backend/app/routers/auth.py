@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from .. import database, schemas
@@ -17,9 +17,7 @@ router = APIRouter(
 
 # Configuration
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise ValueError("FATAL ERROR: 'SECRET_KEY' environment variable must be set for secure JWT signing in production.")
+SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_change_me_prod")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days persistence
 
@@ -90,15 +88,9 @@ def check_subscription_clearance(current_user: UserModel = Depends(get_current_u
 # --- Endpoints ---
 
 from ..schemas.auth import GoogleLoginRequest
-from ..services.email_service import send_email, get_email_template
-import asyncio
 
 @router.post("/google", response_model=dict)
-def google_login(
-    login_data: GoogleLoginRequest, 
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(database.get_db)
-):
+def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.get_db)):
     """
     Verifies Google Token, Creates/Updates User, Returns JWT + User Data.
     """
@@ -182,17 +174,6 @@ def google_login(
             expires_delta=access_token_expires
         )
         
-        # 3.5 Send Welcome Email
-        if is_new_user and email:
-            welcome_title = "Welcome to OppForge Beta"
-            welcome_body = "The intelligence terminal is now yours.<br><br>As a new Scout, you have unlocked 14 days of unrestricted access to the Pro AI Engine. Set up your tracking profile, filter by your specific languages (Rust, Solidity, Design), and the agents will start curating verifiable alpha directly to your dashboard.<br><br>Good hunting."
-            welcome_html = get_email_template(welcome_title, welcome_body, "https://app.oppforge.xyz/dashboard", "Launch Terminal")
-            
-            # Send via background tasks (using an async wrapper inside sync endpoint)
-            def run_welcome_email():
-                asyncio.run(send_email(email, welcome_title, welcome_html))
-            background_tasks.add_task(run_welcome_email)
-            
         # 4. Return everything needed for frontend state
         return {
             "access_token": access_token, 
@@ -204,52 +185,15 @@ def google_login(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")
 
-import re
-from eth_account import Account
-from eth_account.messages import encode_defunct
-
 @router.post("/wallet", response_model=dict)
-def wallet_login(
-    login_data: schemas.auth.WalletLoginRequest, 
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(database.get_db)
-):
+def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depends(database.get_db)):
     """
-    Finds or creates a user by wallet address after validating EIP-191 signature. Returns JWT.
+    Finds or creates a user by wallet address. Returns JWT.
     """
     address = login_data.address.lower()
-    if not address or not login_data.signature or not login_data.message:
-        raise HTTPException(status_code=400, detail="Wallet address, signature, and message required")
-
-    # 1. Verify Timestamp (prevent replay attacks, +/- 5 minutes)
-    try:
-        match = re.search(r"Timestamp:\s*(\d+)", login_data.message, re.IGNORECASE)
-        if not match:
-            raise ValueError("No timestamp found in message")
-        
-        msg_time_ms = int(match.group(1))
-        now_ms = int(datetime.utcnow().timestamp() * 1000)
-        age_ms = now_ms - msg_time_ms
-        
-        if age_ms < -300000 or age_ms > 300000: # 5 minutes threshold
-            raise ValueError("Signature expired or invalid timestamp")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid message format: {str(e)}")
-
-    # 2. Verify Address Context
-    if address not in login_data.message.lower():
-        raise HTTPException(status_code=400, detail="Address in message does not match provider")
-
-    # 3. Cryptographic Signature Verification
-    try:
-        signable_message = encode_defunct(text=login_data.message)
-        recovered_address = Account.recover_message(signable_message, signature=login_data.signature)
-        
-        if recovered_address.lower() != address:
-            raise HTTPException(status_code=401, detail="Signature verification failed: unauthorized signer")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid cryptographic signature: {e}")
-
+    if not address:
+        raise HTTPException(status_code=400, detail="Wallet address required")
+    
     # Logic: Find or Create User by Wallet
     user = db.query(UserModel).filter(UserModel.wallet_address == address).first()
     is_new_user = False

@@ -31,7 +31,7 @@ import { useRouter } from 'next/navigation'
 
 export default function TrackerPage() {
   const router = useRouter()
-  const { data: applications, error, mutate } = useSWR('/tracker', fetcher)
+  const { data: applications, error, mutate } = useSWR('/tracker/', fetcher)
   const [view, setView] = useState('kanban') // 'table' or 'kanban'
   const [selectedMission, setSelectedMission] = useState(null)
   const [isDrafterOpen, setIsDrafterOpen] = useState(false)

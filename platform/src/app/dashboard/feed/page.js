@@ -41,7 +41,7 @@ export default function FeedPage() {
 
   const getQuery = () => {
     if (debouncedSearch) return `/opportunities/search?q=${encodeURIComponent(debouncedSearch)}`
-    let endpoint = '/opportunities'
+    let endpoint = '/opportunities/'
     const params = []
     if (category !== 'all') params.push(`category=${category}`)
     return params.length > 0 ? `${endpoint}?${params.join('&')}` : endpoint

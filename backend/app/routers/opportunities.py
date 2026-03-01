@@ -161,7 +161,13 @@ def get_priority_stream(
             pass
 
         if semantic_score is not None:
-            opp.ai_score = semantic_score
+            # AI engine should return 0-100, but handle both 0-1 and 0-100 ranges
+            if semantic_score <= 1.0:
+                # Raw similarity score (0.0-1.0), convert to 0-100
+                opp.ai_score = int(round(semantic_score * 100))
+            else:
+                # Already on 0-100 scale, just round to int
+                opp.ai_score = int(round(min(semantic_score, 100)))
         else:
             # Fallback to manual match scoring (Heuristic)
             current_ai_score = opp.ai_score or 0

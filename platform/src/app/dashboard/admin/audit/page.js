@@ -10,7 +10,7 @@ import { formatDistanceToNow } from 'date-fns'
 const fetcher = url => api.get(url).then(res => res.data)
 
 export default function AuditPage() {
-  const { data: logs, mutate } = useSWR('/admin/audit', fetcher)
+  const { data: logs, mutate } = useSWR('/admin/audit/', fetcher)
   const [selectedLog, setSelectedLog] = useState(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
 

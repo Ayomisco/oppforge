@@ -6,50 +6,27 @@ import { Button } from '@/components/ui/button';
 import { LogIn, Wallet, Shield, Zap } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useSignMessage } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
   const { loginGoogle, loginWallet, user } = useAuth();
   const { address, isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
   const loginAttempted = useRef(false);
-  const router = useRouter();
 
-  // Auto-login when wallet connects inside the modal
+  // Auto-login when wallet connects
   useEffect(() => {
     if (isConnected && address && !user && !loginAttempted.current) {
       loginAttempted.current = true;
-      
-      const handleSiweLogin = async () => {
-        try {
-            const timestamp = Date.now();
-            const message = `Sign in to OppForge\n\nWelcome back, Hunter. Sign this message to authenticate your wallet. This costs zero gas.\n\nAddress: ${address}\nTimestamp: ${timestamp}`;
-            
-            const signature = await signMessageAsync({ message });
-            const result = await loginWallet(address, signature, message);
-
-            if (result?.success) {
-              onClose();
-              toast.success('Wallet verified securely!');
-              if (result.isNewUser) {
-                router.push('/onboarding');
-              }
-            } else {
-              loginAttempted.current = false;
-            }
-        } catch (err) {
-            console.error("Signature rejected or failed:", err);
-            toast.error("Signature required to authenticate");
-            loginAttempted.current = false;
+      loginWallet(address).then(success => {
+        if (success) {
+          onClose();
+          toast.success('Wallet connected successfully!');
         }
-      };
-
-      handleSiweLogin();
+      });
     }
-  }, [isConnected, address, user, loginWallet, onClose, signMessageAsync, router]);
+  }, [isConnected, address, user, loginWallet, onClose]);
 
   // Reset ref when modal closes
   useEffect(() => {
@@ -60,16 +37,10 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
 
   const handleGoogleSuccess = async (response) => {
     if (response.access_token) {
-      const result = await loginGoogle({ credential: response.access_token });
-      if (result?.success) {
+      const success = await loginGoogle({ credential: response.access_token });
+      if (success) {
         onClose();
-        if (result.isNewUser) {
-          // New user — send to onboarding
-          router.push('/onboarding');
-        } else {
-          toast.success('Welcome back, Hunter!');
-          // Returning user — stay on current page, FeatureGate auto-unlocks
-        }
+        toast.success('Welcome to the Forge!');
       }
     }
   };

@@ -41,7 +41,9 @@ def batch_score_opportunities():
 
                 if response.status_code == 200:
                     data = response.json().get("data", {})
-                    opp.ai_score = data.get("overall_score", 0)
+                    score = data.get("overall_score", 0)
+                    # Ensure ai_score is always an int (0-100)
+                    opp.ai_score = int(round(min(score, 100))) if score else 0
                     count += 1
                 else:
                     logger.warning(f"AI Engine returned {response.status_code} for opp {opp.id}")
