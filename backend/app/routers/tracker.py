@@ -3,9 +3,17 @@ from sqlalchemy.orm import Session
 import uuid
 import os
 import httpx
+import logging
 from typing import List
 from .. import database, models, schemas
 from .auth import get_current_user
+
+logger = logging.getLogger(__name__)
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
 
 router = APIRouter(
     prefix="/tracker",
@@ -151,60 +159,88 @@ async def generate_draft(
     opp = tracking.opportunity
     
     # Prompt Construction
-    prompt = f"""
-    Act as a Web3 Application Advisor. Generate a high-fidelity application draft for a mission.
-    
-    USER PROFILE:
-    - Name: {current_user.full_name}
-    - Bio: {current_user.bio}
-    - Skills: {", ".join(current_user.skills or [])}
-    
-    MISSION DETAILS:
-    - Title: {opp.title}
-    - Category: {opp.category}
-    - Requirements: {", ".join(opp.required_skills or [])}
-    - Briefing: {opp.ai_summary}
-    
-    GOAL: Write a 3-paragraph compelling proposal/application draft. 
-    1. Professional greeting and 'Why Me' based on user bio.
-    2. Tactical approach based on mission briefing.
-    3. Call to action.
-    
-    Output in Markdown format.
-    """
-    
-    # Call AI Engine for specialized drafting
-    AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
-    
-    ai_request = {
-        "message": f"MISSION_DRAFT_REQUEST: {opp.title}. Structure it as a 3-paragraph compelling proposal. Tone: Professional, Data-driven.",
-        "user_profile": {
-            "full_name": current_user.full_name,
-            "bio": current_user.bio,
-            "skills": current_user.skills or []
-        },
-        "opportunity": {
-            "title": opp.title,
-            "description": opp.description,
-            "category": opp.category,
-            "ai_summary": opp.ai_summary
-        }
-    }
+    prompt = f"""Act as a Web3 Application Advisor. Generate a high-fidelity application draft for a mission.
 
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{AI_ENGINE_URL}/ai/chat",
-                json=ai_request,
-                timeout=45.0
-            )
-            if resp.status_code == 200:
-                draft_content = resp.json().get("response", "AI Engine failed to return a draft.")
-                # Save snapshot
-                tracking.ai_strategy_notes = draft_content
-                db.commit()
-                return {"draft": draft_content}
-            else:
-                return {"draft": f"AI Engine error: {resp.status_code}"}
-    except Exception as e:
-        return {"draft": f"Communication error: {str(e)}"}
+USER PROFILE:
+- Name: {current_user.full_name}
+- Bio: {current_user.bio}
+- Skills: {", ".join(current_user.skills or [])}
+
+MISSION DETAILS:
+- Title: {opp.title}
+- Category: {opp.category}
+- Requirements: {", ".join(opp.required_skills or [])}
+- Briefing: {opp.ai_summary or opp.description}
+
+GOAL: Write a 3-paragraph compelling proposal/application draft.
+1. Professional greeting and 'Why Me' based on user bio.
+2. Tactical approach based on mission briefing.
+3. Call to action.
+
+Output in Markdown format."""
+
+    draft_content = None
+
+    # Strategy 1: Try AI Engine (if not localhost)
+    if AI_ENGINE_URL and "localhost" not in AI_ENGINE_URL:
+        ai_request = {
+            "message": f"MISSION_DRAFT_REQUEST: {opp.title}. Structure it as a 3-paragraph compelling proposal. Tone: Professional, Data-driven.",
+            "user_profile": {
+                "full_name": current_user.full_name,
+                "bio": current_user.bio,
+                "skills": current_user.skills or [],
+            },
+            "opportunity": {
+                "title": opp.title,
+                "description": opp.description,
+                "category": opp.category,
+                "ai_summary": opp.ai_summary,
+            },
+        }
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    f"{AI_ENGINE_URL}/ai/chat",
+                    json=ai_request,
+                    timeout=15.0,
+                )
+                if resp.status_code == 200:
+                    draft_content = resp.json().get("response")
+        except Exception as e:
+            logger.warning(f"AI Engine unreachable for draft, falling back to Groq: {e}")
+
+    # Strategy 2: Direct Groq API fallback
+    if not draft_content and GROQ_API_KEY:
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    GROQ_URL,
+                    headers={
+                        "Authorization": f"Bearer {GROQ_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": GROQ_MODEL,
+                        "messages": [
+                            {"role": "system", "content": "You are Forge AI, a Web3 opportunity advisor. Generate compelling, professional application drafts in Markdown format."},
+                            {"role": "user", "content": prompt},
+                        ],
+                        "temperature": 0.8,
+                        "max_tokens": 1500,
+                    },
+                    timeout=20.0,
+                )
+                if resp.status_code == 200:
+                    draft_content = resp.json()["choices"][0]["message"]["content"]
+                else:
+                    logger.error(f"Groq draft error: {resp.status_code}")
+        except Exception as e:
+            logger.error(f"Groq draft exception: {e}")
+
+    if not draft_content:
+        draft_content = "Forge AI is temporarily unavailable. Please try generating the draft again."
+
+    # Save snapshot
+    tracking.ai_strategy_notes = draft_content
+    db.commit()
+    return {"draft": draft_content}

@@ -15,6 +15,12 @@ const SUGGESTED_PROMPTS = [
 ]
 
 export default function ChatPanel() {
+  // ─── TEMPORARILY DISABLED ───
+  // Floating chatbot hidden while AI features are being stabilized.
+  // Users can use the full Forge AI page at /dashboard/chat instead.
+  // To re-enable: remove this early return.
+  return null
+
   const { user, isGuest } = useAuth()
   const router = useRouter()
   const params = useParams()

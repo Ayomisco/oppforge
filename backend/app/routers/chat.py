@@ -1,14 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import uuid
+import logging
 from typing import List, Optional
 from pydantic import BaseModel
 from .. import database, schemas
 from ..models.chat import ChatMessage
 from .auth import get_current_user, check_subscription_clearance
 import os
+import httpx
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/chat", tags=["chat"])
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
 
 class ChatRequest(BaseModel):
     message: str
@@ -18,6 +27,71 @@ class ChatResponse(BaseModel):
     role: str
     content: str
 
+
+async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict = None) -> str:
+    """Direct Groq API fallback when AI Engine service is unreachable."""
+    if not GROQ_API_KEY:
+        return "Forge AI is temporarily unavailable. Please try again later."
+
+    # Build system prompt
+    system_prompt = (
+        "You are Forge AI, a specialist Web3 opportunity advisor for OppForge. "
+        "You help users evaluate blockchain opportunities (grants, hackathons, bounties, testnets, ambassador programs), "
+        "draft proposals, analyze requirements, and build winning strategies. "
+        "Be concise, tactical, and data-driven. Use a professional but approachable tone."
+    )
+
+    # Build context
+    context_parts = []
+    if user_profile:
+        skills = user_profile.get("skills") or []
+        context_parts.append(
+            f"User: {user_profile.get('full_name', 'Operator')} | "
+            f"Skills: {', '.join(skills) if skills else 'Not specified'} | "
+            f"XP: {user_profile.get('xp', 0)} | Level: {user_profile.get('level', 1)}"
+        )
+    if opportunity:
+        context_parts.append(
+            f"Opportunity: {opportunity.get('title', 'Unknown')} | "
+            f"Category: {opportunity.get('category', 'N/A')} | "
+            f"Chain: {opportunity.get('chain', 'N/A')} | "
+            f"Reward: {opportunity.get('reward_pool', 'N/A')} | "
+            f"Requirements: {opportunity.get('mission_requirements', [])}"
+        )
+
+    user_content = message
+    if context_parts:
+        user_content = "CONTEXT:\n" + "\n".join(context_parts) + "\n\nUSER MESSAGE:\n" + message
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                GROQ_URL,
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": GROQ_MODEL,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_content},
+                    ],
+                    "temperature": 0.8,
+                    "max_tokens": 1000,
+                },
+                timeout=20.0,
+            )
+            if resp.status_code == 200:
+                return resp.json()["choices"][0]["message"]["content"]
+            else:
+                logger.error(f"Groq fallback error: {resp.status_code} - {resp.text[:200]}")
+                return "Forge AI is experiencing high load. Please try again in a moment."
+    except Exception as e:
+        logger.error(f"Groq fallback exception: {e}")
+        return "Forge AI is temporarily unavailable. Please try again later."
+
+
 @router.post("/", response_model=ChatResponse)
 async def send_message(
     req: ChatRequest,
@@ -26,6 +100,7 @@ async def send_message(
 ):
     """
     Send a message to Forge AI. Requires active subscription.
+    Tries AI Engine first, falls back to direct Groq API call.
     """
     # Save user message
     user_msg = ChatMessage(
@@ -35,25 +110,23 @@ async def send_message(
         related_opportunity_id=req.opportunity_id
     )
     db.add(user_msg)
-    
-    # Build Contextual Request for AI Engine
-    ai_request = {
-        "message": req.message,
-        "user_profile": {
-            "id": str(current_user.id),
-            "full_name": current_user.full_name,
-            "skills": current_user.skills,
-            "xp": current_user.xp,
-            "level": current_user.level,
-            "bio": current_user.bio
-        }
+
+    # Build context
+    user_profile = {
+        "id": str(current_user.id),
+        "full_name": current_user.full_name,
+        "skills": current_user.skills,
+        "xp": current_user.xp,
+        "level": current_user.level,
+        "bio": current_user.bio,
     }
-    
+
+    opportunity_context = None
     if req.opportunity_id:
         from ..models.opportunity import Opportunity
         opp = db.query(Opportunity).filter(Opportunity.id == req.opportunity_id).first()
         if opp:
-            ai_request["opportunity"] = {
+            opportunity_context = {
                 "id": str(opp.id),
                 "title": opp.title,
                 "description": opp.description,
@@ -61,26 +134,35 @@ async def send_message(
                 "chain": opp.chain,
                 "reward_pool": opp.reward_pool,
                 "trust_score": opp.trust_score,
-                "mission_requirements": opp.mission_requirements
+                "mission_requirements": opp.mission_requirements,
             }
 
-    # Call AI Engine Service (Decoupled Architecture)
-    AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
-    try:
-        import httpx
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{AI_ENGINE_URL}/ai/chat",
-                json=ai_request,
-                timeout=30.0
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                ai_content = data.get("response", "AI Engine failed to return response.")
-            else:
-                ai_content = f"Forge AI Engine offline (Status: {resp.status_code})."
-    except Exception as e:
-        ai_content = f"Communication failure with AI Engine: {str(e)[:100]}"
+    ai_content = None
+
+    # Strategy 1: Try AI Engine service (if URL is not localhost default)
+    if AI_ENGINE_URL and "localhost" not in AI_ENGINE_URL:
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    f"{AI_ENGINE_URL}/ai/chat",
+                    json={
+                        "message": req.message,
+                        "user_profile": user_profile,
+                        "opportunity": opportunity_context,
+                    },
+                    timeout=10.0,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    ai_content = data.get("response")
+        except Exception as e:
+            logger.warning(f"AI Engine unreachable, falling back to Groq: {e}")
+
+    # Strategy 2: Direct Groq API fallback (always available)
+    if not ai_content:
+        ai_content = await _call_groq_direct(
+            req.message, user_profile, opportunity_context
+        )
 
     # Save AI response
     ai_msg = ChatMessage(

@@ -93,8 +93,8 @@ export default function ChatPage() {
             <div>
               <h1 className="text-sm font-bold text-white uppercase tracking-wider">Forge AI <span className="text-[var(--accent-forge)]">v1.1</span></h1>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-mono text-green-500">REALTIME_CONNECTION_ACTIVE</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="text-[10px] font-mono text-green-500">ONLINE</span>
               </div>
             </div>
           </div>
