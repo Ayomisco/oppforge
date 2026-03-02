@@ -14,18 +14,99 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def send_daily_digests():
-    """Send daily opportunity digest to users"""
+    """Send daily opportunity digest to users with email notifications enabled."""
     db = SessionLocal()
     try:
         users = db.query(User).filter(User.email_notifications == True).all()
-        
         logger.info(f"📧 Sending digests to {len(users)} users...")
-        
-        # TODO: Implement email sending
-        
-        logger.info(f"✅ Digests sent")
-        return {"sent": len(users)}
-        
+
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+
+        # Get new opportunities from the last 24h
+        new_opps = db.query(Opportunity).filter(
+            Opportunity.created_at >= yesterday,
+            Opportunity.is_open == True,
+        ).order_by(Opportunity.ai_score.desc().nullslast()).limit(10).all()
+
+        if not new_opps:
+            logger.info("📭 No new opportunities to digest.")
+            return {"sent": 0, "reason": "no_new_opps"}
+
+        # Build opportunity list HTML
+        def build_opp_rows(opps):
+            rows = ""
+            for opp in opps:
+                score = opp.ai_score or 0
+                reward = opp.reward_pool or "Unspecified"
+                rows += f"""
+            <tr style="border-bottom: 1px solid #334155;">
+                <td style="padding: 12px 8px; color: #F8FAFC; font-weight: 600;">{opp.title}</td>
+                <td style="padding: 12px 8px; color: #94A3B8;">{opp.category or 'Unknown'}</td>
+                <td style="padding: 12px 8px; color: #10B981;">{reward}</td>
+                <td style="padding: 12px 8px; color: #FFAA00; text-align: center;">{score}</td>
+            </tr>"""
+            return rows
+
+        sent_count = 0
+        for user in users:
+            if not user.email:
+                continue
+            
+            # Respect user notification preferences
+            prefs = user.notification_settings or {}
+            
+            # Skip if frequency is instant (they already get realtime alerts, no digest)
+            freq = prefs.get("frequency", "instant")
+            # daily digest goes to users who want daily or instant
+            if freq == "weekly":
+                continue
+            
+            # Filter opportunities by user's category preferences
+            user_cats = prefs.get("categories", [])
+            cat_map = {"grants": "grant", "hackathons": "hackathon", "bounties": "bounty",
+                       "airdrops": "airdrop", "testnets": "testnet", "ambassador": "ambassador", "jobs": "job"}
+            allowed_cats = [cat_map.get(c, c) for c in user_cats] if user_cats else []
+            
+            # Filter by AI score threshold
+            score_threshold = prefs.get("ai_score_threshold", 0)
+            
+            user_opps = []
+            for opp in new_opps:
+                if allowed_cats and (opp.category or "").lower() not in allowed_cats:
+                    continue
+                if (opp.ai_score or 0) < score_threshold:
+                    continue
+                user_opps.append(opp)
+            
+            if not user_opps:
+                continue
+            opp_rows = build_opp_rows(user_opps)
+            title = f"🔥 {len(user_opps)} New Opportunities Today"
+            body = f"""
+            Hey {user.full_name or user.username or 'Explorer'},<br><br>
+            Here are the freshest web3 opportunities curated for you today:<br><br>
+            <table style="width:100%; border-collapse: collapse; margin: 16px 0;">
+                <tr style="border-bottom: 2px solid #FF5500;">
+                    <th style="text-align:left; padding:8px; color:#FF5500; font-size:12px;">MISSION</th>
+                    <th style="text-align:left; padding:8px; color:#FF5500; font-size:12px;">TYPE</th>
+                    <th style="text-align:left; padding:8px; color:#FF5500; font-size:12px;">REWARD</th>
+                    <th style="text-align:center; padding:8px; color:#FF5500; font-size:12px;">SCORE</th>
+                </tr>
+                {opp_rows}
+            </table>
+            <br>Don't miss out — the best opportunities go fast.
+            """
+            html = get_email_template(title, body, "https://app.oppforge.xyz/dashboard", "View All Opportunities")
+            try:
+                asyncio.run(send_email(user.email, title, html))
+                sent_count += 1
+            except Exception as e:
+                logger.error(f"[DailyDigest] Failed for {user.email}: {e}")
+
+        logger.info(f"✅ Digests sent to {sent_count} users")
+        return {"sent": sent_count}
+
     finally:
         db.close()
 

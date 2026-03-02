@@ -242,6 +242,30 @@ class IngestionPipeline:
                     prefs = user.notification_settings or {}
                     if not prefs.get("email_alerts", True): # Default True
                         continue
+                    
+                    # Respect frequency preference — skip instant if user wants digest only
+                    freq = prefs.get("frequency", "instant")
+                    if freq != "instant":
+                        continue
+                    
+                    # Respect new_opportunities toggle
+                    if not prefs.get("new_opportunities", True):
+                        continue
+                    
+                    # Respect AI score threshold
+                    ai_threshold = prefs.get("ai_score_threshold", 0)
+                    # Note: at ingestion time ai_score may not be set yet, so default pass
+
+                    # Respect category filters
+                    user_pref_cats = prefs.get("categories", [])
+                    if user_pref_cats:
+                        opp_cat = (opp["category"] or "").lower()
+                        # Map plural form from frontend to singular model category
+                        cat_map = {"grants": "grant", "hackathons": "hackathon", "bounties": "bounty", 
+                                   "airdrops": "airdrop", "testnets": "testnet", "ambassador": "ambassador", "jobs": "job"}
+                        allowed_cats = [cat_map.get(c, c) for c in user_pref_cats]
+                        if opp_cat and opp_cat not in allowed_cats:
+                            continue
 
                     # Match Logic:
                     # 1. Category Match

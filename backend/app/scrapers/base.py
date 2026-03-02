@@ -21,14 +21,25 @@ class BaseScraper(ABC):
         Parse raw data into standardized Opportunity dictionaries.
         Standard format:
         {
-            "title": str,
-            "url": str,
+            "title": str,              # Required
+            "url": str,                # Required
             "description": str,
             "source": str,
             "source_id": str,
             "posted_at": datetime,
-            "category": str,
-            "tags": list
+            "category": str,           # Grant, Hackathon, Bounty, Airdrop, etc.
+            "tags": list,
+            "chain": str,              # Ethereum, Solana, Multi-chain, etc.
+            "reward_pool": str,        # e.g. "$50,000"
+            "reward_token": str,       # e.g. "USDC"
+            "estimated_value_usd": float,
+            "start_date": datetime,    # When the opportunity opens/starts
+            "deadline": datetime,      # When the opportunity closes
+            "logo_url": str,
+            "required_skills": list,   # e.g. ["Rust", "Solidity"]
+            "is_verified": bool,
+            "winner_count": int,       # Number of winners/positions
+            "sub_category": str,       # DeFi, NFT, Infra, etc.
         }
         """
         pass

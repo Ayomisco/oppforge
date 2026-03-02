@@ -114,19 +114,40 @@ export default function SettingsPage() {
     }));
   };
 
-  const saveAlertPrefs = () => {
-    // Persist to localStorage for now (backend endpoint can be added later)
-    localStorage.setItem('oppforge_alert_prefs', JSON.stringify(alertPrefs));
-    toast.success('Alert preferences saved');
+  const saveAlertPrefs = async () => {
+    try {
+      const { data } = await api.put('/auth/profile', { notification_settings: alertPrefs });
+      setUser(data);
+      localStorage.setItem('oppforge_alert_prefs', JSON.stringify(alertPrefs));
+      toast.success('Alert preferences synced to your profile');
+    } catch (error) {
+      // Fallback to localStorage if backend fails
+      localStorage.setItem('oppforge_alert_prefs', JSON.stringify(alertPrefs));
+      toast.success('Alert preferences saved locally');
+      console.error('Failed to sync alert prefs to backend:', error);
+    }
   };
 
-  // Load alert prefs from localStorage
+  // Load alert prefs from backend user data, fallback to localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('oppforge_alert_prefs');
-    if (saved) {
-      try { setAlertPrefs(JSON.parse(saved)); } catch {}
+    if (user?.notification_settings) {
+      const ns = user.notification_settings;
+      setAlertPrefs(prev => ({
+        ...prev,
+        new_opportunities: ns.new_opportunities ?? prev.new_opportunities,
+        deadline_reminders: ns.deadline_reminders ?? prev.deadline_reminders,
+        ai_score_threshold: ns.ai_score_threshold ?? prev.ai_score_threshold,
+        categories: ns.categories ?? prev.categories,
+        frequency: ns.frequency ?? prev.frequency,
+        sound_enabled: ns.sound_enabled ?? prev.sound_enabled,
+      }));
+    } else {
+      const saved = localStorage.getItem('oppforge_alert_prefs');
+      if (saved) {
+        try { setAlertPrefs(JSON.parse(saved)); } catch {}
+      }
     }
-  }, []);
+  }, [user]);
 
   // Security state
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);

@@ -29,9 +29,14 @@ function usePlanStatus(user) {
     if (!user) return { label: 'SCOUT', color: 'text-gray-500', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/20', glow: '', isTrial: false, trialDaysLeft: 0, isActive: false }
     
     const isAdmin = user.role === 'admin' || user.role === 'ADMIN'
+    const isSubAdmin = user.role === 'sub_admin' || user.role === 'SUB_ADMIN'
+    const isStaff = isAdmin || isSubAdmin
     
     if (isAdmin) {
-      return { label: 'ADMIN_UNLOCKED', color: 'text-[#ffaa00]', bgColor: 'bg-[#ffaa00]/10', borderColor: 'border-[#ffaa00]/20', glow: 'shadow-[0_0_12px_rgba(255,170,0,0.3)]', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false }
+      return { label: 'ADMIN_UNLOCKED', color: 'text-[#ffaa00]', bgColor: 'bg-[#ffaa00]/10', borderColor: 'border-[#ffaa00]/20', glow: 'shadow-[0_0_12px_rgba(255,170,0,0.3)]', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false, isStaff: true, isAdmin: true }
+    }
+    if (isSubAdmin) {
+      return { label: 'SUB_ADMIN', color: 'text-[#3b82f6]', bgColor: 'bg-[#3b82f6]/10', borderColor: 'border-[#3b82f6]/20', glow: 'shadow-[0_0_12px_rgba(59,130,246,0.3)]', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false, isStaff: true, isAdmin: false }
     }
 
     const tier = user.tier || 'scout'
@@ -128,16 +133,24 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
 
 
 
-        {(user?.role === 'admin' || user?.role === 'ADMIN' || user?.role?.toLowerCase?.() === 'admin') && (
+        {(user?.role === 'admin' || user?.role === 'ADMIN' || user?.role === 'sub_admin' || user?.role === 'SUB_ADMIN' || user?.role?.toLowerCase?.() === 'admin' || user?.role?.toLowerCase?.() === 'sub_admin') && (
           <>
             <div className="mt-8 text-[9px] font-mono text-[#ffaa00] uppercase mb-3 pl-3">Intelligence HQ</div>
-            <button 
-              onClick={() => window.dispatchEvent(new CustomEvent('open-mission-upload'))}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-gray-400 hover:text-[#ffaa00] hover:bg-[#ffaa00]/10 transition-all duration-200 text-xs font-mono tracking-wide uppercase group"
-            >
-              <PlusSquare size={16} className="group-hover:rotate-90 transition-transform" />
-              <span>Deploy Mission</span>
-            </button>
+            <SidebarItem 
+              item={{ icon: ShieldCheck, label: 'Admin Dashboard', href: '/dashboard/admin' }}
+              isActive={pathname === '/dashboard/admin'}
+            />
+            {(user?.role === 'admin' || user?.role === 'ADMIN' || user?.role?.toLowerCase?.() === 'admin') && (
+              <>
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-mission-upload'))}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-gray-400 hover:text-[#ffaa00] hover:bg-[#ffaa00]/10 transition-all duration-200 text-xs font-mono tracking-wide uppercase group"
+                >
+                  <PlusSquare size={16} className="group-hover:rotate-90 transition-transform" />
+                  <span>Deploy Mission</span>
+                </button>
+              </>
+            )}
             <SidebarItem 
               item={{ icon: ShieldCheck, label: 'Audit Logs', href: '/dashboard/admin/audit' }}
               isActive={pathname === '/dashboard/admin/audit'}

@@ -66,6 +66,8 @@ class ETHGlobalScraper(BaseScraper):
                 "title": "ETHGlobal Denver 2026",
                 "description": "Join the brightest minds in Ethereum at the foot of the Rockies. A weekend of hacking, learning, and community building.",
                 "url": "https://ethglobal.com/events/denver2026",
+                "start_date": "Feb 27, 2026",
+                "end_date": "Mar 1, 2026",
                 "date": "Feb 27 – Mar 1, 2026",
                 "prize": "$500,000"
             },
@@ -74,6 +76,8 @@ class ETHGlobalScraper(BaseScraper):
                 "title": "ETHGlobal London 2026",
                 "description": "Ethereum comes to the heart of London. Build the decentralized future in one of the world's leading financial hubs.",
                 "url": "https://ethglobal.com/events/london2026",
+                "start_date": "April 10, 2026",
+                "end_date": "April 12, 2026",
                 "date": "April 10 – 12, 2026",
                 "prize": "$300,000"
             },
@@ -82,6 +86,8 @@ class ETHGlobalScraper(BaseScraper):
                 "title": "ETHGlobal Singapore 2026",
                 "description": "The largest Ethereum hackathon in Southeast Asia. Building the bridge to the next billion users.",
                 "url": "https://ethglobal.com/events/singapore2026",
+                "start_date": "September 18, 2026",
+                "end_date": "September 20, 2026",
                 "date": "September 18 – 20, 2026",
                 "prize": "$250,000"
             }
@@ -90,6 +96,10 @@ class ETHGlobalScraper(BaseScraper):
     def parse(self, raw_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         parsed = []
         for item in raw_data:
+            # Try to extract start & end from date range like "Feb 27 – Mar 1, 2026"
+            start_date = self._parse_event_date(item.get("start_date"))
+            end_date = self._parse_event_date(item.get("end_date"))
+
             parsed.append({
                 "title": item.get("title"),
                 "description": item.get("description", f"Premier Ethereum hackathon event: {item.get('title')}."),
@@ -100,6 +110,17 @@ class ETHGlobalScraper(BaseScraper):
                 "reward_pool": item.get("prize", "TBD"),
                 "chain": "Ethereum",
                 "tags": ["Ethereum", "Hackathon", "ETHGlobal"],
-                "deadline": item.get("date") # Ingestion pipeline handles parsing
+                "start_date": start_date,
+                "deadline": end_date or item.get("date"),
             })
         return parsed
+
+    def _parse_event_date(self, date_str):
+        """Parse human-readable date like 'Feb 27, 2026' or 'April 10, 2026'."""
+        if not date_str:
+            return None
+        try:
+            from dateutil.parser import parse as dateparse
+            return dateparse(date_str)
+        except Exception:
+            return None

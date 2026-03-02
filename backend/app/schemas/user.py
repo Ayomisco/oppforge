@@ -36,7 +36,7 @@ class UserUpdate(BaseModel):
     
     # Settings
     onboarded: Optional[bool] = None
-    notification_settings: Optional[Dict[str, bool]] = None
+    notification_settings: Optional[Dict[str, Any]] = None
     
     # Subscription
     tier: Optional[str] = None

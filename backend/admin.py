@@ -26,6 +26,29 @@ def promote_user(email: str):
     print(f"✅ User {email} promoted to ADMIN.")
     db.close()
 
+def promote_sub_admin(email: str):
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        print(f"❌ User with email {email} not found.")
+        return
+    user.role = UserRole.SUB_ADMIN
+    db.commit()
+    print(f"✅ User {email} promoted to SUB_ADMIN.")
+    db.close()
+
+def demote_user(email: str):
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        print(f"❌ User with email {email} not found.")
+        return
+    old_role = user.role
+    user.role = UserRole.USER
+    db.commit()
+    print(f"✅ User {email} demoted from {old_role} to USER.")
+    db.close()
+
 def list_users():
     db = SessionLocal()
     users = db.query(User).all()
@@ -55,6 +78,7 @@ def add_user(email: str, username: str, role: str = "user"):
     # Simple role mapping
     target_role = UserRole.USER
     if role.lower() == "admin": target_role = UserRole.ADMIN
+    elif role.lower() == "sub_admin" or role.lower() == "sub-admin": target_role = UserRole.SUB_ADMIN
     elif role.lower() == "moderator": target_role = UserRole.MODERATOR
 
     new_user = User(
@@ -169,6 +193,12 @@ def main():
     parser_promote = subparsers.add_parser("promote", help="Promote a user to ADMIN")
     parser_promote.add_argument("email", help="Email of the user")
 
+    parser_promote_sub = subparsers.add_parser("promote-sub-admin", help="Promote a user to SUB_ADMIN (analytics access, no user management)")
+    parser_promote_sub.add_argument("email", help="Email of the user")
+
+    parser_demote = subparsers.add_parser("demote", help="Demote a user back to regular USER")
+    parser_demote.add_argument("email", help="Email of the user")
+
     parser_list_users = subparsers.add_parser("users", help="List all users")
     
     parser_delete_user = subparsers.add_parser("delete-user", help="Delete a user")
@@ -206,6 +236,10 @@ def main():
 
     if args.command == "promote":
         promote_user(args.email)
+    elif args.command == "promote-sub-admin":
+        promote_sub_admin(args.email)
+    elif args.command == "demote":
+        demote_user(args.email)
     elif args.command == "users":
         list_users()
     elif args.command == "delete-user":

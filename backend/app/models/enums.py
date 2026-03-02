@@ -5,8 +5,10 @@ from ..database import Base
 class UserRole(str, enum.Enum):
     USER = "user"
     ADMIN = "admin"
+    SUB_ADMIN = "sub_admin"
     MODERATOR = "moderator"
 
-# Extend User Model with Role
-# We can't easily extend an existing class in SQLAlchemy like this without redefining or using mixins.
-# But since I just created the file, I can overwrite it with the new field included.
+# Helper sets for permission checks
+ADMIN_ROLES = {UserRole.ADMIN}
+STAFF_ROLES = {UserRole.ADMIN, UserRole.SUB_ADMIN}  # Can view analytics, audit
+MANAGEMENT_ROLES = {UserRole.ADMIN}  # Can edit users, manage data

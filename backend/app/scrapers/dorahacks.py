@@ -56,6 +56,7 @@ class DoraHacksScraper(BaseScraper):
                 "hackathon_id": "ethdenver-2026",
                 "description": "The largest Web3 #BUIDLathon in the world for Ethereum and other blockchain protocols.",
                 "total_prize": "$1,000,000",
+                "start_time": "2026-02-27T00:00:00Z",
                 "end_time": "2026-03-05T00:00:00Z",
                 "tags": ["Ethereum", "DeFi", "DAO", "NFT"],
                 "logo": "https://pbs.twimg.com/profile_images/1628160278839029761/9c894291_400x400.jpg"
@@ -65,6 +66,7 @@ class DoraHacksScraper(BaseScraper):
                 "hackathon_id": "solana-renaissance",
                 "description": "Global hackathon focused on bringing the next wave of high-impact projects to the Solana ecosystem.",
                 "total_prize": "$500,000",
+                "start_time": "2026-03-25T00:00:00Z",
                 "end_time": "2026-04-15T00:00:00Z",
                 "tags": ["Solana", "Rust", "Mobile", "Payments"],
                 "logo": "https://solana.com/_next/static/media/solana-gradient.567c9360.svg"
@@ -74,6 +76,7 @@ class DoraHacksScraper(BaseScraper):
                 "hackathon_id": "chainlink-constellation",
                 "description": "Build the next generation of connected smart contracts using Chainlink CCIP and Data Feeds.",
                 "total_prize": "$350,000",
+                "start_time": "2026-04-10T00:00:00Z",
                 "end_time": "2026-05-01T00:00:00Z",
                 "tags": ["Chainlink", "Cross-chain", "Oracle"],
                 "logo": "https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760a499b56c47b8fa74fbb_chainlink-logo.svg"
@@ -140,6 +143,7 @@ class DoraHacksScraper(BaseScraper):
                         "category": "Hackathon",
                         "source": "DoraHacks",
                         "reward_pool": item.get("total_prize", "TBD"),
+                        "start_date": self._parse_date(item.get("start_time", item.get("begin_time"))),
                         "deadline": self._parse_date(item.get("end_time")),
                         "chain": self._extract_chain(item.get("tags", [])),
                         "tags": item.get("tags", []),

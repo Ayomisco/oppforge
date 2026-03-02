@@ -68,6 +68,7 @@ class Code4renaScraper(BaseScraper):
                 "description": "Comprehensive security review of the latest Orbit chain configurations and customizable L3 parameters.",
                 "url": "https://code4rena.com/contests/2026-03-arbitrum-orbit",
                 "prize": "$120,000",
+                "start_date": "March 5, 2026",
                 "end_date": "March 20, 2026"
             },
             {
@@ -76,6 +77,7 @@ class Code4renaScraper(BaseScraper):
                 "description": "Audit of the core consensus and liquidity modules for the Berachain V2 mainnet launch.",
                 "url": "https://code4rena.com/contests/2026-04-berachain-v2",
                 "prize": "$250,000",
+                "start_date": "March 20, 2026",
                 "end_date": "April 5, 2026"
             }
         ]
@@ -91,8 +93,9 @@ class Code4renaScraper(BaseScraper):
                 "source_id": item.get("id"),
                 "category": "Bounty",
                 "reward_pool": item.get("prize"),
-                "chain": "Multi-chain" if "Arbitrum" not in item.get("title") else "Arbitrum",
+                "chain": "Multi-chain" if "Arbitrum" not in item.get("title", "") else "Arbitrum",
                 "tags": ["Security", "Audit", "Code4rena"],
+                "start_date": item.get("start_date"),
                 "deadline": item.get("end_date")
             })
         return parsed

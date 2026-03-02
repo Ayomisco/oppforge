@@ -13,14 +13,26 @@ This is the most critical command for establishing control. It grants a user ful
 python admin.py promote <user_email>
 ```
 
+### **Roles & Permissions**
+
+OppForge uses a tiered role system managed exclusively via CLI.
+
+| Role | Dashboard Analytics | Audit Logs | Manage Users | Edit/Flag Opps | Create Opps | Send Notifications |
+|------|:------------------:|:----------:|:------------:|:--------------:|:-----------:|:------------------:|
+| **ADMIN** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **SUB_ADMIN** | ✅ | ✅ | ❌ | Flag Only | ❌ | ❌ |
+| **USER** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
 ### **Full User Management Commands**
 Manage users, roles, and search findings.
 
 | Command | Description | Example |
-|---------|-------------|---------|
+|---------|-------------|----------|
 | `promote` | **Grant ADMIN privileges** | `python admin.py promote pilot@forge.xyz` |
+| `promote-sub-admin` | **Grant SUB_ADMIN privileges** (analytics + audit only) | `python admin.py promote-sub-admin analyst@forge.xyz` |
+| `demote` | **Demote any staff back to USER** | `python admin.py demote pilot@forge.xyz` |
 | `users` | List all registered users | `python admin.py users` |
-| `add-user` | Create a user manually | `python admin.py add-user pilot@forge.xyz skyhunter` |
+| `add-user` | Create a user manually (supports `--role admin/sub_admin/user`) | `python admin.py add-user pilot@forge.xyz skyhunter --role sub_admin` |
 | `search-user` | Search by email or username | `python admin.py search-user pilot@` |
 | `delete-user` | Permanent account removal | `python admin.py delete-user pilot@forge.xyz` |
 

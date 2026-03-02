@@ -87,6 +87,7 @@ class Opportunity(Base):
             "chain": self.chain,
             "reward_pool": self.reward_pool,
             "deadline": self.deadline.isoformat() if self.deadline else None,
+            "start_date": self.start_date.isoformat() if self.start_date else None,
             "source": self.source,
             "tags": self.tags,
             "required_skills": self.required_skills,

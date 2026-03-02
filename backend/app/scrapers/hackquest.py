@@ -85,6 +85,7 @@ class HackQuestScraper(BaseScraper):
                 "link": "https://hackquest.io/hackathon/manta",
                 "description": "Build ZK applications on Manta Pacific. Focus on privacy and scalability.",
                 "reward": "$50,000",
+                "start_date": "2026-03-01T00:00:00Z",
                 "deadline": "2026-04-01T00:00:00Z",
                 "chain": "Manta",
                 "tags": ["ZK", "Privacy", "Manta"]
@@ -94,6 +95,7 @@ class HackQuestScraper(BaseScraper):
                 "link": "https://hackquest.io/hackathon/sui",
                 "description": "Global competition to build the next generation of on-chain gaming and DeFi on Sui.",
                 "reward": "$100,000",
+                "start_date": "2026-04-15T00:00:00Z",
                 "deadline": "2026-05-20T00:00:00Z",
                 "chain": "Sui",
                 "tags": ["Sui", "Move", "Gaming"]
@@ -113,8 +115,10 @@ class HackQuestScraper(BaseScraper):
                     "category": "Hackathon",
                     "source": "HackQuest",
                     "reward_pool": item.get("prize", item.get("reward", "TBD")),
-                    "chain": "Multi-chain",
-                    "tags": ["hackathon", "hackquest", "web3"],
+                    "start_date": item.get("start_date", item.get("startTime")),
+                    "deadline": item.get("deadline", item.get("endTime")),
+                    "chain": item.get("chain", "Multi-chain"),
+                    "tags": item.get("tags", ["hackathon", "hackquest", "web3"]),
                     "source_id": item.get("name"),
                 }
                 

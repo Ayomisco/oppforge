@@ -61,6 +61,7 @@ class SuperteamScraper(BaseScraper):
                 "title": "Build a Specialized DePIN Dashboard",
                 "description": "Create a dashboard for tracking DePIN metrics on Solana. Must aggregate data from at least 3 protocols.",
                 "rewards": {"amount": "5,000", "token": "USDC"}, 
+                "publishedAt": "2026-02-20T00:00:00Z",
                 "deadline": "2026-03-20T00:00:00Z",
                 "type": "bounty",
                 "skills": ["React", "Data Visualization", "Solana"],
@@ -72,6 +73,7 @@ class SuperteamScraper(BaseScraper):
                 "title": "Deep Dive Thread on Monad Parallel Execution",
                 "description": "Write a comprehensive Twitter thread explaining Monad's parallel execution model for technical audience.",
                 "rewards": {"amount": "1,000", "token": "USDC"},
+                "publishedAt": "2026-02-25T00:00:00Z",
                 "deadline": "2026-03-10T00:00:00Z",
                 "type": "bounty",
                 "skills": ["Content Writing", "Technical Analysis", "Monad"],
@@ -102,6 +104,7 @@ class SuperteamScraper(BaseScraper):
                     "category": category,
                     "source": "Superteam",
                     "reward_pool": self._format_reward(listing.get("rewards", listing.get("compensationType"))),
+                    "start_date": self._parse_date(listing.get("publishedAt", listing.get("startDate"))),
                     "deadline": self._parse_date(listing.get("deadline")),
                     "chain": "Solana",  # Superteam is Solana-focused
                     "tags": listing.get("skills", []) + ["solana", "superteam"],

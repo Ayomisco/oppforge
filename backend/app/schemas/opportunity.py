@@ -17,6 +17,7 @@ class OpportunityBase(BaseModel):
     
     reward_pool: Optional[str] = None
     reward_token: Optional[str] = None
+    start_date: Optional[datetime] = None
     deadline: Optional[datetime] = None
     
     is_open: bool = True
@@ -25,7 +26,10 @@ class OpportunityCreate(OpportunityBase):
     source_id: Optional[str] = None
     source_url: Optional[str] = None
     posted_at: Optional[datetime] = None
+    estimated_value_usd: Optional[float] = None
+    winner_count: Optional[int] = None
     mission_requirements: List[str] = []
+    required_skills: List[str] = []
     trust_score: int = 100
 
 class OpportunityResponse(OpportunityBase):
@@ -57,6 +61,11 @@ class OpportunityResponse(OpportunityBase):
     required_skills: List[str] = []
     mission_requirements: List[str] = [] # Real field from DB
     trust_score: int = 70
+    
+    # Timeline
+    start_date: Optional[datetime] = None
+    estimated_value_usd: Optional[float] = None
+    winner_count: Optional[int] = None
     
     # Risk Assessment
     risk_score: Optional[int] = None

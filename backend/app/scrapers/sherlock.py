@@ -17,6 +17,7 @@ class SherlockScraper(BaseScraper):
                 "description": "Sherlock contest for Pendle's new modular yield strategy architecture.",
                 "url": "https://sherlock.xyz/audits/contests/142",
                 "prize": "$150,000",
+                "start_date": "2026-03-01",
                 "deadline": "2026-03-15"
             },
             {
@@ -25,6 +26,7 @@ class SherlockScraper(BaseScraper):
                 "description": "Critical security review of Ethena's delta-neutral reserve contracts.",
                 "url": "https://sherlock.xyz/audits/contests/145",
                 "prize": "$200,000",
+                "start_date": "2026-03-25",
                 "deadline": "2026-04-10"
             }
         ]
@@ -42,6 +44,7 @@ class SherlockScraper(BaseScraper):
                 "reward_pool": item.get("prize"),
                 "chain": "Ethereum",
                 "tags": ["Security", "Audit", "Sherlock"],
+                "start_date": item.get("start_date", item.get("starts_at")),
                 "deadline": item.get("deadline")
             })
         return parsed

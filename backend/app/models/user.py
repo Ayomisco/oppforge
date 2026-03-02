@@ -64,7 +64,13 @@ class User(Base):
         "email_alerts": True,
         "push_alerts": False,
         "weekly_digest": True,
-        "marketing_emails": False
+        "marketing_emails": False,
+        "new_opportunities": True,
+        "deadline_reminders": True,
+        "ai_score_threshold": 0,
+        "categories": ["grants", "hackathons", "bounties", "airdrops", "testnets", "ambassador", "jobs"],
+        "frequency": "instant",
+        "sound_enabled": False
     })
 
     # Timestamps

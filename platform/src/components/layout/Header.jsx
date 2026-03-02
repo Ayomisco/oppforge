@@ -1,15 +1,89 @@
 'use client'
 
-import React from 'react'
-import { Search, Bell, Wallet } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { Search, Bell, Wallet, CheckCheck, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/providers/AuthProvider'
-import { useState } from 'react'
+import useSWR from 'swr'
+import api from '@/lib/api'
+import { formatDistanceToNow } from 'date-fns'
+
+const fetcher = url => api.get(url).then(res => res.data)
+
+function NotificationPanel({ onClose }) {
+  const { data: notifs, mutate } = useSWR('/notifications', fetcher, { refreshInterval: 30000 })
+  
+  const markRead = async (id) => {
+    try {
+      await api.put(`/notifications/${id}/read`)
+      mutate()
+    } catch {}
+  }
+  const markAllRead = async () => {
+    try {
+      await api.put('/notifications/read-all')
+      mutate()
+    } catch {}
+  }
+
+  const typeColors = {
+    info: 'bg-blue-500', success: 'bg-green-500', warning: 'bg-yellow-500', alert: 'bg-red-500',
+  }
+
+  return (
+    <div className="absolute right-0 top-12 w-80 max-h-96 bg-[#111] border border-white/10 rounded-lg shadow-2xl z-50 overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+        <span className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">Notifications</span>
+        <div className="flex items-center gap-2">
+          <button onClick={markAllRead} className="text-[9px] font-mono text-[#ff5500] hover:text-white transition-colors flex items-center gap-1">
+            <CheckCheck size={10} /> Read All
+          </button>
+          <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={14} /></button>
+        </div>
+      </div>
+      <div className="overflow-y-auto max-h-72">
+        {(notifs || []).length === 0 && (
+          <div className="p-8 text-center text-gray-600 font-mono text-[10px]">NO SIGNALS DETECTED</div>
+        )}
+        {(notifs || []).map(n => (
+          <div 
+            key={n.id} 
+            onClick={() => { markRead(n.id); if (n.link) window.location.href = n.link }}
+            className={`px-4 py-3 border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors ${!n.is_read ? 'bg-[#ff5500]/[0.03]' : ''}`}
+          >
+            <div className="flex items-start gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${!n.is_read ? 'bg-[#ff5500] shadow-[0_0_6px_#ff5500]' : 'bg-gray-700'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-white font-bold truncate">{n.title}</div>
+                {n.message && <div className="text-[10px] text-gray-500 mt-0.5 line-clamp-2">{n.message}</div>}
+                <div className="text-[9px] text-gray-600 font-mono mt-1">
+                  {formatDistanceToNow(new Date(n.created_at), { addSuffix: true }).toUpperCase()}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function Header({ onMenuClick }) {
   const router = useRouter()
   const { isGuest, openLoginModal } = useAuth()
   const [query, setQuery] = useState('')
+  const [showNotifs, setShowNotifs] = useState(false)
+  const notifRef = useRef(null)
+  
+  const { data: unreadData } = useSWR(!isGuest ? '/notifications/unread-count' : null, fetcher, { refreshInterval: 30000 })
+  const unreadCount = unreadData?.count || 0
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotifs(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && query.trim()) {
@@ -63,10 +137,20 @@ export default function Header({ onMenuClick }) {
         ) : (
           <>
             {/* Notifications */}
-            <button className="p-2 relative text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
-              <Bell size={18} />
-              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#ff5500] shadow-[0_0_8px_#ff5500]" />
-            </button>
+            <div className="relative" ref={notifRef}>
+              <button 
+                onClick={() => setShowNotifs(!showNotifs)}
+                className="p-2 relative text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all group"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-[#ff5500] text-[8px] font-bold text-white px-1 shadow-[0_0_8px_#ff5500]">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {showNotifs && <NotificationPanel onClose={() => setShowNotifs(false)} />}
+            </div>
           </>
         )}
 
