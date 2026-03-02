@@ -41,12 +41,15 @@ class OpportunityResponse(OpportunityBase):
         """Coerce float ai_score from AI engine to int (0-100)."""
         if v is None:
             return 0
-        if isinstance(v, float):
-            # Handle raw similarity scores (0.0-1.0 range)
-            if v < 1.0 and v > 0:
-                return int(round(v * 100))
-            return int(round(min(v, 100)))
-        return int(v)
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return 0
+        # Handle raw similarity scores (0.0-1.0 range)
+        if 0 < v < 1.0:
+            return int(round(v * 100))
+        return int(round(max(0, min(v, 100))))
+
     ai_summary: Optional[str] = None
     ai_strategy: Optional[str] = None
     win_probability: str = "Medium"

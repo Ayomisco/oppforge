@@ -14,7 +14,11 @@ from .models.audit import AuditLog # Ensures table creation
 # Create Tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="OppForge API", version="0.1.0")
+app = FastAPI(
+    title="OppForge API",
+    version="0.1.0",
+    redirect_slashes=False,  # Prevent 307 redirects that cause mixed-content errors
+)
 
 # CORS
 origins = [

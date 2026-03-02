@@ -104,93 +104,50 @@ def get_priority_stream(
     current_user = Depends(get_optional_user)
 ):
     """
-    Personalized stream based on user skills and preferred chains.
-    Calculates a dynamic score: AI Base Score + Match Bonus.
-    Only shows current/future opportunities (not expired).
+    Personalized priority stream.
+    Returns open/future opportunities sorted by AI score + user match bonus.
+    Fast: no per-item AI engine calls — uses pre-computed scores from DB.
     """
     from datetime import datetime
     
-    # Filter: is_open AND (no deadline OR deadline >= today)
-    # Order by: deadline ASC (soonest first), then created_at DESC (newest first)
-    all_opps = db.query(Opportunity).filter(
+    # Base query: open and not expired
+    query = db.query(Opportunity).filter(
         Opportunity.is_open == True,
         or_(
             Opportunity.deadline == None,
             Opportunity.deadline >= datetime.now()
         )
-    ).order_by(
-        Opportunity.deadline.asc().nullslast(),  # Soonest deadlines first, no deadline at end
-        desc(Opportunity.created_at)  # Then newest first
-    ).all()
+    )
     
-    # Build User Profile for AI Engine
-    user_profile = None
+    # If logged in, boost scores for matching skills/chains (in-memory, lightweight)
+    all_opps = query.order_by(
+        Opportunity.deadline.asc().nullslast(),
+        desc(Opportunity.created_at)
+    ).limit(50).all()
+    
     if current_user:
-        user_profile = {
-            "skills": current_user.skills,
-            "experience_level": current_user.experience_level,
-            "preferred_chains": current_user.preferred_chains,
-            "bio": current_user.bio
-        }
-    
-    AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
-    
-    scored_opps = []
-    
-    # Batch process for performance or individual calls (individual for now)
-    for opp in all_opps:
-        # 1. Start with AI Engine Semantic Score
-        semantic_score = None
-        try:
-            import requests # Fast synchronous for this loop
-            resp = requests.post(
-                f"{AI_ENGINE_URL}/ai/match-score",
-                json={
-                    "opportunity": {
-                        "title": opp.title,
-                        "description": opp.description,
-                        "tags": opp.tags
-                    },
-                    "user_profile": user_profile
-                },
-                timeout=0.5 # Fail fast
-            )
-            if resp.status_code == 200:
-                semantic_score = resp.json().get("match_score")
-        except:
-            pass
-
-        if semantic_score is not None:
-            # AI engine should return 0-100, but handle both 0-1 and 0-100 ranges
-            if semantic_score <= 1.0:
-                # Raw similarity score (0.0-1.0), convert to 0-100
-                opp.ai_score = int(round(semantic_score * 100))
-            else:
-                # Already on 0-100 scale, just round to int
-                opp.ai_score = int(round(min(semantic_score, 100)))
-        else:
-            # Fallback to manual match scoring (Heuristic)
-            current_ai_score = opp.ai_score or 0
-            if current_user:
-                user_skills = set(current_user.skills or [])
-                user_chains = set(current_user.preferred_chains or [])
-                match_bonus = 0
-                opp_tags = set(opp.tags or [])
-                opp_reqs = set(opp.required_skills or [])
-                
-                skill_matches = user_skills.intersection(opp_tags.union(opp_reqs))
-                match_bonus += len(skill_matches) * 5
-                if opp.chain in user_chains:
-                    match_bonus += 10
-                    
-                opp.ai_score = min(current_ai_score + match_bonus, 100)
-            else:
-                pass # Baseline scores for guests
-                
-        scored_opps.append(opp)
+        user_skills = set(s.lower() for s in (current_user.skills or []))
+        user_chains = set(c.lower() for c in (current_user.preferred_chains or []))
         
-    scored_opps.sort(key=lambda x: (x.ai_score or 0), reverse=True)
-    return scored_opps[:20]
+        for opp in all_opps:
+            base_score = opp.ai_score or 0
+            # Ensure base_score is int
+            if isinstance(base_score, float):
+                base_score = int(round(base_score * 100)) if base_score < 1.0 else int(round(base_score))
+            match_bonus = 0
+            opp_tags = set(t.lower() for t in (opp.tags or []))
+            opp_reqs = set(r.lower() for r in (opp.required_skills or []))
+            
+            skill_matches = user_skills.intersection(opp_tags.union(opp_reqs))
+            match_bonus += len(skill_matches) * 5
+            if opp.chain and opp.chain.lower() in user_chains:
+                match_bonus += 10
+            
+            opp.ai_score = min(base_score + match_bonus, 100)
+        
+        all_opps.sort(key=lambda x: (x.ai_score or 0), reverse=True)
+    
+    return all_opps[:20]
 
 @router.get("/testnets", response_model=List[schemas.OpportunityResponse])
 def get_testnets(db: Session = Depends(database.get_db)):
