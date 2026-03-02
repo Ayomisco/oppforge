@@ -20,7 +20,7 @@ router = APIRouter(
     tags=["tracker"]
 )
 
-@router.get("/", response_model=List[schemas.TrackedAppResponse])
+@router.get("", response_model=List[schemas.TrackedAppResponse])
 def get_tracked_apps(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     """
     Get all tracked applications for current user.
@@ -29,7 +29,7 @@ def get_tracked_apps(db: Session = Depends(database.get_db), current_user = Depe
         models.TrackedApplication.user_id == current_user.id
     ).all()
 
-@router.post("/", response_model=schemas.TrackedAppResponse)
+@router.post("", response_model=schemas.TrackedAppResponse)
 def track_opportunity(
     track_data: schemas.TrackedAppCreate, 
     db: Session = Depends(database.get_db), 

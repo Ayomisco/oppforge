@@ -12,7 +12,7 @@ from ..models.enums import UserRole
 
 router = APIRouter(prefix="/opportunities", tags=["opportunities"])
 
-@router.post("/", response_model=schemas.OpportunityResponse)
+@router.post("", response_model=schemas.OpportunityResponse)
 def create_opportunity(
     payload: schemas.OpportunityCreate,
     db: Session = Depends(database.get_db),
@@ -55,7 +55,7 @@ def create_opportunity(
     db.refresh(new_opp)
     return new_opp
 
-@router.get("/", response_model=List[schemas.OpportunityResponse])
+@router.get("", response_model=List[schemas.OpportunityResponse])
 def read_opportunities(
     skip: int = 0, 
     limit: int = 50, 

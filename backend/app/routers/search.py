@@ -26,7 +26,7 @@ class SearchResponse(BaseModel):
     total_found: int
     query: str
 
-@router.get("/", response_model=SearchResponse)
+@router.get("", response_model=SearchResponse)
 def search_ops(q: str, limit: int = 10, category: Optional[str] = None, chain: Optional[str] = None, db: Session = Depends(get_db)):
     """
     Search opportunities using semantic vector search powered by ChromaDB.

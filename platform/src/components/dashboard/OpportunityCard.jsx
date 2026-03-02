@@ -11,12 +11,26 @@ import toast from 'react-hot-toast'
 
 // Score ring component
 const ScoreRing = ({ score }) => {
-  const color = score >= 90 ? '#ff5500' : score >= 70 ? '#ffaa00' : '#4b5563'
+  const circumference = 2 * Math.PI * 16 // ~100.53
+  
+  if (!score || score === 0) {
+    return (
+      <div className="relative w-10 h-10 flex items-center justify-center">
+        <svg className="w-full h-full -rotate-90">
+          <circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-800" />
+        </svg>
+        <span className="absolute text-[8px] font-bold text-gray-500 uppercase">New</span>
+      </div>
+    )
+  }
+
+  const color = score >= 90 ? '#ff5500' : score >= 70 ? '#ffaa00' : score >= 40 ? '#3b82f6' : '#4b5563'
+  const offset = circumference - (score / 100) * circumference
   return (
     <div className="relative w-10 h-10 flex items-center justify-center">
        <svg className="w-full h-full -rotate-90">
          <circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-800" />
-         <circle cx="20" cy="20" r="16" fill="none" stroke={color} strokeWidth="2" strokeDasharray="100" strokeDashoffset={100 - score} strokeLinecap="round" />
+         <circle cx="20" cy="20" r="16" fill="none" stroke={color} strokeWidth="2" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
        </svg>
        <span className="absolute text-[10px] font-bold text-white">{score}</span>
     </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt, Mail } from 'lucide-react';
+import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt, Mail, Eye, EyeOff, Key, Smartphone, AlertTriangle, Clock, Filter, Volume2, VolumeX } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -15,6 +15,7 @@ export default function SettingsPage() {
   const { user, loading: authLoading, setUser } = useAuth();
   const { address, isConnected } = useAccount();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
     username: '',
     first_name: '',
@@ -94,6 +95,48 @@ export default function SettingsPage() {
     onError: () => toast.error('Google linking failed'),
   });
 
+  // Alert preferences state
+  const [alertPrefs, setAlertPrefs] = useState({
+    new_opportunities: true,
+    deadline_reminders: true,
+    ai_score_threshold: 70,
+    categories: ['grants', 'hackathons', 'bounties', 'airdrops', 'testnets'],
+    frequency: 'instant',
+    sound_enabled: false,
+  });
+
+  const toggleAlertCategory = (cat) => {
+    setAlertPrefs(prev => ({
+      ...prev,
+      categories: prev.categories.includes(cat)
+        ? prev.categories.filter(c => c !== cat)
+        : [...prev.categories, cat],
+    }));
+  };
+
+  const saveAlertPrefs = () => {
+    // Persist to localStorage for now (backend endpoint can be added later)
+    localStorage.setItem('oppforge_alert_prefs', JSON.stringify(alertPrefs));
+    toast.success('Alert preferences saved');
+  };
+
+  // Load alert prefs from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('oppforge_alert_prefs');
+    if (saved) {
+      try { setAlertPrefs(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  // Security state
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: '', new_password: '', confirm: '' });
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [sessions, setSessions] = useState([
+    { id: 1, device: 'Current Browser', location: 'Active Session', last_active: 'Now', current: true },
+  ]);
+
   if (authLoading) return (
     <div className="max-w-4xl mx-auto py-8 px-4 space-y-8">
       <div className="flex justify-between items-center">
@@ -127,18 +170,26 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Navigation Tabs (Vertical for settings) */}
         <div className="lg:col-span-1 space-y-1">
-           <button className="w-full flex items-center gap-3 px-4 py-3 rounded bg-[#ff5500]/10 text-[#ff5500] border border-[#ff5500]/20 text-xs font-bold uppercase tracking-widest">
-             <User size={16} /> Profile
-           </button>
-           <button className="w-full flex items-center gap-3 px-4 py-3 rounded text-gray-400 hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-colors">
-             <Bell size={16} /> Alerts
-           </button>
-           <button className="w-full flex items-center gap-3 px-4 py-3 rounded text-gray-400 hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-colors">
-             <Shield size={16} /> Security
-           </button>
+           {[
+             { key: 'profile', icon: User, label: 'Profile' },
+             { key: 'alerts', icon: Bell, label: 'Alerts' },
+             { key: 'security', icon: Shield, label: 'Security' },
+           ].map(tab => (
+             <button 
+               key={tab.key}
+               onClick={() => setActiveTab(tab.key)}
+               className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-widest transition-colors ${
+                 activeTab === tab.key 
+                   ? 'bg-[#ff5500]/10 text-[#ff5500] border border-[#ff5500]/20' 
+                   : 'text-gray-400 hover:bg-white/5 border border-transparent'
+               }`}
+             >
+               <tab.icon size={16} /> {tab.label}
+             </button>
+           ))}
            <button 
                onClick={() => window.location.href = '/dashboard/settings/billing'}
-               className="w-full flex items-center gap-3 px-4 py-3 rounded text-gray-400 hover:text-[#ff5500] hover:bg-[#ff5500]/5 text-xs font-bold uppercase tracking-widest transition-colors"
+               className="w-full flex items-center gap-3 px-4 py-3 rounded text-gray-400 hover:text-[#ff5500] hover:bg-[#ff5500]/5 text-xs font-bold uppercase tracking-widest transition-colors border border-transparent"
              >
                <Receipt size={16} /> Billing
              </button>
@@ -146,6 +197,240 @@ export default function SettingsPage() {
 
         {/* Content Area */}
         <div className="lg:col-span-3 space-y-6">
+
+          {/* ========== ALERTS TAB ========== */}
+          {activeTab === 'alerts' && (
+            <>
+              <div className="glass-card p-6 space-y-6">
+                <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+                  // Notification Preferences
+                </h3>
+
+                {/* Toggle Switches */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <Zap size={16} className="text-[#ff5500]" />
+                      <div>
+                        <p className="text-sm text-white font-bold">New Opportunities</p>
+                        <p className="text-[10px] text-gray-500 font-mono">Get notified when new missions match your profile</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setAlertPrefs(p => ({ ...p, new_opportunities: !p.new_opportunities }))}
+                      className={`w-11 h-6 rounded-full transition-colors relative ${alertPrefs.new_opportunities ? 'bg-[#ff5500]' : 'bg-gray-700'}`}
+                    >
+                      <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${alertPrefs.new_opportunities ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <Clock size={16} className="text-[#ffaa00]" />
+                      <div>
+                        <p className="text-sm text-white font-bold">Deadline Reminders</p>
+                        <p className="text-[10px] text-gray-500 font-mono">Alert 24h before tracked mission deadlines</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setAlertPrefs(p => ({ ...p, deadline_reminders: !p.deadline_reminders }))}
+                      className={`w-11 h-6 rounded-full transition-colors relative ${alertPrefs.deadline_reminders ? 'bg-[#ff5500]' : 'bg-gray-700'}`}
+                    >
+                      <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${alertPrefs.deadline_reminders ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded border border-white/5">
+                    <div className="flex items-center gap-3">
+                      {alertPrefs.sound_enabled ? <Volume2 size={16} className="text-green-400" /> : <VolumeX size={16} className="text-gray-500" />}
+                      <div>
+                        <p className="text-sm text-white font-bold">Sound Alerts</p>
+                        <p className="text-[10px] text-gray-500 font-mono">Play notification sound for new alerts</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setAlertPrefs(p => ({ ...p, sound_enabled: !p.sound_enabled }))}
+                      className={`w-11 h-6 rounded-full transition-colors relative ${alertPrefs.sound_enabled ? 'bg-[#ff5500]' : 'bg-gray-700'}`}
+                    >
+                      <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${alertPrefs.sound_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Score Threshold */}
+              <div className="glass-card p-6 space-y-4">
+                <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+                  // AI Score Filter
+                </h3>
+                <p className="text-[11px] text-gray-400">Only notify me about opportunities with AI score above:</p>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="range" min="0" max="100" step="5"
+                    value={alertPrefs.ai_score_threshold}
+                    onChange={(e) => setAlertPrefs(p => ({ ...p, ai_score_threshold: parseInt(e.target.value) }))}
+                    className="flex-1 accent-[#ff5500]"
+                  />
+                  <span className="text-lg font-bold text-[#ff5500] font-mono w-12 text-right">{alertPrefs.ai_score_threshold}</span>
+                </div>
+              </div>
+
+              {/* Category Filters */}
+              <div className="glass-card p-6 space-y-4">
+                <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+                  <Filter size={12} className="inline mr-2" /> Category Filters
+                </h3>
+                <p className="text-[11px] text-gray-400 mb-3">Select which categories trigger notifications:</p>
+                <div className="flex flex-wrap gap-2">
+                  {['grants', 'hackathons', 'bounties', 'airdrops', 'testnets', 'ambassador', 'jobs'].map(cat => (
+                    <button 
+                      key={cat}
+                      onClick={() => toggleAlertCategory(cat)}
+                      className={`px-3 py-1.5 rounded border text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
+                        alertPrefs.categories.includes(cat)
+                          ? 'border-[#ff5500]/40 bg-[#ff5500]/10 text-[#ff5500]'
+                          : 'border-white/10 bg-white/[0.02] text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Frequency */}
+              <div className="glass-card p-6 space-y-4">
+                <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+                  // Delivery Frequency
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: 'instant', label: 'Instant', desc: 'As they arrive' },
+                    { value: 'daily', label: 'Daily Digest', desc: 'Once per day' },
+                    { value: 'weekly', label: 'Weekly Digest', desc: 'Weekly summary' },
+                  ].map(opt => (
+                    <button 
+                      key={opt.value}
+                      onClick={() => setAlertPrefs(p => ({ ...p, frequency: opt.value }))}
+                      className={`p-3 rounded border text-center transition-all ${
+                        alertPrefs.frequency === opt.value
+                          ? 'border-[#ff5500]/40 bg-[#ff5500]/10'
+                          : 'border-white/10 bg-white/[0.02] hover:border-white/20'
+                      }`}
+                    >
+                      <p className={`text-xs font-bold ${alertPrefs.frequency === opt.value ? 'text-[#ff5500]' : 'text-gray-300'}`}>{opt.label}</p>
+                      <p className="text-[9px] text-gray-500 mt-1">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={saveAlertPrefs} className="btn btn-primary w-full shadow-[0_0_20px_rgba(255,85,0,0.3)]">
+                <Save size={16} /> Save Alert Preferences
+              </button>
+            </>
+          )}
+
+          {/* ========== SECURITY TAB ========== */}
+          {activeTab === 'security' && (
+            <>
+              {/* Password Change */}
+              <div className="glass-card p-6 space-y-6">
+                <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+                  <Key size={12} className="inline mr-2" /> Password & Authentication
+                </h3>
+
+                {user?.wallet_address && !user?.email?.endsWith('@web3.internal') ? (
+                  <div className="p-4 bg-green-500/5 border border-green-500/20 rounded">
+                    <p className="text-sm text-green-400 font-bold mb-1">Web3 + Google Authenticated</p>
+                    <p className="text-[11px] text-gray-400">Your account is secured via wallet signature and Google OAuth. No password needed.</p>
+                  </div>
+                ) : user?.wallet_address ? (
+                  <div className="p-4 bg-[#ff5500]/5 border border-[#ff5500]/20 rounded">
+                    <p className="text-sm text-[#ff5500] font-bold mb-1">Wallet-Only Authentication</p>
+                    <p className="text-[11px] text-gray-400">Your account is secured by your wallet signature. Link a Google account in the Profile tab for added recovery options.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-[11px] text-gray-400">Google OAuth accounts do not use passwords. Your account is protected by Google's security.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Two-Factor */}
+              <div className="glass-card p-6 space-y-6">
+                <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+                  <Smartphone size={12} className="inline mr-2" /> Two-Factor Authentication
+                </h3>
+                <div className="flex items-center justify-between p-4 bg-white/[0.02] rounded border border-white/5">
+                  <div>
+                    <p className="text-sm text-white font-bold">2FA Status</p>
+                    <p className="text-[10px] text-gray-500 font-mono">
+                      {twoFactorEnabled ? 'Enabled — Your account has an extra layer of protection' : 'Not enabled — Add an extra layer of security'}
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase ${
+                    twoFactorEnabled ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                  }`}>
+                    {twoFactorEnabled ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => toast('2FA setup coming soon — will support authenticator apps', { icon: '🔒' })}
+                  className="w-full py-2.5 rounded border border-white/10 bg-white/[0.02] text-gray-300 text-xs font-bold uppercase tracking-wider hover:border-[#ff5500]/30 hover:text-[#ff5500] transition-all"
+                >
+                  <Shield size={14} className="inline mr-2" /> {twoFactorEnabled ? 'Manage 2FA' : 'Enable 2FA'}
+                </button>
+              </div>
+
+              {/* Active Sessions */}
+              <div className="glass-card p-6 space-y-6">
+                <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+                  // Active Sessions
+                </h3>
+                <div className="space-y-2">
+                  {sessions.map(session => (
+                    <div key={session.id} className="flex items-center justify-between p-3 bg-white/[0.02] rounded border border-white/5">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${session.current ? 'bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.5)]' : 'bg-gray-600'}`} />
+                        <div>
+                          <p className="text-xs text-white font-bold">{session.device}</p>
+                          <p className="text-[10px] text-gray-500 font-mono">{session.location}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-gray-400">{session.last_active}</p>
+                        {session.current && <span className="text-[9px] text-green-400 font-bold">THIS DEVICE</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="glass-card p-6 space-y-4 border-red-500/10">
+                <h3 className="text-xs font-mono font-bold text-red-400 uppercase tracking-widest border-b border-red-500/10 pb-4">
+                  <AlertTriangle size={12} className="inline mr-2" /> Danger Zone
+                </h3>
+                <div className="flex items-center justify-between p-3 bg-red-500/5 rounded border border-red-500/10">
+                  <div>
+                    <p className="text-sm text-white font-bold">Delete Account</p>
+                    <p className="text-[10px] text-gray-500">Permanently remove your account and all data</p>
+                  </div>
+                  <button 
+                    onClick={() => toast.error('Account deletion requires email confirmation. Feature coming soon.')}
+                    className="px-4 py-2 rounded border border-red-500/30 text-red-400 text-[10px] font-bold uppercase hover:bg-red-500/10 transition-all"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ========== PROFILE TAB (existing content) ========== */}
+          {activeTab === 'profile' && (
+            <>
           {/* Section: Identity */}
           <div className="glass-card p-6 space-y-6">
             <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
@@ -284,6 +569,8 @@ export default function SettingsPage() {
                </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>

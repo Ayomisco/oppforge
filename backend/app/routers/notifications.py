@@ -8,7 +8,7 @@ from .auth import get_current_user
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
-@router.get("/", response_model=List[schemas.NotificationResponse])
+@router.get("", response_model=List[schemas.NotificationResponse])
 def get_notifications(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     """List all notifications for current user, newest first."""
     return db.query(Notification).filter(

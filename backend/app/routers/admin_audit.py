@@ -8,7 +8,7 @@ from .auth import get_current_user
 
 router = APIRouter(prefix="/admin/audit", tags=["admin"])
 
-@router.get("/", response_model=List[schemas.AuditLogResponse])
+@router.get("", response_model=List[schemas.AuditLogResponse])
 def read_audit_logs(
     limit: int = 50,
     db: Session = Depends(database.get_db),
