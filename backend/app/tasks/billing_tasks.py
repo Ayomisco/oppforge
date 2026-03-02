@@ -19,12 +19,12 @@ def check_subscription_expirations():
     try:
         now = datetime.now()
         
-        # 1. ⚠️ Trial Ending Warning (3 days left)
-        # 14 day trial - 11 days used = 3 days left
-        three_days_warning_target = now - timedelta(days=11)
+        # 1. ⚠️ Trial Ending Warning (2 days left)
+        # 7 day trial - 5 days used = 2 days left
+        warning_target = now - timedelta(days=5)
         users_to_warn = db.query(User).filter(
             User.subscription_status == "trialing",
-            User.trial_started_at <= three_days_warning_target,
+            User.trial_started_at <= warning_target,
             User.role != "admin" # Admins are immune
         ).all()
         
@@ -32,7 +32,7 @@ def check_subscription_expirations():
             logger.info(f"Sending trial warning to {user.email}")
             body = """
             <h3>Your Alpha Trial is ending soon!</h3>
-            <p>You have <b>3 days left</b> of full AI-powered mission intelligence.</p>
+            <p>You have <b>2 days left</b> of full AI-powered mission intelligence.</p>
             <p>Upgrade to <b>Hunter</b> now to keep your edge and ensure you never miss a high-yield opportunity.</p>
             """
             template = get_email_template(
@@ -41,15 +41,13 @@ def check_subscription_expirations():
                 cta_link="https://app.oppforge.xyz/dashboard/subscription",
                 cta_text="Secure My Access"
             )
-            # We don't want to spam, so maybe add a flag or just check specifically for day 11
-            # For simplicity in this demo, we'll just send once
-            send_email(user.email, "Action Required: Your OppForge Trial Ends in 3 Days", template)
+            send_email(user.email, "Action Required: Your OppForge Trial Ends in 2 Days", template)
 
         # 2. 🛑 Trial Expired
-        fourteen_days_ago = now - timedelta(days=14)
+        seven_days_ago = now - timedelta(days=7)
         expired_trials = db.query(User).filter(
             User.subscription_status == "trialing",
-            User.trial_started_at <= fourteen_days_ago,
+            User.trial_started_at <= seven_days_ago,
             User.role != "admin"
         ).all()
         
@@ -60,7 +58,7 @@ def check_subscription_expirations():
             
             body = """
             <h3>Mission Intelligence: OFFLINE</h3>
-            <p>Your 14-day Alpha Trial has expired. Your advanced AI features have been soft-locked.</p>
+            <p>Your 7-day Alpha Trial has expired. Your advanced AI features have been soft-locked.</p>
             <p>But the forge is still hot. You can restore full access instantly by upgrading to a permanent plan.</p>
             """
             template = get_email_template(

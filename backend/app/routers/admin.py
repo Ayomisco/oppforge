@@ -600,3 +600,172 @@ def send_notification(
             count += 1
         db.commit()
         return {"status": "broadcast", "count": count}
+
+
+# ========================
+# Scraper Management
+# ========================
+
+class ScrapeRequest(BaseModel):
+    source: Optional[str] = None  # None = all scrapers
+
+@router.post("/scrape")
+def trigger_scrape(
+    body: ScrapeRequest,
+    db: Session = Depends(database.get_db),
+    current_user=Depends(require_admin)
+):
+    """Trigger scrapers to fetch new opportunities. Admin only."""
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+
+    from app.scrapers.superteam import SuperteamScraper
+    from app.scrapers.dorahacks import DoraHacksScraper
+    from app.scrapers.code4rena import Code4renaScraper
+    from app.scrapers.curated import CuratedScraper
+    from app.scrapers.hackquest import HackQuestScraper
+    from app.scrapers.questbook import QuestbookScraper
+
+    SCRAPER_REGISTRY = {
+        "superteam": SuperteamScraper,
+        "dorahacks": DoraHacksScraper,
+        "code4rena": Code4renaScraper,
+        "curated": CuratedScraper,
+        "hackquest": HackQuestScraper,
+        "questbook": QuestbookScraper,
+    }
+
+    # Validate source
+    if body.source and body.source.lower() not in SCRAPER_REGISTRY:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown source: {body.source}. Available: {list(SCRAPER_REGISTRY.keys())}"
+        )
+
+    scrapers_to_run = {}
+    if body.source:
+        name = body.source.lower()
+        scrapers_to_run[name] = SCRAPER_REGISTRY[name]
+    else:
+        scrapers_to_run = SCRAPER_REGISTRY
+
+    results = {}
+    total_saved = 0
+
+    for name, scraper_cls in scrapers_to_run.items():
+        try:
+            scraper = scraper_cls()
+            raw = scraper.run()
+
+            saved = 0
+            skipped = 0
+            for opp_data in raw:
+                source = opp_data.get("source", "Unknown")
+                source_id = opp_data.get("source_id")
+                title = opp_data.get("title", "")
+                url = opp_data.get("url", "")
+
+                # Dedup
+                exists = False
+                if source_id:
+                    exists = db.query(Opportunity).filter(
+                        Opportunity.source_id == str(source_id), Opportunity.source == source
+                    ).first()
+                if not exists and url:
+                    exists = db.query(Opportunity).filter(Opportunity.url == url).first()
+                if not exists and title:
+                    exists = db.query(Opportunity).filter(Opportunity.title == title).first()
+
+                if exists:
+                    skipped += 1
+                    continue
+
+                slug = title.lower().replace(" ", "-").replace("'", "")[:80] if title else None
+                if slug:
+                    slug_exists = db.query(Opportunity).filter(Opportunity.slug == slug).first()
+                    if slug_exists:
+                        slug = f"{slug}-{source.lower()}"
+
+                opp = Opportunity(
+                    title=title,
+                    slug=slug,
+                    description=opp_data.get("description", ""),
+                    url=url,
+                    logo_url=opp_data.get("logo_url"),
+                    source=source,
+                    source_id=str(source_id) if source_id else None,
+                    source_url=opp_data.get("source_url", url),
+                    category=opp_data.get("category", "Hackathon"),
+                    chain=opp_data.get("chain", "Multi-chain"),
+                    tags=opp_data.get("tags", []),
+                    reward_pool=opp_data.get("reward_pool"),
+                    deadline=opp_data.get("deadline"),
+                    start_date=opp_data.get("start_date"),
+                    is_open=True,
+                    ai_score=70,
+                    trust_score=80,
+                    required_skills=opp_data.get("required_skills", []),
+                    is_verified=opp_data.get("is_verified", False),
+                )
+                db.add(opp)
+                try:
+                    db.commit()
+                    saved += 1
+                except Exception:
+                    db.rollback()
+
+            results[name] = {"found": len(raw), "saved": saved, "skipped": skipped}
+            total_saved += saved
+
+        except Exception as e:
+            logger.error(f"Scraper {name} failed: {e}")
+            results[name] = {"error": str(e)}
+
+    # Audit log
+    audit = AuditLog(
+        user_id=current_user.id,
+        action="trigger_scrape",
+        entity_type="scraper",
+        entity_id=body.source or "all",
+        details={"results": results, "total_saved": total_saved}
+    )
+    db.add(audit)
+    db.commit()
+
+    return {
+        "status": "completed",
+        "total_saved": total_saved,
+        "results": results,
+        "total_in_db": db.query(Opportunity).count()
+    }
+
+
+@router.get("/scraper/status")
+def scraper_status(
+    db: Session = Depends(database.get_db),
+    current_user=Depends(require_staff)
+):
+    """Get scraper status and DB statistics."""
+    total = db.query(Opportunity).count()
+    by_source = db.query(
+        Opportunity.source, func.count(Opportunity.id)
+    ).group_by(Opportunity.source).all()
+
+    by_category = db.query(
+        Opportunity.category, func.count(Opportunity.id)
+    ).group_by(Opportunity.category).all()
+
+    verified = db.query(Opportunity).filter(Opportunity.is_verified == True).count()
+    open_count = db.query(Opportunity).filter(Opportunity.is_open == True).count()
+
+    return {
+        "total_opportunities": total,
+        "verified": verified,
+        "open": open_count,
+        "by_source": {s: c for s, c in by_source},
+        "by_category": {c: cnt for c, cnt in by_category},
+        "available_scrapers": [
+            "superteam", "dorahacks", "code4rena", "curated",
+            "hackquest", "questbook"
+        ]
+    }

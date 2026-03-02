@@ -3,33 +3,28 @@ from ..database import SessionLocal
 from ..models.opportunity import Opportunity
 from ..models.user import User
 from ..models.notification import Notification
-from ..scrapers.twitter import TwitterScraper
-from ..scrapers.reddit import RedditScraper
-from ..scrapers.gitcoin import GitcoinScraper
+from ..scrapers.superteam import SuperteamScraper
+from ..scrapers.dorahacks import DoraHacksScraper
+from ..scrapers.code4rena import Code4renaScraper
+from ..scrapers.curated import CuratedScraper
 from .email_service import send_email, get_email_template
 import asyncio
 
 from .curator import AgentCurator
 from .vector_db import VectorDBService
-from ..scrapers.heavy.devpost import DevpostScraper
-from ..scrapers.heavy.devfolio import DevfolioScraper
-from ..scrapers.heavy.twitter_playwright import TwitterPlaywrightScraper
 from ..utils.text_processing import normalize_url, generate_content_hash, extract_deadline, extract_reward_pool, extract_skills, is_opportunity_fresh
 
 class IngestionPipeline:
     def __init__(self):
         self.scrapers = [
-            RedditScraper(),
-            GitcoinScraper()
+            SuperteamScraper(),      # Live API — pulls 40+ real bounties
+            DoraHacksScraper(),      # Curated real hackathons (API is WAF-protected)
+            Code4renaScraper(),      # Security audit bounties
+            CuratedScraper(),        # Verified events from Devfolio, Devpost, ETHGlobal etc.
         ]
         
-        # Async Scrapers (Heavy)
-        # Playwright Scrapers (Async)
-        self.async_scrapers = [
-            DevpostScraper(),
-            DevfolioScraper(),
-            TwitterPlaywrightScraper()
-        ]
+        # Async scrapers disabled until Playwright is available in production
+        self.async_scrapers = []
         self.db = SessionLocal()
 
     def run(self):

@@ -33,7 +33,7 @@ export default function FeatureGate({ children, featureName = "This feature", re
 
             <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Access Restricted</h2>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              {featureName} is locked for guests. Sign in with Google or connect your wallet to start your 14-day free trial — no credit card required.
+              {featureName} is locked for guests. Sign in with Google or connect your wallet to start your 7-day free trial — no credit card required.
             </p>
 
             <button
@@ -76,7 +76,7 @@ export default function FeatureGate({ children, featureName = "This feature", re
             
             <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Trial Ended</h2>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              Your 14-day Scout trial has concluded. {featureName} is now locked. Upgrade to Hunter to restore full access to your intelligence dashboard.
+              Your 7-day Scout trial has concluded. {featureName} is now locked. Upgrade to Hunter to restore full access to your intelligence dashboard.
             </p>
 
             <a 

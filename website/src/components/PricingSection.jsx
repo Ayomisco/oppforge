@@ -18,7 +18,7 @@ export default function PricingSection() {
           <div className="glass-card p-8 border-t-4 border-[#10b981] relative flex flex-col bg-[#10b981]/5">
             <div className="mb-6">
               <h3 className="text-xl font-bold text-[#10b981] uppercase tracking-widest">Scout</h3>
-              <div className="text-4xl font-bold mt-2 text-white">$0 <span className="text-sm text-gray-500 font-normal uppercase font-mono">/ 14 Days</span></div>
+              <div className="text-4xl font-bold mt-2 text-white">$0 <span className="text-sm text-gray-500 font-normal uppercase font-mono">/ 7 Days</span></div>
               <p className="text-sm text-gray-400 mt-2 font-mono uppercase">Full Access Alpha Trial.</p>
             </div>
             <ul className="space-y-4 mb-8 flex-1">

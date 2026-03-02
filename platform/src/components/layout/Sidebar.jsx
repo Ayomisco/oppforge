@@ -46,7 +46,7 @@ function usePlanStatus(user) {
     const trialStart = user.trial_started_at ? new Date(user.trial_started_at) : (user.created_at ? new Date(user.created_at) : new Date())
     const now = new Date()
     const daysSinceStart = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24))
-    const trialDaysLeft = Math.max(0, 14 - daysSinceStart)
+    const trialDaysLeft = Math.max(0, 7 - daysSinceStart)
     const isTrial = status === 'trialing' && trialDaysLeft > 0
     const isExpired = status === 'trialing' && trialDaysLeft <= 0
     const isActive = status === 'active' || user.is_pro
@@ -197,7 +197,7 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
             <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/5 overflow-hidden">
                <motion.div 
                  initial={{ width: 0 }}
-                 animate={{ width: `${((14 - plan.trialDaysLeft) / 14) * 100}%` }}
+                 animate={{ width: `${((7 - plan.trialDaysLeft) / 7) * 100}%` }}
                  className="h-full bg-[#10b981]"
                />
             </div>

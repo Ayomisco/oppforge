@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import api from '@/lib/api';
 
 const PLAN_DETAILS = {
-  scout: { name: 'Scout', price: '$0', period: '14-Day Trial', color: '#10b981', icon: Shield },
+  scout: { name: 'Scout', price: '$0', period: '7-Day Trial', color: '#10b981', icon: Shield },
   hunter: { name: 'Hunter', price: '$2.9', period: '/month', color: '#ff5500', icon: Zap },
   founder: { name: 'Founder', price: '$6', period: '/month', color: '#D4AF37', icon: Crown },
 };
@@ -46,7 +46,7 @@ export default function BillingPage() {
     const trialStart = user?.trial_started_at ? new Date(user.trial_started_at) : (user?.created_at ? new Date(user.created_at) : new Date());
     const now = new Date();
     const daysUsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
-    const daysLeft = Math.max(0, 14 - daysUsed);
+    const daysLeft = Math.max(0, 7 - daysUsed);
     const isTrialing = user?.subscription_status === 'trialing' && daysLeft > 0 && !isAdmin;
     const isExpired = user?.subscription_status === 'trialing' && daysLeft <= 0 && !isAdmin;
     const isActive = user?.subscription_status === 'active' || user?.is_pro || isAdmin;
@@ -146,12 +146,12 @@ export default function BillingPage() {
               <div className="mt-6 pt-4 border-t border-white/5">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest font-bold">Trial Progress</span>
-                  <span className="text-[10px] font-mono text-gray-500">Day {trialInfo.daysUsed} of 14</span>
+                  <span className="text-[10px] font-mono text-gray-500">Day {trialInfo.daysUsed} of 7</span>
                 </div>
                 <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${(trialInfo.daysUsed / 14) * 100}%` }}
+                    animate={{ width: `${(trialInfo.daysUsed / 7) * 100}%` }}
                     className="h-full bg-gradient-to-r from-[#10b981] to-[#ff5500] rounded-full shadow-[0_0_8px_#10b981]"
                   />
                 </div>
@@ -165,7 +165,7 @@ export default function BillingPage() {
               <div className="mt-6 pt-4 border-t border-white/5">
                 <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/10">
                   <p className="text-sm text-red-400 font-bold mb-2 uppercase tracking-tighter">PROTOCOL_ACCESS_LOCKED</p>
-                  <p className="text-[11px] text-gray-500 mb-4 font-mono leading-relaxed">Your 14-day clearance has concluded. Upgrade to Hunter ($2.9/mo) to restore AI services.</p>
+                  <p className="text-[11px] text-gray-500 mb-4 font-mono leading-relaxed">Your 7-day clearance has concluded. Upgrade to Hunter ($2.9/mo) to restore AI services.</p>
                   <Link href="/dashboard/subscription" className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff5500] text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#ff7700] transition-colors shadow-[0_0_15px_rgba(255,85,0,0.3)]">
                     View Access Plans <ArrowRight size={12} />
                   </Link>

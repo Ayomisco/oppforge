@@ -17,10 +17,10 @@ const TIERS = [
     name: 'Scout',
     tagline: 'Alpha Access',
     price: '$0',
-    priceDetail: '14-Day Free Trial',
+    priceDetail: '7-Day Free Trial',
     ethPrice: '0',
     icon: Shield,
-    description: 'Full platform access for 14 days. No credit card required.',
+    description: 'Full platform access for 7 days. No credit card required.',
     features: [
       'Full AI Analysis & Scoring',
       'Priority Alpha Feed',
@@ -68,7 +68,7 @@ export default function SubscriptionPage() {
     const trialStart = user?.trial_started_at ? new Date(user.trial_started_at) : (user?.created_at ? new Date(user.created_at) : new Date());
     const now = new Date();
     const daysUsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
-    const daysLeft = Math.max(0, 14 - daysUsed);
+    const daysLeft = Math.max(0, 7 - daysUsed);
     const isTrialing = (user?.subscription_status === 'trialing') && daysLeft > 0;
     const isExpired = (user?.subscription_status === 'trialing') && daysLeft <= 0;
     const isAdmin = user?.role === 'admin' || user?.role === 'ADMIN';

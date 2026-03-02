@@ -82,7 +82,7 @@ class SuperteamScraper(BaseScraper):
         ]
     
     def parse(self, raw_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Parse Superteam data"""
+        """Parse Superteam data — handles both live API and fallback formats"""
         opportunities = []
         
         for listing in raw_data:
@@ -97,21 +97,49 @@ class SuperteamScraper(BaseScraper):
                 }
                 category = category_map.get(listing_type, "Bounty")
                 
+                # URL: live API uses slug, type maps to URL path segment
+                slug = listing.get("slug", listing.get("id", ""))
+                type_path_map = {
+                    "bounty": "bounties",
+                    "project": "project",
+                    "hackathon": "hackathon",
+                    "job": "jobs"
+                }
+                type_path = type_path_map.get(listing_type, "bounties")
+                url = f"{self.base_url}/listings/{type_path}/{slug}"
+                
+                # Sponsor info (live API has nested sponsor object)
+                sponsor = listing.get("sponsor", {})
+                logo_url = sponsor.get("logo") if isinstance(sponsor, dict) else listing.get("sponsorLogo", listing.get("logo"))
+                sponsor_name = sponsor.get("name", "") if isinstance(sponsor, dict) else ""
+                
+                # Skills: live API may have skills as list of objects or strings
+                raw_skills = listing.get("skills", [])
+                if raw_skills and isinstance(raw_skills[0], dict):
+                    skills = [s.get("skills", s.get("name", "")) for s in raw_skills]
+                else:
+                    skills = raw_skills if isinstance(raw_skills, list) else []
+                
+                # Build description
+                desc = listing.get("description", "")
+                if sponsor_name and not desc:
+                    desc = f"Opportunity by {sponsor_name} on Superteam Earn"
+                
                 opp = {
                     "title": listing.get("title", "Untitled"),
-                    "description": listing.get("description", "")[:500],
-                    "url": f"{self.base_url}/earn/listing/{listing.get('slug', listing.get('id', ''))}",
+                    "description": (desc or "")[:500],
+                    "url": url,
                     "category": category,
                     "source": "Superteam",
-                    "reward_pool": self._format_reward(listing.get("rewards", listing.get("compensationType"))),
+                    "reward_pool": self._format_reward(listing),
                     "start_date": self._parse_date(listing.get("publishedAt", listing.get("startDate"))),
                     "deadline": self._parse_date(listing.get("deadline")),
                     "chain": "Solana",  # Superteam is Solana-focused
-                    "tags": listing.get("skills", []) + ["solana", "superteam"],
-                    "required_skills": listing.get("skills", []),
-                    "logo_url": listing.get("logo", listing.get("sponsorLogo")),
-                    "is_verified": True,  # Superteam listings are curated
-                    "source_id": listing.get("id"),
+                    "tags": skills + ["solana", "superteam"],
+                    "required_skills": skills,
+                    "logo_url": logo_url,
+                    "is_verified": sponsor.get("isVerified", True) if isinstance(sponsor, dict) else True,
+                    "source_id": str(listing.get("id", slug)),
                 }
                 
                 opportunities.append(opp)
@@ -123,15 +151,32 @@ class SuperteamScraper(BaseScraper):
         logger.info(f"✅ Parsed {len(opportunities)} Superteam opportunities")
         return opportunities
     
-    def _format_reward(self, reward):
-        """Format reward"""
-        if not reward:
-            return "TBD"
-        if isinstance(reward, dict):
-            amount = reward.get("amount", reward.get("value", ""))
-            token = reward.get("token", "USDC")
-            return f"${amount} {token}" if amount else "TBD"
-        return str(reward)
+    def _format_reward(self, listing):
+        """Format reward — handles both live API (rewardAmount+token) and fallback (rewards dict)"""
+        # Live API format: top-level rewardAmount (number) + token (string)
+        reward_amount = listing.get("rewardAmount")
+        token = listing.get("token", "USDC")
+        
+        if reward_amount and reward_amount > 0:
+            # Format nicely
+            if reward_amount >= 1000:
+                formatted = f"${reward_amount:,.0f}"
+            else:
+                formatted = f"${reward_amount}"
+            return f"{formatted} {token}"
+        
+        # Fallback format: nested rewards dict
+        rewards = listing.get("rewards")
+        if rewards and isinstance(rewards, dict):
+            amount = rewards.get("amount", rewards.get("value", ""))
+            fallback_token = rewards.get("token", "USDC")
+            return f"${amount} {fallback_token}" if amount else "TBD"
+        
+        comp_type = listing.get("compensationType", "")
+        if comp_type:
+            return comp_type
+        
+        return "TBD"
     
     def _parse_date(self, date_str):
         """Parse date"""

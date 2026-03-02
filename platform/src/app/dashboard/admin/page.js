@@ -540,11 +540,17 @@ export default function AdminDashboard() {
   const [editModal, setEditModal] = useState(null)
   const [createModal, setCreateModal] = useState(false)
 
-  // Data fetching
-  const { data: stats, mutate: mutateStats } = useSWR(isStaff ? '/admin/dashboard/stats' : null, fetcher)
+  // Data fetching — add error tracking for debug
+  const { data: stats, error: statsError, mutate: mutateStats, isLoading: statsLoading } = useSWR(isStaff ? '/admin/dashboard/stats' : null, fetcher, { revalidateOnFocus: true, shouldRetryOnError: true, errorRetryCount: 3 })
   const { data: growth } = useSWR(isStaff ? '/admin/dashboard/user-growth?days=30' : null, fetcher)
   const { data: categories } = useSWR(isStaff ? '/admin/dashboard/category-breakdown' : null, fetcher)
   const { data: topOpps } = useSWR(isStaff ? '/admin/dashboard/top-opportunities' : null, fetcher)
+
+  // Debug: log admin stats errors
+  React.useEffect(() => {
+    if (statsError) console.error('[Admin] Stats fetch error:', statsError?.response?.status, statsError?.message)
+    if (stats) console.log('[Admin] Stats loaded:', stats)
+  }, [stats, statsError])
   
   const userSearchParam = userSearch ? `&search=${encodeURIComponent(userSearch)}` : ''
   const { data: users, mutate: mutateUsers } = useSWR(
@@ -653,6 +659,23 @@ export default function AdminDashboard() {
       {/* ============ OVERVIEW TAB ============ */}
       {activeTab === 'overview' && (
         <>
+          {/* Stats Error Banner */}
+          {statsError && (
+            <div className="glass-card p-4 mb-4 border border-red-500/20 bg-red-500/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertTriangle size={16} className="text-red-400" />
+                <span className="text-xs font-mono text-red-400">Stats failed to load: {statsError?.response?.status || 'Network error'} — {statsError?.message}</span>
+              </div>
+              <button onClick={() => mutateStats()} className="text-xs font-bold text-[#ff5500] hover:underline">RETRY</button>
+            </div>
+          )}
+          {statsLoading && !stats && (
+            <div className="glass-card p-4 mb-4 border border-white/5 flex items-center gap-3">
+              <RefreshCw size={14} className="text-[#ff5500] animate-spin" />
+              <span className="text-xs font-mono text-gray-400">Loading analytics...</span>
+            </div>
+          )}
+
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <StatCard label="Total Users" value={stats?.total_users || 0} icon={Users} color="#3b82f6" change={stats?.new_users_week} />
