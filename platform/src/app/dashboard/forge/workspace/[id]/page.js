@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import { Sparkles, Save, Send, ArrowLeft, Wand2, FileText, Layout, MessageSquare, History, Zap, Lightbulb, FileEdit, Presentation, Target, Upload, Briefcase, Trophy, Code, Rocket, Users, Shield, BookOpen } from 'lucide-react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { Sparkles, Save, Send, ArrowLeft, Wand2, FileText, Layout, MessageSquare, History, Zap, Lightbulb, FileEdit, Presentation, Target, Upload, Briefcase, Trophy, Code, Rocket, Users, Shield, BookOpen, Eye, PenLine, Copy, Replace, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useOppForge } from '@/hooks/useOppForge'
+import ReactMarkdown from 'react-markdown'
 
 const fetcher = url => api.get(url).then(res => res.data)
 
@@ -133,6 +134,9 @@ export default function ForgeWorkspace({ params }) {
   const [chatMessage, setChatMessage] = useState('')
   const [chatHistory, setChatHistory] = useState([])
   const [activeMode, setActiveMode] = useState(null)
+  const [viewMode, setViewMode] = useState('preview') // 'edit' | 'preview'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const chatEndRef = useRef(null)
   
   const { data: opp, isLoading: isOppLoading } = useSWR(`/opportunities/${id}`, fetcher)
   
@@ -271,6 +275,18 @@ export default function ForgeWorkspace({ params }) {
     navigator.clipboard.writeText(proposal).then(() => toast.success('Copied to clipboard'))
   }
 
+  // Auto-scroll chat to bottom on new messages
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatHistory])
+
+  // Apply an AI chat response to the draft editor
+  const applyToDraft = (content) => {
+    setProposal(content)
+    setViewMode('preview')
+    toast.success('Applied to draft')
+  }
+
   const CategoryIcon = forgeConfig.icon
 
   const PageContent = () => {
@@ -315,8 +331,34 @@ export default function ForgeWorkspace({ params }) {
         <div className="flex-1 flex overflow-hidden">
           
           {/* Left: Mode Selector + Mission Intel + AI Chat */}
-          <div className="w-80 border-r border-white/5 bg-black/20 flex flex-col">
+          <div className={`${sidebarCollapsed ? 'w-12' : 'w-80 lg:w-96'} border-r border-white/5 bg-black/20 flex flex-col transition-all duration-300 relative`}>
               
+              {/* Collapse toggle */}
+              <button 
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="absolute -right-3 top-20 z-20 w-6 h-6 rounded-full bg-[#1a1512] border border-white/10 flex items-center justify-center text-gray-500 hover:text-white transition-colors"
+              >
+                {sidebarCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+              </button>
+
+              {sidebarCollapsed ? (
+                <div className="flex flex-col items-center py-4 gap-3">
+                  {forgeConfig.modes.map(mode => {
+                    const ModeIcon = mode.icon
+                    return (
+                      <button 
+                        key={mode.key}
+                        onClick={() => { switchMode(mode.key); setSidebarCollapsed(false) }}
+                        className={`p-2 rounded transition-all ${activeMode === mode.key ? 'text-white' : 'text-gray-600 hover:text-gray-300'}`}
+                        style={activeMode === mode.key ? { color: forgeConfig.color, backgroundColor: `${forgeConfig.color}15` } : {}}
+                        title={mode.label}
+                      >
+                        <ModeIcon size={16} />
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (<>
               {/* Forge Mode Selector */}
               <div className="p-3 border-b border-white/5">
                 <div className="text-[9px] uppercase font-mono font-bold text-gray-600 mb-2 tracking-widest">Forge_Mode</div>
@@ -371,17 +413,28 @@ export default function ForgeWorkspace({ params }) {
                       </div>
                   ) : (
                       chatHistory.map((msg, i) => (
-                          <div key={i} className={`p-2.5 rounded text-[10px] font-mono leading-relaxed ${
+                          <div key={i} className={`p-2.5 rounded text-[11px] font-mono leading-relaxed ${
                             msg.role === 'ai' ? 'bg-[#ff5500]/5 border border-[#ff5500]/10 text-gray-300' : 
                             msg.role === 'system' ? 'bg-blue-500/5 border border-blue-500/10 text-blue-300' :
                             'bg-white/5 text-gray-500'
                           }`}>
-                              <span className="font-bold text-[#ffaa00] mr-1 text-[9px]">[{msg.role.toUpperCase()}]</span>
-                              {msg.content}
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-[#ffaa00] text-[9px]">[{msg.role.toUpperCase()}]</span>
+                                {msg.role === 'ai' && msg.content.length > 100 && (
+                                  <button 
+                                    onClick={() => applyToDraft(msg.content)}
+                                    className="flex items-center gap-1 text-[8px] font-bold uppercase text-[#ff5500]/60 hover:text-[#ff5500] transition-colors"
+                                  >
+                                    <Replace size={10} /> Apply to Draft
+                                  </button>
+                                )}
+                              </div>
+                              <div className="whitespace-pre-wrap">{msg.content}</div>
                           </div>
                       ))
                   )}
                   {isGenerating && <div className="text-[9px] text-[#ff5500] font-mono animate-pulse uppercase tracking-[0.2em]">Forging...</div>}
+                  <div ref={chatEndRef} />
               </div>
               <div className="p-3 bg-black/40 border-t border-white/5">
                   <form onSubmit={handleRefinement} className="relative">
@@ -390,17 +443,18 @@ export default function ForgeWorkspace({ params }) {
                           value={chatMessage}
                           onChange={(e) => setChatMessage(e.target.value)}
                           placeholder="Refine... (e.g. 'Make it more technical')"
-                          className="w-full bg-[#111] border border-white/10 rounded px-3 py-2 pr-10 text-[10px] text-white font-mono focus:outline-none focus:border-[#ff5500] transition-colors"
+                          className="w-full bg-[#111] border border-white/10 rounded px-3 py-2.5 pr-10 text-[11px] text-white font-mono focus:outline-none focus:border-[#ff5500] transition-colors"
                       />
                       <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#ff5500]">
                           <Send size={14} />
                       </button>
                   </form>
               </div>
+              </>)}
           </div>
 
-          {/* Center/Right: The Canvas (Editor) */}
-          <div className="flex-1 bg-black flex flex-col relative">
+          {/* Center/Right: The Canvas (Editor + Preview) */}
+          <div className="flex-1 bg-black flex flex-col relative min-w-0">
               {!proposal && !isGenerating && (
                   <div className="absolute inset-0 z-10 bg-black/80 backdrop-blur-sm flex items-center justify-center">
                       <div className="text-center max-w-md">
@@ -440,8 +494,9 @@ export default function ForgeWorkspace({ params }) {
                   </div>
               )}
 
-              <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/[0.02]">
-                  <div className="flex gap-3">
+              {/* Canvas Toolbar */}
+              <div className="flex items-center justify-between p-3 border-b border-white/5 bg-white/[0.02]">
+                  <div className="flex gap-3 items-center">
                       {forgeConfig.modes.map(mode => {
                         const MIcon = mode.icon
                         return (
@@ -457,6 +512,27 @@ export default function ForgeWorkspace({ params }) {
                           </button>
                         )
                       })}
+                      {/* Divider */}
+                      <div className="h-4 w-px bg-white/10 mx-1" />
+                      {/* View Toggle */}
+                      <div className="flex items-center bg-white/5 rounded-md p-0.5">
+                        <button 
+                          onClick={() => setViewMode('preview')}
+                          className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase transition-all ${
+                            viewMode === 'preview' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          <Eye size={11} /> Preview
+                        </button>
+                        <button 
+                          onClick={() => setViewMode('edit')}
+                          className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase transition-all ${
+                            viewMode === 'edit' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          <PenLine size={11} /> Edit
+                        </button>
+                      </div>
                   </div>
                   <div className="flex gap-2">
                       <button 
@@ -472,16 +548,49 @@ export default function ForgeWorkspace({ params }) {
                   </div>
               </div>
 
-              <div className="flex-1 p-12 overflow-y-auto custom-scrollbar">
-                  <textarea 
+              {/* Canvas Content - Edit or Preview */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                {viewMode === 'edit' ? (
+                  <div className="h-full p-6 lg:p-10">
+                    <textarea 
                       value={proposal}
                       onChange={(e) => setProposal(e.target.value)}
                       className="w-full h-full bg-transparent text-gray-300 font-mono text-sm leading-relaxed focus:outline-none resize-none placeholder-gray-800"
                       placeholder={`${currentModeConfig?.label || 'Forge'} output will appear here...`}
-                  />
+                    />
+                  </div>
+                ) : (
+                  <div className="p-6 lg:p-10">
+                    {proposal ? (
+                      <div className="prose prose-invert prose-sm max-w-none
+                        prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
+                        prose-h1:text-2xl prose-h1:border-b prose-h1:border-white/10 prose-h1:pb-3 prose-h1:mb-4
+                        prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3
+                        prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-2
+                        prose-p:text-gray-300 prose-p:leading-relaxed prose-p:text-sm
+                        prose-li:text-gray-300 prose-li:text-sm
+                        prose-strong:text-white prose-strong:font-semibold
+                        prose-code:text-[#ff5500] prose-code:bg-[#ff5500]/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono
+                        prose-pre:bg-[#111] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg
+                        prose-a:text-[#ff5500] prose-a:no-underline hover:prose-a:underline
+                        prose-table:text-sm
+                        prose-th:text-[#ff5500] prose-th:font-mono prose-th:text-xs prose-th:uppercase prose-th:tracking-wider prose-th:border-b prose-th:border-[#ff5500]/20 prose-th:pb-2
+                        prose-td:text-gray-300 prose-td:border-b prose-td:border-white/5 prose-td:py-2
+                        prose-blockquote:border-l-[#ff5500] prose-blockquote:bg-[#ff5500]/5 prose-blockquote:py-1 prose-blockquote:rounded-r
+                        prose-hr:border-white/10
+                      ">
+                        <ReactMarkdown>{proposal}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-gray-800 font-mono text-sm">
+                        {currentModeConfig?.label || 'Forge'} output will appear here...
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Bottom Suggestions Toolbar - Dynamic per category */}
+              {/* Bottom Quick Actions Toolbar */}
               <div className="p-3 border-t border-white/5 bg-white/[0.01] flex items-center gap-4 overflow-x-auto no-scrollbar">
                   <span className="text-[9px] font-mono font-bold text-gray-600 uppercase whitespace-nowrap">Quick_Actions:</span>
                   {(forgeConfig.quickActions || []).map((action, i) => (
@@ -489,6 +598,7 @@ export default function ForgeWorkspace({ params }) {
                           key={i} 
                           onClick={() => {
                               setChatMessage(`Action: ${action}`)
+                              setSidebarCollapsed(false)
                           }}
                           className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-mono text-gray-400 hover:text-white transition-all whitespace-nowrap"
                           style={{ '--hover-border': forgeConfig.color }}
