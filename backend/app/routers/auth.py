@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from .. import database, schemas
 from ..models import User as UserModel
 from google.oauth2 import id_token
@@ -265,3 +266,113 @@ def update_profile(
     db.refresh(current_user)
     return current_user
 
+
+class LinkGoogleRequest(BaseModel):
+    token: str
+
+@router.post("/link-google", response_model=dict)
+def link_google_account(
+    req: LinkGoogleRequest,
+    db: Session = Depends(database.get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+    """
+    Link a Google account to an existing user (typically wallet-authenticated).
+    Pulls email, name, and avatar from Google profile.
+    If the Google email is already used by another account, returns an error.
+    """
+    import requests as httpx_requests
+
+    token = req.token
+    if not token:
+        raise HTTPException(status_code=400, detail="Google token required")
+
+    try:
+        idinfo = None
+        try:
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        except ValueError:
+            res = httpx_requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10.0,
+            )
+            if res.status_code == 200:
+                idinfo = res.json()
+            else:
+                raise ValueError("Invalid Google access token")
+
+        if not idinfo:
+            raise ValueError("Could not extract user information from Google.")
+
+        google_id = idinfo.get("sub")
+        email = idinfo.get("email")
+        name = idinfo.get("name")
+        first_name = idinfo.get("given_name")
+        last_name = idinfo.get("family_name")
+        picture = idinfo.get("picture")
+
+        # Check if email is taken by a different user
+        existing = db.query(UserModel).filter(
+            UserModel.email == email,
+            UserModel.id != current_user.id,
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=409,
+                detail="This Google account is already linked to a different user."
+            )
+
+        # Check if google_id is taken by a different user
+        if google_id:
+            existing_g = db.query(UserModel).filter(
+                UserModel.google_id == google_id,
+                UserModel.id != current_user.id,
+            ).first()
+            if existing_g:
+                raise HTTPException(
+                    status_code=409,
+                    detail="This Google account is already linked to a different user."
+                )
+
+        # Update the current user with Google details
+        old_email = current_user.email
+        current_user.email = email
+        current_user.google_id = google_id
+        if picture:
+            current_user.avatar_url = picture
+        if first_name and not current_user.first_name:
+            current_user.first_name = first_name
+        if last_name and not current_user.last_name:
+            current_user.last_name = last_name
+        if name and (not current_user.full_name or current_user.full_name.startswith("Hunter ")):
+            current_user.full_name = name
+        if not current_user.username or current_user.username.startswith("hunter_"):
+            current_user.username = email.split("@")[0]
+
+        db.commit()
+        db.refresh(current_user)
+
+        # Issue a new JWT with the real email
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={
+                "sub": current_user.email,
+                "role": current_user.role.value if hasattr(current_user.role, "value") else current_user.role,
+                "onboarded": current_user.onboarded,
+            },
+            expires_delta=access_token_expires,
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": schemas.UserResponse.model_validate(current_user),
+            "linked": True,
+            "old_email": old_email,
+        }
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")

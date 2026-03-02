@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt } from 'lucide-react';
+import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt, Mail } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
+import { useGoogleLogin } from '@react-oauth/google';
+import Cookies from 'js-cookie';
 import FeatureGate from '@/components/ui/FeatureGate';
 
 export default function SettingsPage() {
@@ -64,6 +66,33 @@ export default function SettingsPage() {
       setLoading(false);
     }
   };
+
+  // Google Account Linking (for wallet-authenticated users)
+  const [linkingGoogle, setLinkingGoogle] = useState(false);
+  const isWalletOnlyUser = user?.email?.endsWith('@web3.internal');
+
+  const handleGoogleLink = async (response) => {
+    setLinkingGoogle(true);
+    try {
+      const { data } = await api.post('/auth/link-google', { token: response.access_token });
+      // Update token with new email-based JWT
+      if (data.access_token) {
+        Cookies.set('token', data.access_token, { expires: 7, path: '/', sameSite: 'lax', secure: true });
+      }
+      setUser(data.user);
+      toast.success('Google account linked! Your email and profile have been updated.');
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Failed to link Google account';
+      toast.error(msg);
+    } finally {
+      setLinkingGoogle(false);
+    }
+  };
+
+  const linkGoogle = useGoogleLogin({
+    onSuccess: handleGoogleLink,
+    onError: () => toast.error('Google linking failed'),
+  });
 
   if (authLoading) return (
     <div className="max-w-4xl mx-auto py-8 px-4 space-y-8">
@@ -152,6 +181,37 @@ export default function SettingsPage() {
                  </div>
                </div>
             </div>
+
+            {/* Google Account Linking (for wallet users) */}
+            {isWalletOnlyUser && (
+              <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg space-y-3">
+                <div className="flex items-center gap-2">
+                  <Mail size={16} className="text-blue-400" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">Link Google Account</span>
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  You signed in with your wallet. Link your Google account to enable email notifications, 
+                  recover your account, and auto-fill your profile details.
+                </p>
+                <button
+                  onClick={() => linkGoogle()}
+                  disabled={linkingGoogle}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded hover:bg-white/10 hover:border-blue-500/30 transition-all text-sm text-white"
+                >
+                  <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+                  {linkingGoogle ? 'Linking...' : 'Connect Google Account'}
+                </button>
+              </div>
+            )}
+
+            {/* Show linked email for wallet users who already linked */}
+            {user?.wallet_address && !isWalletOnlyUser && (
+              <div className="p-3 bg-green-500/5 border border-green-500/20 rounded-lg flex items-center gap-2">
+                <Mail size={14} className="text-green-400" />
+                <span className="text-[11px] text-gray-300 font-mono">{user.email}</span>
+                <span className="text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded uppercase font-bold">Google Linked</span>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                <div className="space-y-2">

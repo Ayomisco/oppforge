@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func as sql_func, desc
 import uuid
 import logging
 from typing import List, Optional
@@ -22,10 +23,12 @@ AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
 class ChatRequest(BaseModel):
     message: str
     opportunity_id: Optional[uuid.UUID] = None
+    session_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
     role: str
     content: str
+    session_id: Optional[str] = None
 
 
 async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict = None) -> str:
@@ -92,7 +95,7 @@ async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict 
         return "Forge AI is temporarily unavailable. Please try again later."
 
 
-@router.post("/", response_model=ChatResponse)
+@router.post("", response_model=ChatResponse)
 async def send_message(
     req: ChatRequest,
     db: Session = Depends(database.get_db),
@@ -101,10 +104,15 @@ async def send_message(
     """
     Send a message to Forge AI. Requires active subscription.
     Tries AI Engine first, falls back to direct Groq API call.
+    Auto-assigns a session_id for conversation threading.
     """
+    # Resolve or create session
+    session_id = req.session_id or str(uuid.uuid4())
+
     # Save user message
     user_msg = ChatMessage(
         user_id=current_user.id,
+        session_id=session_id,
         sender="user",
         content=req.message,
         related_opportunity_id=req.opportunity_id
@@ -167,6 +175,7 @@ async def send_message(
     # Save AI response
     ai_msg = ChatMessage(
         user_id=current_user.id,
+        session_id=session_id,
         sender="ai",
         content=ai_content,
         related_opportunity_id=req.opportunity_id
@@ -174,7 +183,104 @@ async def send_message(
     db.add(ai_msg)
     db.commit()
 
-    return ChatResponse(role="ai", content=ai_content)
+    return ChatResponse(role="ai", content=ai_content, session_id=session_id)
+
+@router.get("/sessions", response_model=List[schemas.ChatSessionResponse])
+def list_sessions(
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    """List all chat sessions for the current user, newest first."""
+    from sqlalchemy import case
+
+    # Get sessions with their latest message and count
+    sessions = (
+        db.query(
+            ChatMessage.session_id,
+            sql_func.count(ChatMessage.id).label("message_count"),
+            sql_func.max(ChatMessage.timestamp).label("updated_at"),
+        )
+        .filter(
+            ChatMessage.user_id == current_user.id,
+            ChatMessage.session_id.isnot(None),
+        )
+        .group_by(ChatMessage.session_id)
+        .order_by(desc("updated_at"))
+        .limit(50)
+        .all()
+    )
+
+    result = []
+    for sess in sessions:
+        # Get the first user message as title
+        first_msg = (
+            db.query(ChatMessage)
+            .filter(
+                ChatMessage.session_id == sess.session_id,
+                ChatMessage.sender == "user",
+            )
+            .order_by(ChatMessage.timestamp.asc())
+            .first()
+        )
+        # Get the last message as preview
+        last_msg = (
+            db.query(ChatMessage)
+            .filter(ChatMessage.session_id == sess.session_id)
+            .order_by(ChatMessage.timestamp.desc())
+            .first()
+        )
+
+        title = (first_msg.content[:80] + "...") if first_msg and len(first_msg.content) > 80 else (first_msg.content if first_msg else "New Chat")
+        last_content = (last_msg.content[:100] + "...") if last_msg and len(last_msg.content) > 100 else (last_msg.content if last_msg else "")
+
+        result.append(schemas.ChatSessionResponse(
+            session_id=sess.session_id,
+            title=title,
+            last_message=last_content,
+            message_count=sess.message_count,
+            updated_at=sess.updated_at,
+        ))
+
+    return result
+
+
+@router.get("/sessions/{session_id}", response_model=List[schemas.ChatMessageResponse])
+def get_session_messages(
+    session_id: str,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    """Get all messages for a specific chat session."""
+    messages = (
+        db.query(ChatMessage)
+        .filter(
+            ChatMessage.user_id == current_user.id,
+            ChatMessage.session_id == session_id,
+        )
+        .order_by(ChatMessage.timestamp.asc())
+        .all()
+    )
+    return messages
+
+
+@router.delete("/sessions/{session_id}")
+def delete_session(
+    session_id: str,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(get_current_user)
+):
+    """Delete an entire chat session."""
+    deleted = (
+        db.query(ChatMessage)
+        .filter(
+            ChatMessage.user_id == current_user.id,
+            ChatMessage.session_id == session_id,
+        )
+        .delete()
+    )
+    db.commit()
+    return {"success": True, "deleted_count": deleted}
+
 
 @router.get("/history", response_model=List[schemas.ChatMessageResponse])
 def get_history(
