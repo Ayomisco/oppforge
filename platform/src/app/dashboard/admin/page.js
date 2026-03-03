@@ -541,10 +541,10 @@ export default function AdminDashboard() {
   const [createModal, setCreateModal] = useState(false)
 
   // Data fetching — add error tracking for debug
-  const { data: stats, error: statsError, mutate: mutateStats, isLoading: statsLoading } = useSWR(isStaff ? '/admin/dashboard/stats' : null, fetcher, { revalidateOnFocus: true, shouldRetryOnError: true, errorRetryCount: 3 })
-  const { data: growth } = useSWR(isStaff ? '/admin/dashboard/user-growth?days=30' : null, fetcher)
-  const { data: categories } = useSWR(isStaff ? '/admin/dashboard/category-breakdown' : null, fetcher)
-  const { data: topOpps } = useSWR(isStaff ? '/admin/dashboard/top-opportunities' : null, fetcher)
+  const { data: stats, error: statsError, mutate: mutateStats, isLoading: statsLoading } = useSWR(isStaff ? '/admin/dashboard/stats' : null, fetcher, { revalidateOnFocus: false, revalidateOnReconnect: false, dedupingInterval: 60000, refreshInterval: 0, shouldRetryOnError: true, errorRetryCount: 2, errorRetryInterval: 5000 })
+  const { data: growth } = useSWR(isStaff ? '/admin/dashboard/user-growth?days=30' : null, fetcher, { revalidateOnFocus: false, dedupingInterval: 300000 })
+  const { data: categories } = useSWR(isStaff ? '/admin/dashboard/category-breakdown' : null, fetcher, { revalidateOnFocus: false, dedupingInterval: 300000 })
+  const { data: topOpps } = useSWR(isStaff ? '/admin/dashboard/top-opportunities' : null, fetcher, { revalidateOnFocus: false, dedupingInterval: 60000 })
 
   // Debug: log admin stats errors
   React.useEffect(() => {

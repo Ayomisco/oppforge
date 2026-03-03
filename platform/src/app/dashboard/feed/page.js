@@ -51,11 +51,13 @@ export default function FeedPage() {
     getQuery(),
     fetcher,
     {
-      dedupingInterval: 30000,
+      dedupingInterval: 60000,
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 0,
       shouldRetryOnError: true,
-      errorRetryCount: 3,
-      errorRetryInterval: 3000,
+      errorRetryCount: 2,
+      errorRetryInterval: 5000,
     }
   )
 
