@@ -12,8 +12,7 @@ import {
   Settings, 
   LogOut, 
   Menu,
-  Terminal,
-  Cpu
+  Terminal
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -53,9 +52,7 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
       {/* Logo Area */}
       <div className="h-14 flex items-center px-4 border-b border-[var(--glass-border)]">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-6 h-6 rounded-sm bg-[var(--accent-forge)] flex items-center justify-center text-black shadow-[0_0_10px_rgba(255,85,0,0.5)]">
-            <Cpu size={14} />
-          </div>
+          <img src="/oppforge_logo.png" alt="OppForge" className="w-6 h-6 object-contain filter drop-shadow-[0_0_8px_rgba(255,85,0,0.5)] group-hover:scale-110 transition-transform" />
           <span className="font-bold text-sm tracking-widest uppercase text-white group-hover:text-[var(--accent-forge)] transition-colors">
             OppForge <span className="text-[9px] text-gray-600 align-top">v1.0</span>
           </span>

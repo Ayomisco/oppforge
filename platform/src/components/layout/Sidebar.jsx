@@ -111,7 +111,7 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
       {/* Logo Area */}
       <div className="h-14 flex items-center px-4 border-b border-[#1a1512]">
         <Link href="/" className="flex items-center gap-3 group">
-          <Image src="/logo.png" alt="OppForge" width={24} height={24} className="object-contain filter drop-shadow-[0_0_8px_rgba(255,85,0,0.5)] group-hover:scale-110 transition-transform" priority />
+          <Image src="/oppforge_logo.png" alt="OppForge" width={24} height={24} className="object-contain filter drop-shadow-[0_0_8px_rgba(255,85,0,0.5)] group-hover:scale-110 transition-transform" priority />
           <span className="font-bold text-sm tracking-widest uppercase text-white group-hover:text-[#ff5500] transition-colors">
             OppForge <span className="text-[9px] text-gray-800 align-top">v1.0</span>
           </span>

@@ -193,7 +193,7 @@ export default function OnboardingPage() {
           className="flex items-center justify-between mb-8"
         >
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="OppForge" className="w-7 h-7 object-contain" />
+            <img src="/oppforge_logo.png" alt="OppForge" className="w-7 h-7 object-contain" />
             <span className="text-white font-bold tracking-tight">OppForge</span>
           </div>
           <div className="text-xs font-mono text-gray-600 tracking-widest uppercase">
@@ -305,7 +305,7 @@ export default function OnboardingPage() {
                         boxShadow: isConnected ? '0 0 40px rgba(34,197,94,0.2)' : '0 0 40px rgba(255,85,0,0.15)',
                       }}
                     >
-                      <img src="/logo.png" alt="OppForge" className="w-16 h-16 object-contain" />
+                      <img src="/oppforge_logo.png" alt="OppForge" className="w-16 h-16 object-contain" />
                     </div>
                     {isConnected && (
                       <motion.div

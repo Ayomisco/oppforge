@@ -32,9 +32,9 @@ export const metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/logo.png', type: 'image/png', sizes: '512x512' },
+      { url: '/oppforge_logo.png', type: 'image/png', sizes: '512x512' },
     ],
-    apple: '/logo.png',
+    apple: '/oppforge_logo.png',
     shortcut: '/favicon.ico',
   },
   manifest: '/manifest.json',
@@ -47,7 +47,7 @@ export const metadata = {
     description: 'Your Web3 mission control center. Track grants, hackathons, airdrops, and bounties with AI-powered insights.',
     images: [
       {
-        url: '/logo.png',
+        url: '/oppforge_logo.png',
         width: 512,
         height: 512,
         alt: 'OppForge Logo',
@@ -58,7 +58,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'OppForge | Mission Control',
     description: 'Your Web3 mission control center. Track grants, hackathons, airdrops, and bounties with AI-powered insights.',
-    images: ['/logo.png'],
+    images: ['/oppforge_logo.png'],
     creator: '@oppforge',
   },
   robots: {

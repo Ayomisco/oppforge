@@ -30,9 +30,9 @@ export const metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/logo.png', type: 'image/png', sizes: '512x512' },
+      { url: '/oppforge_logo.png', type: 'image/png', sizes: '512x512' },
     ],
-    apple: '/logo.png',
+    apple: '/oppforge_logo.png',
     shortcut: '/favicon.ico',
   },
   manifest: '/manifest.json',
@@ -45,7 +45,7 @@ export const metadata = {
     description: 'AI-powered agent that discovers, scores, and helps you win Web3 grants, hackathons, airdrops, and bounties.',
     images: [
       {
-        url: '/logo.png',
+        url: '/oppforge_logo.png',
         width: 512,
         height: 512,
         alt: 'OppForge Logo',
@@ -56,7 +56,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'OppForge | Web3 Opportunity Agent',
     description: 'AI-powered agent that discovers, scores, and helps you win Web3 grants, hackathons, airdrops, and bounties.',
-    images: ['/logo.png'],
+    images: ['/oppforge_logo.png'],
     creator: '@oppforge',
   },
   robots: {

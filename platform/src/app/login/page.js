@@ -129,7 +129,7 @@ export default function LoginPage() {
         >
           {/* Logo */}
           <div className="inline-flex items-center gap-3 mb-10">
-            <img src="/logo.png" alt="OppForge" className="w-10 h-10 object-contain" />
+            <img src="/oppforge_logo.png" alt="OppForge" className="w-10 h-10 object-contain" />
             <span className="text-white font-bold text-2xl tracking-tight">OppForge</span>
           </div>
 

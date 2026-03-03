@@ -13,7 +13,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--glass-border)] bg-transparent">
       <div className="container h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <img src="/logo.png" alt="OppForge Logo" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
+          <img src="/oppforge_logo.png" alt="OppForge Logo" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
           <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-forge)] transition-colors">
             OppForge
           </span>
