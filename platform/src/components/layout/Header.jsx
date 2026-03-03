@@ -11,7 +11,12 @@ import { formatDistanceToNow } from 'date-fns'
 const fetcher = url => api.get(url).then(res => res.data)
 
 function NotificationPanel({ onClose }) {
-  const { data: notifs, mutate } = useSWR('/notifications', fetcher, { refreshInterval: 30000 })
+  const { data: notifs, mutate } = useSWR('/notifications', fetcher, { 
+    refreshInterval: 300000,
+    dedupingInterval: 60000,
+    revalidateOnFocus: false,
+    shouldRetryOnError: false
+  })
   
   const markRead = async (id) => {
     try {
@@ -75,7 +80,12 @@ export default function Header({ onMenuClick }) {
   const [showNotifs, setShowNotifs] = useState(false)
   const notifRef = useRef(null)
   
-  const { data: unreadData } = useSWR(!isGuest ? '/notifications/unread-count' : null, fetcher, { refreshInterval: 30000 })
+  const { data: unreadData } = useSWR(!isGuest ? '/notifications/unread-count' : null, fetcher, { 
+    refreshInterval: 300000,
+    dedupingInterval: 60000,
+    revalidateOnFocus: false,
+    shouldRetryOnError: false
+  })
   const unreadCount = unreadData?.count || 0
 
   // Close on outside click

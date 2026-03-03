@@ -1,6 +1,6 @@
 'use client'
 
-import React, { memo } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import { Clock, MessageSquare, Zap, Hash, ArrowUpRight, ShieldCheck, Trash2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -37,7 +37,7 @@ const ScoreRing = ({ score }) => {
   )
 }
 
-const OpportunityCard = memo(function OpportunityCard({ opp, index, onRefresh }) {
+export default function OpportunityCard({ opp, index, onRefresh }) {
   const { user } = useAuth();
   
   if (!opp || !opp.id) {
@@ -79,7 +79,10 @@ const OpportunityCard = memo(function OpportunityCard({ opp, index, onRefresh })
 
   return (
     <motion.div
-      whileHover={{ scale: 1.005 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      whileHover={{ scale: 1.01 }}
       className="glass-card group flex items-start gap-4 p-3 hover:border-[#ff5500]/30 transition-all hover:bg-[var(--glass-shine)]"
     >
       {/* 1. Left: Score Indicator */}
@@ -168,11 +171,4 @@ const OpportunityCard = memo(function OpportunityCard({ opp, index, onRefresh })
       </div>
     </motion.div>
   )
-}, (prevProps, nextProps) => {
-  // Only re-render if opp data actually changed
-  return prevProps.opp.id === nextProps.opp.id && 
-         prevProps.opp.ai_score === nextProps.opp.ai_score &&
-         prevProps.opp.is_verified === nextProps.opp.is_verified
-})
-
-export default OpportunityCard
+}

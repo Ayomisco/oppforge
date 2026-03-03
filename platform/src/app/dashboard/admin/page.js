@@ -541,16 +541,33 @@ export default function AdminDashboard() {
   const [createModal, setCreateModal] = useState(false)
 
   // Data fetching — add error tracking for debug
-  const { data: stats, error: statsError, mutate: mutateStats, isLoading: statsLoading } = useSWR(isStaff ? '/admin/dashboard/stats' : null, fetcher, { revalidateOnFocus: false, revalidateOnReconnect: false, dedupingInterval: 60000, refreshInterval: 0, shouldRetryOnError: true, errorRetryCount: 2, errorRetryInterval: 5000 })
-  const { data: growth } = useSWR(isStaff ? '/admin/dashboard/user-growth?days=30' : null, fetcher, { revalidateOnFocus: false, dedupingInterval: 300000 })
-  const { data: categories } = useSWR(isStaff ? '/admin/dashboard/category-breakdown' : null, fetcher, { revalidateOnFocus: false, dedupingInterval: 300000 })
-  const { data: topOpps } = useSWR(isStaff ? '/admin/dashboard/top-opportunities' : null, fetcher, { revalidateOnFocus: false, dedupingInterval: 60000 })
+  const { data: stats, error: statsError, mutate: mutateStats, isLoading: statsLoading } = useSWR(
+    isStaff ? '/admin/dashboard/stats' : null, 
+    fetcher, 
+    { 
+      revalidateOnFocus: true, 
+      shouldRetryOnError: true, 
+      errorRetryCount: 5,
+      errorRetryInterval: 2000,
+      dedupingInterval: 30000,
+      refreshInterval: 60000
+    }
+  )
+  const { data: growth } = useSWR(isStaff ? '/admin/dashboard/user-growth?days=30' : null, fetcher)
+  const { data: categories } = useSWR(isStaff ? '/admin/dashboard/category-breakdown' : null, fetcher)
+  const { data: topOpps } = useSWR(isStaff ? '/admin/dashboard/top-opportunities' : null, fetcher)
 
   // Debug: log admin stats errors
   React.useEffect(() => {
-    if (statsError) console.error('[Admin] Stats fetch error:', statsError?.response?.status, statsError?.message)
-    if (stats) console.log('[Admin] Stats loaded:', stats)
-  }, [stats, statsError])
+    if (statsError) {
+      const status = statsError?.response?.status
+      const msg = statsError?.response?.data?.detail || statsError?.message
+      console.error('[Admin] Stats fetch error:', { status, msg, isStaff })
+      if (status === 401) console.warn('[Admin] 401 Unauthorized - check if user token is valid and role is ADMIN/SUB_ADMIN')
+      if (status === 403) console.warn('[Admin] 403 Forbidden - user role insufficient')
+    }
+    if (stats) console.log('[Admin] Stats loaded successfully:', stats)
+  }, [stats, statsError, isStaff])
   
   const userSearchParam = userSearch ? `&search=${encodeURIComponent(userSearch)}` : ''
   const { data: users, mutate: mutateUsers } = useSWR(
@@ -661,12 +678,23 @@ export default function AdminDashboard() {
         <>
           {/* Stats Error Banner */}
           {statsError && (
-            <div className="glass-card p-4 mb-4 border border-red-500/20 bg-red-500/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <AlertTriangle size={16} className="text-red-400" />
-                <span className="text-xs font-mono text-red-400">Stats failed to load: {statsError?.response?.status || 'Network error'} — {statsError?.message}</span>
+            <div className="glass-card p-4 mb-4 border border-red-500/20 bg-red-500/5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={16} className="text-red-400" />
+                  <span className="text-xs font-bold text-red-400">
+                    {statsError?.response?.status === 401 ? 'Authentication Required' : 
+                     statsError?.response?.status === 403 ? 'Access Denied' : 
+                     'Stats Load Failed'}
+                  </span>
+                </div>
+                <button onClick={() => mutateStats()} className="text-xs font-bold text-[#ff5500] hover:underline">RETRY</button>
               </div>
-              <button onClick={() => mutateStats()} className="text-xs font-bold text-[#ff5500] hover:underline">RETRY</button>
+              <div className="text-[10px] font-mono text-gray-500 ml-7">
+                {statsError?.response?.status === 401 ? 'Your session may have expired. Try logging out and back in.' :
+                 statsError?.response?.status === 403 ? 'Your account role does not have permission to view this data.' :
+                 `Error ${statsError?.response?.status || 'Network'}: ${statsError?.response?.data?.detail || statsError?.message || 'Unknown error'}`}
+              </div>
             </div>
           )}
           {statsLoading && !stats && (
