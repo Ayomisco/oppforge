@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, CheckCircle, MoreHorizontal, Zap, ArrowRight, XCircle, ChevronRight, FileText } from 'lucide-react'
+import { Clock, CheckCircle, MoreHorizontal, Zap, ArrowRight, XCircle, ChevronRight, FileText, ExternalLink, Trash2, Wand2, ChevronDown } from 'lucide-react'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 const COLUMNS = [
   { id: 'Interested', label: 'Saved', color: 'gray', description: 'Opportunities you\'re interested in' },
@@ -14,7 +15,9 @@ const COLUMNS = [
 ]
 
 export default function KanbanBoard({ initialApplications, onRefresh, onOpenDrafter }) {
+  const router = useRouter()
   const [apps, setApps] = useState(initialApplications)
+  const [openMenuId, setOpenMenuId] = useState(null)
 
   const getColumnData = (columnId) => {
     if (columnId === 'Results') {
@@ -27,10 +30,41 @@ export default function KanbanBoard({ initialApplications, onRefresh, onOpenDraf
     try {
       await api.put(`/tracker/${appId}`, { status: newStatus })
       toast.success(`Moved to ${newStatus}`)
+      setOpenMenuId(null)
       onRefresh()
     } catch (err) {
       toast.error("Failed to update status")
     }
+  }
+
+  const removeFromTracker = async (appId) => {
+    try {
+      await api.delete(`/tracker/${appId}`)
+      toast.success("Removed from tracker")
+      setOpenMenuId(null)
+      onRefresh()
+    } catch (err) {
+      toast.error("Failed to remove")
+    }
+  }
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!openMenuId) return
+    const handle = () => setOpenMenuId(null)
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [openMenuId])
+
+  const getMoveOptions = (status) => {
+    const all = [
+      { label: 'Saved', value: 'Interested' },
+      { label: 'In Progress', value: 'Drafting' },
+      { label: 'Applied', value: 'Submitted' },
+      { label: 'Won', value: 'Won' },
+      { label: 'Lost', value: 'Lost' },
+    ]
+    return all.filter(o => o.value !== status && !(['Won','Lost','Rejected'].includes(status) && ['Won','Lost'].includes(o.value)))
   }
 
   return (
@@ -70,9 +104,67 @@ export default function KanbanBoard({ initialApplications, onRefresh, onOpenDraf
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-[11px] font-medium text-gray-500">{app.type}</span>
-                      <button className="text-gray-600 hover:text-white transition-colors p-1">
-                        <MoreHorizontal size={16} />
-                      </button>
+                      {/* 3-dot menu */}
+                      <div className="relative" onMouseDown={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
+                          className={`transition-colors p-1 rounded-md ${openMenuId === app.id ? 'text-white bg-white/10' : 'text-gray-600 hover:text-white hover:bg-white/10'}`}
+                        >
+                          <MoreHorizontal size={16} />
+                        </button>
+
+                        <AnimatePresence>
+                          {openMenuId === app.id && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                              transition={{ duration: 0.12 }}
+                              className="absolute right-0 top-full mt-1 z-50 w-52 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl shadow-black/50 overflow-hidden"
+                            >
+                              {/* View & Forge links */}
+                              <button
+                                onClick={() => { router.push(`/dashboard/opportunity/${app.opportunity_id}`); setOpenMenuId(null) }}
+                                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+                              >
+                                <ExternalLink size={14} className="text-gray-500" /> View Opportunity
+                              </button>
+                              <button
+                                onClick={() => { router.push(`/dashboard/forge/workspace/${app.opportunity_id}`); setOpenMenuId(null) }}
+                                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-[#ff5500] transition-colors"
+                              >
+                                <Wand2 size={14} className="text-gray-500" /> Open in Forge
+                              </button>
+
+                              <div className="h-px bg-white/5 my-1" />
+
+                              {/* Move to section */}
+                              <div className="px-3.5 py-1.5">
+                                <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Move to</span>
+                              </div>
+                              {getMoveOptions(app.status).map(opt => (
+                                <button
+                                  key={opt.value}
+                                  onClick={() => updateStatus(app.id, opt.value)}
+                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
+                                >
+                                  <ChevronRight size={13} className="text-gray-600" /> {opt.label}
+                                </button>
+                              ))}
+
+                              <div className="h-px bg-white/5 my-1" />
+
+                              {/* Remove */}
+                              <button
+                                onClick={() => removeFromTracker(app.id)}
+                                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                              >
+                                <Trash2 size={14} /> Remove from Tracker
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
 
                     <h4 className="text-sm font-bold text-white mb-3 line-clamp-2">{app.title}</h4>
