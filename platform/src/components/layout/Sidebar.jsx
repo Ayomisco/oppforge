@@ -81,7 +81,7 @@ const SidebarItem = ({ item, isActive, isCollapsed, locked }) => {
       href={locked ? '#' : item.href}
       onClick={locked ? (e) => e.preventDefault() : undefined}
       className={`
-        flex items-center gap-3 px-3 py-2 rounded-sm transition-all duration-200 group relative overflow-hidden text-xs font-mono tracking-wide
+        flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative text-sm
         ${locked 
           ? 'text-gray-700 cursor-not-allowed opacity-50'
           : isActive 
@@ -89,13 +89,13 @@ const SidebarItem = ({ item, isActive, isCollapsed, locked }) => {
           : 'text-gray-400 hover:text-white hover:bg-white/5'}
       `}
     >
-      <item.icon size={16} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-[#ff5500]' : locked ? 'text-gray-700' : 'text-gray-400 group-hover:text-white transition-colors'} />
+      <item.icon size={18} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-[#ff5500]' : locked ? 'text-gray-700' : 'text-gray-400 group-hover:text-white transition-colors'} />
       
       {!isCollapsed && (
-        <span className="uppercase flex-1">{item.label}</span>
+        <span className="flex-1 font-medium">{item.label}</span>
       )}
       {locked && !isCollapsed && (
-        <Lock size={10} className="text-gray-700" />
+        <Lock size={12} className="text-gray-700" />
       )}
     </Link>
   )
@@ -111,16 +111,16 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
       {/* Logo Area */}
       <div className="h-14 flex items-center px-4 border-b border-[#1a1512]">
         <Link href="/" className="flex items-center gap-3 group">
-          <Image src="/oppforge_logo.png" alt="OppForge" width={24} height={24} className="object-contain filter drop-shadow-[0_0_8px_rgba(255,85,0,0.5)] group-hover:scale-110 transition-transform" priority />
-          <span className="font-bold text-sm tracking-widest uppercase text-white group-hover:text-[#ff5500] transition-colors">
-            OppForge <span className="text-[9px] text-gray-800 align-top">v1.0</span>
+          <Image src="/oppforge_logo.png" alt="OppForge" width={26} height={26} className="object-contain filter drop-shadow-[0_0_8px_rgba(255,85,0,0.5)] group-hover:scale-110 transition-transform" priority />
+          <span className="font-bold text-base tracking-tight text-white group-hover:text-[#ff5500] transition-colors">
+            OppForge
           </span>
         </Link>
       </div>
 
       {/* Nav Items */}
-      <div className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
-        <div className="text-[9px] font-mono text-gray-700 uppercase mb-3 pl-3">Main Module</div>
+      <div className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+        <div className="text-[11px] font-semibold text-gray-600 uppercase mb-3 pl-3 tracking-wide">Menu</div>
         {menuItems.map((item) => (
           <SidebarItem 
             key={item.href} 
@@ -135,7 +135,7 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
 
         {(user?.role === 'admin' || user?.role === 'ADMIN' || user?.role === 'sub_admin' || user?.role === 'SUB_ADMIN' || user?.role?.toLowerCase?.() === 'admin' || user?.role?.toLowerCase?.() === 'sub_admin') && (
           <>
-            <div className="mt-8 text-[9px] font-mono text-[#ffaa00] uppercase mb-3 pl-3">Intelligence HQ</div>
+            <div className="mt-8 text-[11px] font-semibold text-[#ffaa00] uppercase mb-3 pl-3 tracking-wide">Admin</div>
             <SidebarItem 
               item={{ icon: ShieldCheck, label: 'Admin Dashboard', href: '/dashboard/admin' }}
               isActive={pathname === '/dashboard/admin'}
@@ -144,10 +144,10 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
               <>
                 <button 
                   onClick={() => window.dispatchEvent(new CustomEvent('open-mission-upload'))}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-gray-400 hover:text-[#ffaa00] hover:bg-[#ffaa00]/10 transition-all duration-200 text-xs font-mono tracking-wide uppercase group"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-[#ffaa00] hover:bg-[#ffaa00]/10 transition-all duration-200 text-sm group"
                 >
-                  <PlusSquare size={16} className="group-hover:rotate-90 transition-transform" />
-                  <span>Deploy Mission</span>
+                  <PlusSquare size={18} className="group-hover:rotate-90 transition-transform" />
+                  <span className="font-medium">Add Opportunity</span>
                 </button>
               </>
             )}
@@ -161,9 +161,9 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
 
       {/* User Profile / Footer */}
       <div className="p-3 border-t border-[#1a1512]">
-        <div className="flex items-center gap-3 p-2 rounded-sm bg-[#0a0806] border border-white/5 group relative overflow-hidden">
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-[#0a0806] border border-white/5 group relative overflow-hidden">
           {/* Avatar */}
-          <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-[10px] font-black text-white shadow-lg shrink-0 ${
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-lg shrink-0 ${
             plan.isActive && !plan.isTrial 
               ? 'bg-gradient-to-br from-[#ff5500] to-[#ffaa00]' 
               : 'bg-gradient-to-br from-gray-600 to-gray-700'
@@ -172,29 +172,29 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <div className="text-[11px] font-bold text-white truncate lowercase tracking-tighter italic">
-              {user?.full_name || user?.username || 'Pilot'}
+            <div className="text-sm font-semibold text-white truncate">
+              {user?.full_name || user?.username || 'User'}
             </div>
             
             <div className="flex items-center gap-1.5 mt-0.5">
-               <span className={`text-[8px] font-mono font-bold px-1 rounded-[2px] ${plan.bgColor} ${plan.color} border ${plan.borderColor} tracking-tighter`}>
+               <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${plan.bgColor} ${plan.color} border ${plan.borderColor}`}>
                  {plan.label}
                </span>
                {plan.isTrial && (
-                 <span className="text-[8px] font-mono text-gray-600">
-                   {plan.trialDaysLeft}d
+                 <span className="text-[10px] text-gray-500">
+                   {plan.trialDaysLeft}d left
                  </span>
                )}
             </div>
           </div>
 
-          <button onClick={logout} className="p-1.5 hover:bg-white/5 rounded text-gray-700 hover:text-red-500 transition-colors">
-            <LogOut size={14} />
+          <button onClick={logout} className="p-2 hover:bg-white/5 rounded-lg text-gray-600 hover:text-red-500 transition-colors" aria-label="Log out">
+            <LogOut size={16} />
           </button>
 
-          {/* Minimalist Trial Progress Line (Bottom Edge of profile) */}
+          {/* Trial Progress Line */}
           {plan.isTrial && (
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/5 overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/5 overflow-hidden">
                <motion.div 
                  initial={{ width: 0 }}
                  animate={{ width: `${((7 - plan.trialDaysLeft) / 7) * 100}%` }}
