@@ -1,82 +1,191 @@
-# ⚒️ OppForge Admin & Testing Guide
+# OppForge — Commands Reference
 
-This document outlines the available commands for managing and testing the OppForge infrastructure.
-
-## 🛡️ Administrative Commands (Backend)
-
-All administrative actions are handled by the `admin.py` CLI tool located in the `backend/` directory.
-
-### **Key Administrative Action: Promote to Admin**
-This is the most critical command for establishing control. It grants a user full access to the Admin Dashboard and bypasses subscription checks.
-
-```bash
-python admin.py promote <user_email>
-```
-
-### **Roles & Permissions**
-
-OppForge uses a tiered role system managed exclusively via CLI.
-
-| Role | Dashboard Analytics | Audit Logs | Manage Users | Edit/Flag Opps | Create Opps | Send Notifications |
-|------|:------------------:|:----------:|:------------:|:--------------:|:-----------:|:------------------:|
-| **ADMIN** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **SUB_ADMIN** | ✅ | ✅ | ❌ | Flag Only | ❌ | ❌ |
-| **USER** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-
-### **Full User Management Commands**
-Manage users, roles, and search findings.
-
-| Command | Description | Example |
-|---------|-------------|----------|
-| `promote` | **Grant ADMIN privileges** | `python admin.py promote pilot@forge.xyz` |
-| `promote-sub-admin` | **Grant SUB_ADMIN privileges** (analytics + audit only) | `python admin.py promote-sub-admin analyst@forge.xyz` |
-| `demote` | **Demote any staff back to USER** | `python admin.py demote pilot@forge.xyz` |
-| `users` | List all registered users | `python admin.py users` |
-| `add-user` | Create a user manually (supports `--role admin/sub_admin/user`) | `python admin.py add-user pilot@forge.xyz skyhunter --role sub_admin` |
-| `search-user` | Search by email or username | `python admin.py search-user pilot@` |
-| `delete-user` | Permanent account removal | `python admin.py delete-user pilot@forge.xyz` |
-
-### **Opportunity Management**
-Handle manual mission control and verification.
-
-| Command | Description | Example |
-|---------|-------------|---------|
-| `opps` | List recent opportunities | `python admin.py opps` |
-| `create-opp` | Manually add a mission | `python admin.py create-opp "New Grant" "https://..." --chain Solana` |
-| `verify` | Approve a mission | `python admin.py verify <UUID>` |
-| `delete-opp` | Remove a mission | `python admin.py delete-opp <UUID>` |
-| `clear-opps` | **Wipe all opportunities** | `python admin.py clear-opps` |
+> **Updated**: March 7, 2026
 
 ---
 
-## 🧪 Testing & Health Commands
+## Local Development
 
-Testing is split into specific service level tests and a unified master suite.
+### Start Backend
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+```
 
-### **1. Master Test Suite**
-The recommended way to verify the entire stack.
+### Start Frontend
+```bash
+cd platform
+pnpm dev           # http://localhost:3000
+```
+
+### Start All Services (script)
+```bash
+./start-all.sh     # Redis + Backend + AI Engine + Celery Worker + Beat
+./stop-all.sh      # Stop everything
+```
+
+### Start Celery (manually)
+```bash
+cd backend
+bash start_celery_worker.sh
+bash start_celery_beat.sh
+```
+
+### Run Scrapers Manually
+```bash
+cd backend
+python run_scrapers.py                       # run all scrapers
+python -c "from app.scrapers.gitcoin import GitcoinScraper; GitcoinScraper().run()"
+```
+
+### Seed Opportunities
+```bash
+cd backend
+python seed_fresh_opportunities.py           # seed curated opportunities to DB
+```
+
+---
+
+## Admin CLI
+
+All admin actions run from `backend/admin.py`.
+
+```bash
+cd backend && source venv/bin/activate
+
+python admin.py promote <email>              # grant ADMIN role
+python admin.py promote-sub-admin <email>    # grant SUB_ADMIN role
+python admin.py demote <email>               # demote back to USER
+python admin.py users                        # list all users
+python admin.py add-user <email> <username> --role admin
+python admin.py search-user <query>
+python admin.py delete-user <email>
+
+python admin.py opps                         # list recent opportunities
+python admin.py create-opp "Title" "https://..." --chain Solana
+python admin.py verify <uuid>                # approve an opp
+python admin.py delete-opp <uuid>
+python admin.py clear-opps                   # wipe all opportunities (careful)
+```
+
+### Role Permissions
+
+| Role | Analytics | Audit Logs | Manage Users | Edit Opps | Send Notifications |
+|---|---|---|---|---|---|
+| ADMIN | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SUB_ADMIN | ✅ | ✅ | ❌ | Flag only | ❌ |
+| USER | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+---
+
+## Testing
+
+### Master test suite (full stack)
 ```bash
 python tools/master_test.py
 ```
 
-### **2. Backend API Tests**
-Verifies endpoint availability and JSON response integrity.
+### Backend API tests
 ```bash
-cd backend
-python test_api.py
+cd backend && python test_api.py
+python test_api.py https://oppbackendapi.oppforge.xyz    # test live
 ```
 
-### **3. AI Engine Tests**
-Verifies the Llama3/Mistral pipeline and scoring internal logic.
+### AI Engine tests
 ```bash
-cd ai-engine
-python test_engine.py
+cd ai-engine && python test_engine.py
+```
+
+### Backend unit tests
+```bash
+cd backend && pytest tests/
 ```
 
 ---
 
-## 🚀 Deployment Verification
-To check a live deployment (e.g., Railway/Vercel), pass the URL to the test scripts:
+## Smart Contracts
+
 ```bash
-python backend/test_api.py https://api.oppforge.xyz
+cd contracts
+
+# Compile
+npx hardhat compile
+
+# Test
+npx hardhat test
+
+# Deploy to Ethereum Sepolia (testnet)
+npx hardhat run scripts/deploy-ethereum.js --network sepolia
+
+# Deploy to Ethereum Mainnet
+npx hardhat run scripts/deploy-ethereum.js --network mainnet
+
+# Deploy to Arbitrum Sepolia
+npx hardhat run scripts/deploy.js --network arbitrumSepolia
+
+# Deploy to Arbitrum One
+npx hardhat run scripts/deploy.js --network arbitrumOne
+
+# Verify on Etherscan (after deploy)
+npx hardhat verify --network sepolia <ADDRESS>
+npx hardhat verify --network mainnet <ADDRESS>
+npx hardhat verify --network arbitrumSepolia <ADDRESS>
+
+# Check wallet address
+node check_address.js
+```
+
+---
+
+## Production Deployment (Railway)
+
+### Deploy Backend
+```bash
+# Backend has its own Railway remote (backend-remote)
+cd backend
+git add -A && git commit -m "..."
+git push    # pushes to backend Railway remote
+```
+
+### Deploy Platform (Frontend)
+```bash
+# From monorepo root — subtree push
+git add -A && git commit -m "..."
+git subtree push --prefix=platform platform-remote main
+```
+
+### Both at once
+```bash
+git add -A && git commit -m "feat: ..."
+git push origin main
+git subtree push --prefix=platform platform-remote main
+```
+
+---
+
+## Health Checks
+
+```bash
+# Backend liveness
+curl https://oppbackendapi.oppforge.xyz/health
+
+# Priority opportunities feed
+curl https://oppbackendapi.oppforge.xyz/opportunities/priority | head -20
+
+# Local backend
+curl http://localhost:8000/health
+```
+
+---
+
+## Database
+
+```bash
+cd backend
+# Run a migration script
+python app/scripts/add_risk_fields.py
+
+# Seed ecosystems
+python -m app.scripts.add_remaining_ecosystems
 ```
