@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { Sparkles, Save, Send, ArrowLeft, Wand2, FileText, MessageSquare, Lightbulb, FileEdit, Presentation, Target, Briefcase, Trophy, Code, Rocket, Users, Shield, BookOpen, Eye, PenLine, Copy, Replace, Download, Menu, X, RefreshCw } from 'lucide-react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { Sparkles, Send, ArrowLeft, Wand2, FileText, MessageSquare, Lightbulb, FileEdit, Presentation, Target, Briefcase, Trophy, Code, Rocket, Users, Shield, BookOpen, Eye, PenLine, Copy, Replace, Download, X, RefreshCw, Plus, ChevronDown, ChevronRight, Brain, BarChart2, Calendar, DollarSign, Search, ExternalLink, Star, Clock, TrendingUp, CheckCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import api from '@/lib/api'
@@ -12,6 +12,43 @@ import ReactMarkdown from 'react-markdown'
 const fetcher = url => api.get(url).then(res => res.data)
 
 import FeatureGate from '@/components/ui/FeatureGate'
+
+// Brainstorm chips shown when chat has no user messages yet
+const BRAINSTORM_CHIPS = [
+  { label: 'What makes a winner here?', icon: Trophy },
+  { label: 'Suggest 3 unique angles', icon: Lightbulb },
+  { label: 'What are my risks?', icon: Shield },
+  { label: 'How competitive is this?', icon: BarChart2 },
+  { label: 'What should I prioritize?', icon: Target },
+  { label: 'Ideal team composition?', icon: Users },
+]
+
+// Parse markdown into interactive sections
+function parseSectionsFromMarkdown(content) {
+  if (!content?.trim()) return []
+  const lines = content.split('\n')
+  const sections = []
+  let current = null
+  for (const line of lines) {
+    if (/^#{1,2}\s/.test(line)) {
+      if (current) sections.push(current)
+      current = { id: Math.random().toString(36).slice(2), title: line.replace(/^#+\s/, ''), content: '', isCollapsed: false }
+    } else if (current) {
+      current.content += line + '\n'
+    } else if (line.trim()) {
+      current = { id: Math.random().toString(36).slice(2), title: 'Introduction', content: line + '\n', isCollapsed: false }
+    }
+  }
+  if (current) sections.push(current)
+  if (!sections.length && content.trim()) return [{ id: 'default', title: 'Draft', content, isCollapsed: false }]
+  return sections.map(s => ({ ...s, content: s.content.trimEnd() }))
+}
+
+function sectionsToMarkdown(sections) {
+  return sections.map(s => `## ${s.title}\n${s.content}`).join('\n\n')
+}
+
+const RESEARCH_MODE = { key: 'research', label: 'Research', icon: Search, desc: 'Deep competitive analysis & intelligence' }
 
 // Forge mode configurations per opportunity category
 const FORGE_MODES = {
@@ -25,8 +62,9 @@ const FORGE_MODES = {
       { key: 'proposal', label: 'Submission', icon: FileEdit, desc: 'Draft a hackathon submission' },
       { key: 'pitch', label: 'Pitch Deck', icon: Presentation, desc: 'Create a pitch deck outline' },
       { key: 'strategy', label: 'Strategy', icon: Target, desc: 'Strategy to maximize your chances' },
+      RESEARCH_MODE,
     ],
-    quickActions: ['Generate 5 project ideas', 'Add technical architecture', 'Strengthen demo plan', 'Optimize for judges', 'Add team composition'],
+    quickActions: ['Generate 5 winning ideas', 'Add technical architecture', 'Strengthen demo plan', 'Optimize for judges', 'Add team composition'],
   },
   grants: {
     label: 'Grant',
@@ -38,6 +76,7 @@ const FORGE_MODES = {
       { key: 'budget', label: 'Budget', icon: Briefcase, desc: 'Create a budget breakdown' },
       { key: 'milestones', label: 'Milestones', icon: Target, desc: 'Define deliverables and timeline' },
       { key: 'pitch', label: 'Pitch Deck', icon: Presentation, desc: 'Deck for grant committee' },
+      RESEARCH_MODE,
     ],
     quickActions: ['Quantify impact', 'Add milestone table', 'Strengthen roadmap', 'Add budget breakdown', 'Refine problem statement'],
   },
@@ -50,6 +89,7 @@ const FORGE_MODES = {
       { key: 'proposal', label: 'Submission', icon: FileEdit, desc: 'Draft your bounty submission' },
       { key: 'strategy', label: 'Approach', icon: Code, desc: 'Plan your implementation' },
       { key: 'review', label: 'Review Notes', icon: Shield, desc: 'Prepare review notes' },
+      RESEARCH_MODE,
     ],
     quickActions: ['Detail implementation', 'Add code snippets', 'Explain security considerations', 'Add testing plan', 'Optimize for reviewer'],
   },
@@ -61,6 +101,7 @@ const FORGE_MODES = {
     modes: [
       { key: 'strategy', label: 'Strategy', icon: Target, desc: 'Steps to qualify' },
       { key: 'checklist', label: 'Checklist', icon: Shield, desc: 'Required interactions' },
+      RESEARCH_MODE,
     ],
     quickActions: ['List all requirements', 'Estimate gas costs', 'Add timeline', 'Optimize interactions', 'Risk assessment'],
   },
@@ -72,6 +113,7 @@ const FORGE_MODES = {
     modes: [
       { key: 'strategy', label: 'Guide', icon: BookOpen, desc: 'Participation guide' },
       { key: 'checklist', label: 'Checklist', icon: Shield, desc: 'Tasks to complete' },
+      RESEARCH_MODE,
     ],
     quickActions: ['List all tasks', 'Add wallet setup steps', 'Estimate time needed', 'Prioritize interactions', 'Track progress'],
   },
@@ -84,6 +126,7 @@ const FORGE_MODES = {
       { key: 'application', label: 'Application', icon: FileEdit, desc: 'Write an ambassador application' },
       { key: 'strategy', label: 'Content Plan', icon: Target, desc: 'Community strategy' },
       { key: 'pitch', label: 'Pitch Deck', icon: Presentation, desc: 'Showcase your presence' },
+      RESEARCH_MODE,
     ],
     quickActions: ['Highlight community experience', 'Add content calendar', 'Show social reach', 'Detail growth plan', 'Add past results'],
   },
@@ -96,6 +139,7 @@ const FORGE_MODES = {
       { key: 'cv', label: 'CV / Resume', icon: FileText, desc: 'Tailor your CV' },
       { key: 'cover', label: 'Cover Letter', icon: FileEdit, desc: 'Write a cover letter' },
       { key: 'prep', label: 'Interview Prep', icon: MessageSquare, desc: 'Prepare for interviews' },
+      RESEARCH_MODE,
     ],
     quickActions: ['Tailor to job description', 'Add quantified achievements', 'Highlight relevant skills', 'Add portfolio links', 'Optimize keywords'],
   },
@@ -110,6 +154,7 @@ const DEFAULT_CONFIG = {
     { key: 'proposal', label: 'Proposal', icon: FileEdit, desc: 'Draft a compelling application' },
     { key: 'strategy', label: 'Strategy', icon: Target, desc: 'Build a tactical approach' },
     { key: 'pitch', label: 'Pitch Deck', icon: Presentation, desc: 'Create a pitch outline' },
+    RESEARCH_MODE,
   ],
   quickActions: ['Quantify achievements', 'Add milestone table', 'Strengthen roadmap', 'Add technical detail', 'Refine summary'],
 }
@@ -129,16 +174,20 @@ export default function ForgeWorkspace({ params }) {
   const { id } = React.use(params)
   const router = useRouter()
   const [proposal, setProposal] = useState('')
+  const [sections, setSections] = useState([])
+  const [sectionGenId, setSectionGenId] = useState(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [chatMessage, setChatMessage] = useState('')
   const [chatHistory, setChatHistory] = useState([])
   const [activeMode, setActiveMode] = useState(null)
-  const [viewMode, setViewMode] = useState('preview')
+  const [viewMode, setViewMode] = useState('sections')
   const [showChat, setShowChat] = useState(false)
+  const [autoBriefDone, setAutoBriefDone] = useState(false)
   const chatEndRef = useRef(null)
   const chatInputRef = useRef(null)
   
   const { data: opp, isLoading: isOppLoading } = useSWR(`/opportunities/${id}`, fetcher)
+  const { data: trackerData } = useSWR('/tracker', fetcher)
   
   const forgeConfig = useMemo(() => getForgeConfig(opp?.category), [opp?.category])
   
@@ -158,27 +207,71 @@ export default function ForgeWorkspace({ params }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // Auto-brief: fire once when opportunity data arrives
+  useEffect(() => {
+    if (!opp || autoBriefDone) return
+    setAutoBriefDone(true)
+    ;(async () => {
+      try {
+        const apps = Array.isArray(trackerData) ? trackerData : (trackerData?.applications || [])
+        const history = apps.slice(0, 5).map(a =>
+          `${a.title || a.opportunity?.title || 'Unknown'} (${a.status || 'tracked'})`
+        ).join(', ')
+        const resp = await api.post('/chat', {
+          message: `You are a strategic advisor. Give a concise 3-point intelligence brief:
+
+1. **What they want** — top 2 things the organizers care about most
+2. **Competition level** — difficulty (Easy/Medium/Hard) and why
+3. **#1 tip to stand out** — the most important differentiator
+
+Opportunity: ${opp.title}
+Category: ${opp.category}
+Reward: ${opp.reward_pool || 'Not stated'}
+Description: ${(opp.ai_summary || opp.description || '').slice(0, 500)}
+${opp.win_probability ? `Win rate: ${Math.round(opp.win_probability * 100)}%` : ''}
+${history ? `User history: ${history}` : ''}
+
+Be direct. 4-6 sentences max. No fluff.`,
+          opportunity_id: id
+        })
+        setChatHistory([{ role: 'ai', content: resp.data.content, tag: 'brief' }])
+      } catch { /* silent */ }
+    })()
+  }, [opp]) // eslint-disable-line
+
+  const buildUserHistorySnippet = useCallback(() => {
+    const apps = Array.isArray(trackerData) ? trackerData : (trackerData?.applications || [])
+    if (!apps.length) return ''
+    return apps.slice(0, 6).map(a => `${a.title || a.opportunity?.title || 'Unknown'} (${a.status || 'tracked'})`).join(', ')
+  }, [trackerData])
+
   const currentModeConfig = forgeConfig.modes.find(m => m.key === activeMode) || forgeConfig.modes[0]
 
-  const buildForgePrompt = (mode) => {
-    const base = `Opportunity: ${opp?.title}\nCategory: ${opp?.category}\nDescription: ${opp?.ai_summary || opp?.description}\nRequirements: ${(opp?.required_skills || []).join(', ')}\n`
+  const buildForgePrompt = useCallback((mode) => {
+    const skills = (opp?.required_skills || []).join(', ')
+    const tags = (opp?.tags || []).join(', ')
+    const reqs = (opp?.requirements || []).slice(0, 8).join('\n- ')
+    const deadline = opp?.deadline ? new Date(opp.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Ongoing'
+    const userHistory = buildUserHistorySnippet()
+    const base = `=== OPPORTUNITY INTELLIGENCE ===\nTitle: ${opp?.title}\nCategory: ${opp?.category}\nDescription: ${opp?.ai_summary || opp?.description}\nReward / Prize Pool: ${opp?.reward_pool || opp?.reward || 'Not specified'}\nDeadline: ${deadline}\nChain / Platform: ${opp?.chain || opp?.source || 'Web3'}\nRequired Skills: ${skills || 'See description'}\nTags: ${tags || 'N/A'}\nTrust Score: ${opp?.trust_score ?? 'N/A'}/10\nAI Win Probability: ${opp?.win_probability ? Math.round(opp.win_probability * 100) + '%' : 'N/A'}\n${reqs ? 'Specific Requirements:\\n- ' + reqs : ''}\n${opp?.strategy ? 'Strategy hint: ' + opp.strategy : ''}\n${userHistory ? '\\n=== USER CONTEXT ===\\nPreviously tracked: ' + userHistory : ''}\n=================================\n`
     
     const prompts = {
-      ideas: `${base}\nGenerate 5 creative, innovative project ideas for this hackathon. For each idea include:\n1. Project Name\n2. One-line pitch\n3. Technical approach (2-3 sentences)\n4. Why it could win\n\nFormat in Markdown.`,
-      proposal: `${base}\nWrite a compelling 3-paragraph application/proposal:\n1. Professional introduction and 'Why Me'\n2. Tactical approach with concrete deliverables\n3. Timeline and call to action\n\nFormat in Markdown.`,
-      pitch: `${base}\nCreate a pitch deck outline with 8-10 slides:\n- Title slide\n- Problem statement\n- Solution overview\n- Technical architecture\n- Market opportunity\n- Team & capabilities\n- Roadmap & milestones\n- Ask / CTA\n\nFor each slide, include bullet points. Format in Markdown.`,
-      strategy: `${base}\nCreate a detailed strategy to maximize success. Include:\n1. Preparation steps\n2. Key requirements and how to meet them\n3. Timeline with milestones\n4. Risk factors and mitigation\n5. Competitive advantage tactics\n\nFormat in Markdown.`,
-      budget: `${base}\nCreate a detailed budget breakdown. Include:\n1. Personnel costs\n2. Infrastructure & tools\n3. Marketing/community\n4. Contingency\n5. Total with justification\n\nFormat as a Markdown table.`,
-      milestones: `${base}\nDefine a milestone-based delivery plan:\n- 3-5 major milestones\n- Each with: deliverables, timeline, success metrics, payment trigger\n\nFormat as a Markdown table.`,
-      cv: `${base}\nGenerate a tailored CV/resume for this role. Include:\n1. Professional summary (tailored)\n2. Relevant experience highlights\n3. Technical skills (matched to requirements)\n4. Key achievements with metrics\n\nFormat in Markdown.`,
-      cover: `${base}\nWrite a compelling cover letter:\n1. Opening hook\n2. Why this role excites me\n3. Relevant experience & achievements\n4. Cultural fit & closing\n\nFormat in Markdown.`,
-      prep: `${base}\nPrepare interview content:\n1. 5 likely technical questions with sample answers\n2. 3 behavioral questions with STAR-format answers\n3. 5 smart questions to ask the interviewer\n4. Key topics to review\n\nFormat in Markdown.`,
-      application: `${base}\nWrite a standout ambassador application:\n1. Introduction and motivation\n2. Community experience & reach\n3. Content/growth strategy\n4. What I bring to the program\n\nFormat in Markdown.`,
-      checklist: `${base}\nCreate a detailed task checklist:\n- All required interactions/tasks\n- Step-by-step instructions for each\n- Estimated time per task\n- Priority order\n\nFormat as a Markdown checklist.`,
-      review: `${base}\nPrepare code review submission notes:\n1. Implementation approach\n2. Key design decisions\n3. Security considerations\n4. Testing strategy\n5. Known limitations\n\nFormat in Markdown.`,
+      ideas: `${base}\nGenerate 5 creative, high-probability winning project ideas for this hackathon.\nFor each idea:\n1. **Project Name** — punchy\n2. **One-line pitch** — what it does + why novel\n3. **Technical stack** — key technologies (2-3 sentences)\n4. **Why it could win** — maps to judge priorities\n5. **Difficulty** — Easy/Medium/Hard + reasoning\n\nFormat in Markdown. Match required skills and reward criteria.`,
+      proposal: `${base}\nWrite a compelling, personalized application/proposal.\n\n## Hook\nStrong opening that signals deep understanding of ${opp?.title || 'this opportunity'}\n\n## Why This Opportunity\nGenuine specific motivation referencing the actual mission and reward\n\n## What I Bring\nSkills mapped to requirements (${skills || 'as listed'})\n\n## My Approach\nConcrete plan with deliverables; reference deadline (${deadline})\n\n## Timeline & Milestones\n3-4 milestones to the deadline\n\n## Closing Statement\nConfident specific CTA\n\nFormat in Markdown. Personal tone, not templated.`,
+      pitch: `${base}\nCreate a pitch deck (8-10 slides): Title & Hook | Problem | Solution | How It Works | Traction | Market (${opp?.chain || 'Web3'}) | Team | Roadmap to ${deadline} | The Ask\nFor each slide: title + 4-5 bullets + speaker notes.\nFormat in Markdown.`,
+      strategy: `${base}\nBuild a winning strategy.\n\n## Opportunity Assessment\nDifficulty, expected competition, success probability\n\n## Preparation Checklist\nStep-by-step prep with estimated hours\n\n## Requirements Mapping\nEach requirement vs. how to meet/exceed it\n\n## Competitive Differentiators\n3 ways to stand out from typical applicants\n\n## Timeline to ${deadline}\nWeek-by-week milestones\n\n## Risk Register\nRisks + mitigation plans\n\n## Pre-Submission Checklist\n20-point final review\n\nFormat in Markdown.`,
+      research: `${base}\nDeep intelligence report.\n\n## Opportunity DNA\nWhat organizers really value; past winner patterns; hidden criteria\n\n## Competition Intelligence\nEstimated applicants; difficulty 1-10 with reasoning; main competitors\n\n## Success Patterns\nTop 3 winner factors; common mistakes; insider knowledge\n\n## Unique Angle Generator\n5 differentiated approaches most applicants won't think of — with rationale\n\n## Risk & Reward Analysis\nHonest ROI: time cost vs. expected value\n\n## Personalized Action Plan\nNext steps tailored to: ${buildUserHistorySnippet() || 'building Web3 portfolio'}\nPriority ordered.\n\nFormat in Markdown with detailed, actionable intel.`,
+      budget: `${base}\nDetailed budget targeting ${opp?.reward_pool || 'stated reward'}.\n\n## Budget Table\n| Category | Item | Cost (USD) | Justification |\nInclude: Personnel, Infrastructure, Tools, Marketing, Legal, Contingency 10%\n\n## Budget Narrative\n1-2 sentences per major item\n\n## Contingency Plan\nWhat gets cut if partial funding\n\nFormat in Markdown.`,
+      milestones: `${base}\nMilestone plan for deadline ${deadline}.\n| Milestone | Deliverables | Timeline | Success Metric | Payment Trigger |\nCreate 4-6 milestones.\n\n## Dependencies & Risks\n\n## Definition of Done\n\nFormat in Markdown.`,
+      cv: `${base}\nHighly tailored CV.\n\n## Professional Summary\n3-4 lines tailored to ${opp?.title || 'this role'}\n\n## Core Competencies\nSkills matrix mapped to: ${skills}\n\n## Relevant Experience\n2-3 roles with 4-5 quantified achievement bullets each\n\n## Key Projects\n2-3 projects with outcomes\n\n## Education & Certifications\n\nFormat in Markdown.`,
+      cover: `${base}\nExceptional cover letter.\n\n## Opening Hook\nPersonal, specific — NOT "I am writing to apply for..."\n\n## The Match\nWhy this opportunity + why this applicant; cite specific requirements\n\n## Proof Points\n2-3 concrete achievements relevant to what they need\n\n## Cultural Fit\nConnection to ${opp?.chain || 'Web3'} and the mission\n\n## Close\nConfident, action-oriented CTA\n\nFormat in Markdown. Conversational but professional.`,
+      prep: `${base}\nComprehensive interview kit.\n\n## Technical Questions (5)\nLikely questions + detailed model answers\n\n## Behavioral Questions (3)\nSTAR-format answers tailored to this role\n\n## Smart Questions to Ask (7)\nQuestions signaling deep research\n\n## Key Topics to Review\nSpecific concepts and technologies\n\n## Red Flags to Avoid\n\nFormat in Markdown.`,
+      application: `${base}\nStandout ambassador application.\n\n## Personal Brand\nBrief statement + community credentials\n\n## Why ${opp?.title || 'This Program'}\nSpecific genuine reason showing real research\n\n## Community Strategy\nChannels, target audience, content plan, growth tactics\n\n## Proof of Impact\nPast work, growth numbers, content examples\n\n## 30-60-90 Day Plan\nConcrete milestones for first 3 months\n\nFormat in Markdown.`,
+      checklist: `${base}\nComplete step-by-step task checklist.\nFor every required interaction:\n- [ ] **Task** — exact numbered steps, time estimate, priority High/Med/Low\n- Gas fee estimates if on-chain\n- How to verify completion; common pitfalls\n\nEnd with a Progress Tracker table.\nFormat as Markdown checklist.`,
+      review: `${base}\nCode review submission notes.\n\n## Implementation Overview\n## Key Design Decisions\n## Security Considerations\n## Testing Strategy\n## Performance Notes\n## Known Limitations\n## Reviewer Guide\n\nFormat in Markdown.`,
     }
-    return prompts[mode] || `${base}\nGenerate a professional, detailed response appropriate for this opportunity. Format in Markdown.`
-  }
+    return prompts[mode] || `${base}\nGenerate a professional, personalized response for this opportunity. Format in Markdown.`
+  }, [opp, buildUserHistorySnippet])
 
   const startForging = async () => {
     setIsGenerating(true)
@@ -197,8 +290,15 @@ export default function ForgeWorkspace({ params }) {
           draftContent = resp.data.content
         }
         
-        setProposal(draftContent || 'Failed to generate content. Please try again.')
-        setChatHistory([{ role: 'ai', content: `Here's your ${currentModeConfig.label.toLowerCase()} draft. Use the chat to refine it, or try the quick actions below.` }])
+        const content = draftContent || '# Draft\n\nFailed to generate. Please try again.'
+        setProposal(content)
+        const parsed = parseSectionsFromMarkdown(content)
+        setSections(parsed)
+        setViewMode('sections')
+        setChatHistory(prev => [
+          ...prev,
+          { role: 'ai', content: `✅ Your **${currentModeConfig.label}** is ready — ${parsed.length} section${parsed.length !== 1 ? 's' : ''} generated.\n\nClick any section to edit directly, or ask me to refine specific parts.` }
+        ])
         toast.success(`${currentModeConfig.label} generated!`)
     } catch (error) {
         toast.error('Failed to generate. Please try again.')
@@ -207,11 +307,64 @@ export default function ForgeWorkspace({ params }) {
     }
   }
 
+  const regenerateSection = async (section) => {
+    setSectionGenId(section.id)
+    try {
+      const resp = await api.post('/chat', {
+        message: `Rewrite ONLY the "${section.title}" section. Make it stronger and better tailored.\n\nCurrent content:\n${section.content}\n\nOpportunity: ${opp?.title} | Reward: ${opp?.reward_pool || 'N/A'}\n\nReturn ONLY the new content — no heading, no commentary.`,
+        opportunity_id: id
+      })
+      const newContent = resp.data.content
+      setSections(prev => {
+        const updated = prev.map(s => s.id === section.id ? { ...s, content: newContent } : s)
+        setProposal(sectionsToMarkdown(updated))
+        return updated
+      })
+      toast.success(`"${section.title}" refreshed`)
+    } catch {
+      toast.error('Regeneration failed')
+    } finally {
+      setSectionGenId(null)
+    }
+  }
+
+  const updateSection = (sId, newContent) => {
+    setSections(prev => {
+      const updated = prev.map(s => s.id === sId ? { ...s, content: newContent } : s)
+      setProposal(sectionsToMarkdown(updated))
+      return updated
+    })
+  }
+
+  const updateSectionTitle = (sId, newTitle) => {
+    setSections(prev => prev.map(s => s.id === sId ? { ...s, title: newTitle } : s))
+  }
+
+  const toggleSection = (sId) => {
+    setSections(prev => prev.map(s => s.id === sId ? { ...s, isCollapsed: !s.isCollapsed } : s))
+  }
+
+  const deleteSection = (sId) => {
+    setSections(prev => {
+      const updated = prev.filter(s => s.id !== sId)
+      setProposal(sectionsToMarkdown(updated))
+      return updated
+    })
+    toast.success('Section removed')
+  }
+
+  const addSection = () => {
+    setSections(prev => [
+      ...prev,
+      { id: Math.random().toString(36).slice(2), title: 'New Section', content: 'Add your content here...', isCollapsed: false }
+    ])
+  }
+
   const switchMode = async (newMode) => {
     setActiveMode(newMode)
     if (proposal) {
       const modeLabel = forgeConfig.modes.find(m => m.key === newMode)?.label || 'Content'
-      toast(`Switched to ${modeLabel}. Click "Generate" to create new content.`, { icon: '🔄' })
+      toast(`Switched to ${modeLabel}. Click "Regenerate" to refresh.`, { icon: '🔄' })
     }
   }
 
@@ -226,16 +379,18 @@ export default function ForgeWorkspace({ params }) {
 
     try {
         const resp = await api.post('/chat', {
-            message: `Refine this ${currentModeConfig.label.toLowerCase()}: "${userMsg}". Current content: ${proposal}. Opportunity: ${opp?.title}`,
+            message: `User request: "${userMsg}"\n\nContext: Working on ${currentModeConfig.label} for "${opp?.title}"\nCurrent draft: ${proposal?.slice(0, 700) || 'Not generated yet'}\nReward: ${opp?.reward_pool || 'N/A'}\n\nIf updating the draft, prefix with UPDATED_DRAFT:\nOtherwise answer directly. Be specific to this opportunity.`,
             opportunity_id: id
         })
         
         const aiResponse = resp.data.content
         setChatHistory(prev => [...prev, { role: 'ai', content: aiResponse }])
         
-        if (aiResponse.includes('FIXED_PROPOSAL:')) {
-            const newDraft = aiResponse.split('FIXED_PROPOSAL:')[1]
-            setProposal(newDraft.trim())
+        if (aiResponse.includes('UPDATED_DRAFT:')) {
+            const newDraft = aiResponse.split('UPDATED_DRAFT:')[1].trim()
+            setProposal(newDraft)
+            setSections(parseSectionsFromMarkdown(newDraft))
+            toast.success('Draft updated')
         }
     } catch (error) {
         toast.error('Failed to refine')
@@ -244,14 +399,27 @@ export default function ForgeWorkspace({ params }) {
     }
   }
 
+  const sendBrainstormChip = (text) => {
+    setChatHistory(prev => [...prev, { role: 'user', content: text }])
+    setIsGenerating(true)
+    api.post('/chat', {
+      message: `${text}\n\nOpportunity: "${opp?.title}" (${opp?.category}, reward: ${opp?.reward_pool || 'N/A'})\n${(opp?.ai_summary || opp?.description || '').slice(0, 400)}\n\nBe specific to this exact opportunity. Direct and actionable.`,
+      opportunity_id: id
+    }).then(resp => {
+      setChatHistory(prev => [...prev, { role: 'ai', content: resp.data.content }])
+    }).catch(() => toast.error('Failed to respond'))
+      .finally(() => setIsGenerating(false))
+  }
+
   const { startMissionOnChain } = useOppForge()
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(proposal).then(() => toast.success('Copied to clipboard'))
+    const text = viewMode === 'sections' && sections.length ? sectionsToMarkdown(sections) : proposal
+    navigator.clipboard.writeText(text).then(() => toast.success('Copied to clipboard'))
   }
 
   const exportAsPDF = async () => {
-    if (!proposal) return
+    if (!proposal && !sections.length) return
     const tid = toast.loading('Generating PDF...')
     try {
       // Dynamic import to keep bundle size small
@@ -273,15 +441,20 @@ export default function ForgeWorkspace({ params }) {
     }
   }
 
+  const applyToDraft = (content) => {
+    setProposal(content)
+    setSections(parseSectionsFromMarkdown(content))
+    setViewMode('sections')
+    toast.success('Applied to draft')
+  }
+
+  const daysLeft = opp?.deadline
+    ? Math.max(0, Math.ceil((new Date(opp.deadline) - new Date()) / 86400000))
+    : null
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatHistory])
-
-  const applyToDraft = (content) => {
-    setProposal(content)
-    setViewMode('preview')
-    toast.success('Applied to draft')
-  }
 
   const CategoryIcon = forgeConfig.icon
 
@@ -306,9 +479,19 @@ export default function ForgeWorkspace({ params }) {
             <div className="hidden sm:block h-4 w-px bg-white/10" />
             <div className="flex items-center gap-2 min-w-0">
               <CategoryIcon size={16} className="shrink-0" style={{ color: forgeConfig.color }} />
-              <span className="text-sm font-semibold text-white truncate">
+              <span className="text-sm font-semibold text-white truncate max-w-[180px] sm:max-w-xs">
                 {opp?.title}
               </span>
+              {opp?.reward_pool && (
+                <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[11px] text-green-400 shrink-0">
+                  <DollarSign size={9} />{opp.reward_pool}
+                </span>
+              )}
+              {daysLeft !== null && (
+                <span className={`hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[11px] shrink-0 ${daysLeft <= 7 ? 'text-red-400' : 'text-gray-400'}`}>
+                  <Clock size={9} />{daysLeft}d left
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -372,13 +555,23 @@ export default function ForgeWorkspace({ params }) {
               <div className="flex items-center gap-1.5 shrink-0">
                 {/* View Toggle */}
                 <div className="flex items-center bg-white/5 rounded-lg p-0.5">
+                  {sections.length > 0 && (
+                    <button 
+                      onClick={() => setViewMode('sections')}
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        viewMode === 'sections' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      <Brain size={12} /> <span className="hidden sm:inline">Sections</span>
+                    </button>
+                  )}
                   <button 
                     onClick={() => setViewMode('preview')}
                     className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                       viewMode === 'preview' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
-                    <Eye size={13} /> Preview
+                    <Eye size={13} /> <span className="hidden sm:inline">Preview</span>
                   </button>
                   <button 
                     onClick={() => setViewMode('edit')}
@@ -386,7 +579,7 @@ export default function ForgeWorkspace({ params }) {
                       viewMode === 'edit' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
-                    <PenLine size={13} /> Edit
+                    <PenLine size={13} /> <span className="hidden sm:inline">Edit</span>
                   </button>
                 </div>
               </div>
@@ -404,7 +597,28 @@ export default function ForgeWorkspace({ params }) {
                     <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
                       Create your {forgeConfig.label.toLowerCase()} draft
                     </h2>
-                    <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">{currentModeConfig?.desc}</p>
+                    <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">{currentModeConfig?.desc}</p>
+                    
+                    {/* Opportunity stats */}
+                    {opp && (
+                      <div className="flex flex-wrap justify-center gap-2 mb-5">
+                        {opp.reward_pool && (
+                          <span className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 text-xs text-green-400">
+                            <DollarSign size={11} />{opp.reward_pool}
+                          </span>
+                        )}
+                        {daysLeft !== null && (
+                          <span className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs ${daysLeft <= 7 ? 'text-red-400 bg-red-500/5 border-red-500/20' : 'text-gray-400 bg-white/5 border-white/10'}`}>
+                            <Calendar size={11} />{daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed'}
+                          </span>
+                        )}
+                        {opp.win_probability && (
+                          <span className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#ff5500]/10 border border-[#ff5500]/20 text-xs text-[#ff5500]">
+                            <TrendingUp size={11} />{Math.round(opp.win_probability * 100)}% win rate
+                          </span>
+                        )}
+                      </div>
+                    )}
                     
                     {/* Mode pills */}
                     <div className="flex flex-wrap justify-center gap-2 mb-8">
@@ -450,14 +664,80 @@ export default function ForgeWorkspace({ params }) {
                 </div>
               )}
 
+              {/* Sections View (interactive) */}
+              {viewMode === 'sections' && sections.length > 0 && (
+                <div className="p-4 sm:p-6 space-y-2.5 max-w-4xl mx-auto">
+                  {sections.map((section) => (
+                    <div key={section.id} className="border border-white/5 rounded-xl overflow-hidden bg-white/[0.02] group">
+                      {/* Section header */}
+                      <div
+                        className="flex items-center justify-between px-4 py-3 bg-white/[0.015] cursor-pointer hover:bg-white/[0.04] transition-colors"
+                        onClick={() => toggleSection(section.id)}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          {section.isCollapsed
+                            ? <ChevronRight size={13} className="text-gray-600 shrink-0" />
+                            : <ChevronDown size={13} className="text-gray-600 shrink-0" />}
+                          <input
+                            value={section.title}
+                            onChange={e => { e.stopPropagation(); updateSectionTitle(section.id, e.target.value) }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-transparent text-sm font-semibold text-white focus:outline-none focus:text-[#ff5500] min-w-0 w-full"
+                          />
+                        </div>
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                          <button
+                            onClick={e => { e.stopPropagation(); regenerateSection(section) }}
+                            disabled={sectionGenId === section.id}
+                            className="p-1.5 hover:bg-white/10 rounded-lg text-gray-600 hover:text-[#ff5500] transition-colors disabled:opacity-40"
+                            title="Regenerate this section with AI"
+                          >
+                            {sectionGenId === section.id
+                              ? <Sparkles size={12} className="animate-spin text-[#ff5500]" />
+                              : <RefreshCw size={12} />}
+                          </button>
+                          <button
+                            onClick={e => { e.stopPropagation(); deleteSection(section.id) }}
+                            className="p-1.5 hover:bg-white/10 rounded-lg text-gray-600 hover:text-red-400 transition-colors"
+                            title="Delete section"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                      {/* Section body */}
+                      {!section.isCollapsed && (
+                        <div className="px-4 pt-1 pb-4">
+                          <textarea
+                            value={section.content}
+                            onChange={e => updateSection(section.id, e.target.value)}
+                            className="w-full bg-transparent text-gray-300 text-sm leading-relaxed focus:outline-none resize-none placeholder-gray-700"
+                            style={{ minHeight: '60px', height: Math.max(60, section.content.split('\n').length * 21 + 24) + 'px' }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    onClick={addSection}
+                    className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-white/10 rounded-xl text-xs text-gray-600 hover:text-gray-400 hover:border-white/20 transition-all"
+                  >
+                    <Plus size={13} /> Add Section
+                  </button>
+                </div>
+              )}
+
               {/* Edit or Preview Mode */}
               {viewMode === 'edit' ? (
                 <div className="h-full p-4 sm:p-6 lg:p-10">
                   <textarea 
                     value={proposal}
-                    onChange={(e) => setProposal(e.target.value)}
-                    className="w-full h-full bg-transparent text-gray-300 text-sm leading-relaxed focus:outline-none resize-none placeholder-gray-700"
-                    placeholder={`Your ${currentModeConfig?.label || 'draft'} will appear here...`}
+                    onChange={(e) => {
+                      setProposal(e.target.value)
+                      setSections(parseSectionsFromMarkdown(e.target.value))
+                    }}
+                    className="w-full h-full bg-transparent text-gray-300 text-sm leading-relaxed focus:outline-none resize-none placeholder-gray-700 font-mono"
+                    placeholder={`Your ${currentModeConfig?.label || 'draft'} will appear here in Markdown...`}
                   />
                 </div>
               ) : (
@@ -493,7 +773,7 @@ export default function ForgeWorkspace({ params }) {
 
             {/* Quick Actions Bar */}
             <div className="shrink-0 px-3 sm:px-5 py-2.5 border-t border-white/5 bg-white/[0.01] flex items-center gap-2.5 overflow-x-auto">
-              <span className="text-xs font-medium text-gray-600 whitespace-nowrap shrink-0">Quick:</span>
+              <span className="text-xs font-medium text-gray-600 whitespace-nowrap shrink-0">Ask AI:</span>
               {(forgeConfig.quickActions || []).map((action, i) => (
                 <button 
                   key={i} 
@@ -531,8 +811,8 @@ export default function ForgeWorkspace({ params }) {
                 {/* Chat Header */}
                 <div className="shrink-0 px-4 py-3 border-b border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-[#ff5500]" />
-                    <span className="text-sm font-semibold text-white">AI Assistant</span>
+                    <Brain size={15} className="text-[#ff5500]" />
+                    <span className="text-sm font-semibold text-white">Forge Intelligence</span>
                   </div>
                   <button 
                     onClick={() => setShowChat(false)} 
@@ -542,16 +822,53 @@ export default function ForgeWorkspace({ params }) {
                   </button>
                 </div>
 
-                {/* Opportunity Context */}
-                <div className="shrink-0 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
-                  <p className="text-xs text-gray-500 mb-1.5">Context</p>
-                  <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
-                    {opp?.ai_summary || opp?.description || 'No description available'}
-                  </p>
+                {/* Opportunity Context Card */}
+                <div className="shrink-0 px-4 py-3 border-b border-white/5 bg-white/[0.015]">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <p className="text-xs font-semibold text-white leading-snug line-clamp-2">{opp?.title}</p>
+                    {opp?.url && (
+                      <a href={opp.url} target="_blank" rel="noopener noreferrer" className="shrink-0 p-1 hover:bg-white/10 rounded text-gray-600 hover:text-gray-300 transition-colors">
+                        <ExternalLink size={11} />
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {opp?.category && (
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-medium border"
+                        style={{ backgroundColor: `${forgeConfig.color}12`, color: forgeConfig.color, borderColor: `${forgeConfig.color}25` }}>
+                        {opp.category}
+                      </span>
+                    )}
+                    {opp?.reward_pool && (
+                      <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] text-green-400 bg-green-500/10 border border-green-500/20">
+                        <DollarSign size={8} />{opp.reward_pool}
+                      </span>
+                    )}
+                    {daysLeft !== null && (
+                      <span className={`flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] border ${daysLeft <= 7 ? 'text-red-400 bg-red-500/5 border-red-500/20' : 'text-gray-500 bg-white/4 border-white/8'}`}>
+                        <Clock size={8} />{daysLeft}d
+                      </span>
+                    )}
+                    {opp?.trust_score && (
+                      <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] text-gray-500 bg-white/4 border border-white/8">
+                        <Star size={8} />{opp.trust_score}/10
+                      </span>
+                    )}
+                    {opp?.win_probability && (
+                      <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] text-[#ff5500] bg-[#ff5500]/8 border border-[#ff5500]/18">
+                        <TrendingUp size={8} />{Math.round(opp.win_probability * 100)}%
+                      </span>
+                    )}
+                    {opp?.is_verified && (
+                      <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] text-blue-400 bg-blue-500/8 border border-blue-500/18">
+                        <CheckCircle size={8} />Verified
+                      </span>
+                    )}
+                  </div>
                   {opp?.required_skills?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {opp.required_skills.slice(0, 4).map((skill, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-white/5 rounded-md text-[10px] text-gray-500 border border-white/5">{skill}</span>
+                    <div className="flex flex-wrap gap-1">
+                      {opp.required_skills.slice(0, 5).map((skill, i) => (
+                        <span key={i} className="px-1.5 py-0.5 bg-white/[0.04] rounded text-[9px] text-gray-600 border border-white/[0.05]">{skill}</span>
                       ))}
                     </div>
                   )}
@@ -562,21 +879,27 @@ export default function ForgeWorkspace({ params }) {
                   {chatHistory.length === 0 ? (
                     <div className="py-12 text-center">
                       <Wand2 className="mx-auto text-gray-800 mb-3" size={28} />
-                      <p className="text-sm text-gray-600 mb-1">No messages yet</p>
-                      <p className="text-xs text-gray-700">Generate a draft first, then refine it here</p>
+                      <p className="text-sm text-gray-600 mb-1">Analysing opportunity...</p>
                     </div>
                   ) : (
                     chatHistory.map((msg, i) => (
                       <div key={i} className={`rounded-xl p-3 text-sm leading-relaxed ${
-                        msg.role === 'ai' ? 'bg-white/[0.03] border border-white/5 text-gray-300' : 
-                        msg.role === 'system' ? 'bg-blue-500/5 border border-blue-500/10 text-blue-300 text-xs' :
-                        'bg-[#ff5500]/5 border border-[#ff5500]/10 text-gray-300 ml-6'
+                        msg.role === 'ai'
+                          ? msg.tag === 'brief'
+                            ? 'bg-[#ff5500]/[0.05] border border-[#ff5500]/15 text-gray-300'
+                            : 'bg-white/[0.03] border border-white/5 text-gray-300'
+                          : msg.role === 'system' ? 'bg-blue-500/5 border border-blue-500/10 text-blue-300 text-xs' :
+                          'bg-[#ff5500]/5 border border-[#ff5500]/10 text-gray-300 ml-6'
                       }`}>
                         <div className="flex items-center justify-between mb-1.5">
                           <span className={`text-xs font-semibold ${
-                            msg.role === 'ai' ? 'text-[#ff5500]' : msg.role === 'system' ? 'text-blue-400' : 'text-gray-500'
+                            msg.role === 'ai'
+                              ? msg.tag === 'brief' ? 'text-[#ff5500]' : 'text-gray-500'
+                              : msg.role === 'system' ? 'text-blue-400' : 'text-gray-500'
                           }`}>
-                            {msg.role === 'ai' ? 'Forge AI' : msg.role === 'system' ? 'Tip' : 'You'}
+                            {msg.role === 'ai'
+                              ? msg.tag === 'brief' ? '⚡ Intelligence Brief' : 'Forge AI'
+                              : msg.role === 'system' ? 'Tip' : 'You'}
                           </span>
                           {msg.role === 'ai' && msg.content.length > 100 && (
                             <button 
@@ -600,6 +923,25 @@ export default function ForgeWorkspace({ params }) {
                   <div ref={chatEndRef} />
                 </div>
 
+                {/* Brainstorm chips — shown when no user messages yet */}
+                {chatHistory.filter(m => m.role === 'user').length === 0 && !isGenerating && (
+                  <div className="shrink-0 px-3 py-2.5 border-t border-white/5">
+                    <p className="text-[10px] text-gray-600 mb-2 font-medium uppercase tracking-wide">Brainstorm</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {BRAINSTORM_CHIPS.map(({ label, icon: Icon }) => (
+                        <button
+                          key={label}
+                          onClick={() => sendBrainstormChip(label)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[11px] text-gray-500 hover:text-white hover:bg-white/8 hover:border-white/15 transition-all"
+                        >
+                          <Icon size={9} className="shrink-0" style={{ color: forgeConfig.color }} />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Chat Input */}
                 <div className="shrink-0 p-3 bg-black/40 border-t border-white/5">
                   <form onSubmit={handleRefinement} className="relative">
@@ -608,7 +950,7 @@ export default function ForgeWorkspace({ params }) {
                       type="text"
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
-                      placeholder="Ask AI to refine your draft..."
+                      placeholder="Ask anything about this opportunity..."
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-[#ff5500]/50 focus:ring-1 focus:ring-[#ff5500]/20 transition-all placeholder-gray-600"
                     />
                     <button 
