@@ -26,7 +26,7 @@ module.exports = {
     sepolia: {
       url: ALCHEMY_API_KEY
         ? `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-        : "https://rpc.sepolia.org",
+        : "https://ethereum-sepolia-rpc.publicnode.com",
       chainId: 11155111,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     },
@@ -45,14 +45,8 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: {
-      // Ethereum
-      mainnet: ETHERSCAN_API_KEY,
-      sepolia: ETHERSCAN_API_KEY,
-      // Arbitrum
-      arbitrumOne: ARBISCAN_API_KEY,
-      arbitrumSepolia: ARBISCAN_API_KEY
-    }
+    // Etherscan V2: single key covers all chains (mainnet, sepolia, arbitrum, etc.)
+    apiKey: ETHERSCAN_API_KEY
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS === "true",
