@@ -1,50 +1,50 @@
 'use client'
 
 import React from 'react'
-import { Sparkles, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react'
+import { Sparkles, ArrowRight } from 'lucide-react'
 
 export default function AIAnalysisPanel({ id, score, probability, summary, strategy }) {
   return (
-    <div className="glass-card p-6 border border-[var(--border-glow)] shadow-[0_0_30px_rgba(255,107,26,0.1)] relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 p-20 bg-[var(--accent-forge)]/5 blur-3xl rounded-full pointer-events-none" />
+    <div className="glass-card p-5 sm:p-6 border border-[var(--border-glow)] shadow-[0_0_30px_rgba(255,107,26,0.08)] relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff5500]/5 blur-3xl rounded-full pointer-events-none" />
       
-      <div className="flex items-center gap-2 mb-4 text-[var(--accent-forge)] font-bold uppercase tracking-wider text-sm">
-        <Sparkles size={16} /> Forge AI Analysis
+      <div className="flex items-center gap-2 mb-4 text-[#ff5500] font-semibold text-sm">
+        <Sparkles size={16} /> AI Analysis
       </div>
 
-      <div className="flex items-center justify-between mb-6 pb-6 border-b border-[var(--border-subtle)]">
+      <div className="flex items-center justify-between mb-5 pb-5 border-b border-white/5">
         <div>
-          <div className="text-3xl font-bold font-mono text-[var(--text-primary)]">{score}<span className="text-sm text-[var(--text-tertiary)]">/100</span></div>
-          <div className="text-xs text-[var(--text-secondary)]">Match Score</div>
+          <div className="text-3xl font-bold text-white">{score}<span className="text-sm text-gray-500 ml-0.5">/100</span></div>
+          <div className="text-xs text-gray-500 mt-0.5">Match Score</div>
         </div>
         <div className="text-right">
-          <div className="text-3xl font-bold font-mono text-[var(--status-success)] text-green-400">{probability}</div>
-          <div className="text-xs text-[var(--text-secondary)]">Win Probability</div>
+          <div className="text-3xl font-bold text-[#10b981]">{probability}</div>
+          <div className="text-xs text-gray-500 mt-0.5">Win Rate</div>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div>
-          <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2">Why you should apply:</h4>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            {summary}
-          </p>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2">Recommended Strategy:</h4>
-          <div className="p-3 bg-[var(--bg-walnut)] rounded border border-[var(--border-subtle)] text-sm text-[var(--text-secondary)] font-mono">
-            {strategy}
+        {summary && (
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-1.5">Why apply</h4>
+            <p className="text-sm text-gray-400 leading-relaxed">{summary}</p>
           </div>
-        </div>
+        )}
 
-        {/* Action */}
+        {strategy && (
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-1.5">Strategy</h4>
+            <div className="p-3 bg-white/5 rounded-lg border border-white/5 text-sm text-gray-400 leading-relaxed">
+              {strategy}
+            </div>
+          </div>
+        )}
+
         <button 
           onClick={() => window.location.href = `/dashboard/forge/workspace/${id}`}
-          className="w-full btn btn-primary mt-4 group justify-between"
+          className="w-full btn btn-primary mt-2 group justify-between text-sm"
         >
-          <span>Ask Forge to Draft Proposal</span> <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          <span>Draft with AI</span> <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
     </div>

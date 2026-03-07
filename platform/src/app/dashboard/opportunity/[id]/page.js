@@ -2,7 +2,7 @@
 
 import React, { use } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Globe, Shield, Zap, ExternalLink, ShieldCheck, Trash2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Clock, Globe, Shield, ExternalLink, ShieldCheck, Trash2, Sparkles, Bookmark, BookmarkCheck, Calendar, DollarSign, Tag, Info } from 'lucide-react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -24,15 +24,44 @@ export default function OpportunityDetail({ params }) {
   const { user, isGuest } = useAuth()
   const router = useRouter()
   const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
   
   // Guard Clause: Don't fetch if ID is invalid
   const shouldFetch = id && id !== 'undefined'
   const { data: opp, error, isLoading, mutate } = useSWR(shouldFetch ? `/opportunities/${id}` : null, fetcher)
+  
+  // Check if already tracked
+  const { data: trackedApps } = useSWR(!isGuest ? '/tracker' : null, fetcher, {
+    onSuccess: (data) => {
+      if (data?.some(app => app.opportunity?.id === id)) setIsSaved(true)
+    }
+  })
+
+  const handleSaveToTracker = async () => {
+    if (isGuest) { setIsLoginOpen(true); return }
+    if (isSaved) { router.push('/dashboard/tracker'); return }
+    setIsSaving(true)
+    try {
+      await api.post('/tracker', { opportunity_id: id, status: 'Interested' })
+      setIsSaved(true)
+      toast.success('Saved to your tracker!')
+    } catch (err) {
+      if (err?.response?.status === 400) {
+        setIsSaved(true)
+        toast.success('Already in your tracker')
+      } else {
+        toast.error('Failed to save')
+      }
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const handleVerify = async () => {
     try {
       await api.patch(`/opportunities/${id}/verify`)
-      toast.success('Mission Verified')
+      toast.success('Opportunity verified')
       mutate()
     } catch (error) {
       toast.error('Failed to verify')
@@ -40,10 +69,10 @@ export default function OpportunityDetail({ params }) {
   }
 
   const handleDelete = async () => {
-    if (!confirm('Abort this mission permanently?')) return
+    if (!confirm('Delete this opportunity permanently?')) return
     try {
       await api.delete(`/opportunities/${id}`)
-      toast.success('Mission Purged')
+      toast.success('Opportunity deleted')
       router.push('/dashboard')
     } catch (error) {
       toast.error('Failed to delete')
@@ -55,17 +84,17 @@ export default function OpportunityDetail({ params }) {
 
   const handleFund = async () => {
     if (!isConnected) {
-        toast.error("Connect Wallet to fund mission");
+        toast.error("Connect your wallet first");
         return;
     }
     const amount = prompt("Enter reward amount in ETH (e.g. 0.01):");
     if (!amount) return;
 
-    const tid = toast.loading(`Funding Mission on Arbitrum...`);
+    const tid = toast.loading('Funding on Arbitrum...');
     try {
         const missionIdBytes = keccak256(encodePacked(['string'], [id]));
         await writeContractAsync({
-            address: '0x0000000000000000000000000000000000000000', // Protocol Address
+            address: '0x0000000000000000000000000000000000000000',
             abi: [{
                 "inputs": [{"internalType": "bytes32", "name": "_missionId", "type": "bytes32"}],
                 "name": "fundMission",
@@ -77,30 +106,30 @@ export default function OpportunityDetail({ params }) {
             args: [missionIdBytes],
             value: parseEther(amount)
         });
-        toast.success('Funds Secured On-Chain', { id: tid });
+        toast.success('Funded on-chain!', { id: tid });
     } catch (e) {
         toast.error('Funding failed', { id: tid });
     }
   }
 
   if (isLoading) return (
-    <div className="max-w-5xl mx-auto pb-20 animate-pulse">
+    <div className="max-w-5xl mx-auto px-4 pb-20 animate-pulse">
       <div className="h-4 w-24 bg-white/5 rounded mb-6" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="h-10 w-3/4 bg-white/5 rounded" />
-          <div className="h-40 bg-white/5 rounded" />
-          <div className="h-32 bg-white/5 rounded" />
+          <div className="h-40 bg-white/5 rounded-xl" />
+          <div className="h-32 bg-white/5 rounded-xl" />
         </div>
-        <div className="h-64 bg-white/5 rounded" />
+        <div className="h-64 bg-white/5 rounded-xl" />
       </div>
     </div>
   )
 
   if (error || !opp) return (
-    <div className="max-w-5xl mx-auto py-20 text-center">
-      <p className="text-gray-500 mb-4">Opportunity not found or mission aborted.</p>
-      <Link href="/dashboard" className="btn btn-secondary">Return to Mission Control</Link>
+    <div className="max-w-5xl mx-auto py-20 text-center px-4">
+      <p className="text-gray-500 mb-4">Opportunity not found.</p>
+      <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
     </div>
   )
 
@@ -109,89 +138,93 @@ export default function OpportunityDetail({ params }) {
   const trust = getTrustStatus(opp.trust_score || (opp.is_verified ? 95 : 60))
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
+    <div className="max-w-6xl mx-auto px-4 sm:px-0 pb-20">
       {/* Back Nav */}
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-gray-500 hover:text-white mb-8 transition-colors group">
+      <Link href="/dashboard/feed" className="inline-flex items-center gap-2 text-gray-500 hover:text-white mb-6 sm:mb-8 transition-colors group text-sm">
         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
-        <span className="text-xs font-mono uppercase tracking-[0.2em]">Exit_Mission_Briefing</span>
+        <span>Back to Feed</span>
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         
         {/* Main Content (Left, 8 cols) */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-6">
           
           {/* Header */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="px-2 py-1 rounded bg-[#ff5500]/10 border border-[#ff5500]/20 text-[10px] font-mono uppercase tracking-wide text-[#ffaa00]">
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-[#ffaa00] bg-[#ffaa00]/10 px-3 py-1.5 rounded-lg border border-[#ffaa00]/20">
                 {opp.category}
               </span>
-              <span className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-wide text-gray-400">
+              <span className="text-xs font-medium text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
                 {opp.chain}
               </span>
               <div 
-                className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded border"
-                style={{ color: trust.color, borderColor: `${trust.color}44`, backgroundColor: trust.bg }}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border"
+                style={{ color: trust.color, borderColor: `${trust.color}33`, backgroundColor: trust.bg }}
               >
-                 <ShieldCheck size={12} /> {trust.label}
+                 <ShieldCheck size={13} /> {trust.label}
               </div>
             </div>
             
-            <h1 className="text-4xl font-black mb-4 leading-tight text-white tracking-tight">{opp.title}</h1>
+            {/* Title */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight">{opp.title}</h1>
             
-            <div className="flex flex-wrap items-center gap-8 text-xs font-mono">
-              <div className="flex items-center gap-2 text-gray-500">
-                <Globe size={14} className="text-[#ff5500]" /> {opp.source.toUpperCase()}
+            {/* Key Info Row */}
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Globe size={15} className="text-[#ff5500]" /> {opp.source}
               </div>
-              <div className={`flex items-center gap-2 ${isExpired ? 'text-red-400' : 'text-gray-300'}`}>
-                <Clock size={14} className="text-[#ff5500]" /> 
-                <span className={isExpired ? 'animate-pulse' : ''}>{isExpired ? 'MISSION_EXPIRED' : `CLOSING_IN: ${deadlineLabel.toUpperCase()}`}</span>
+              <div className={`flex items-center gap-2 text-sm ${isExpired ? 'text-red-400' : 'text-gray-400'}`}>
+                <Calendar size={15} className="text-[#ff5500]" /> 
+                <span>{isExpired ? 'Expired' : `Closes ${deadlineLabel}`}</span>
               </div>
-              <div className="flex items-center gap-2 text-white font-bold bg-[#10b981]/10 px-3 py-1.5 rounded-full border border-[#10b981]/20">
-                <span className="text-[#10b981] font-black">$</span> 
-                <span className="text-[#10b981]">{opp.reward_pool || 'UNSPECIFIED_YIELD'}</span>
-              </div>
+              {(opp.reward_pool) && (
+                <div className="flex items-center gap-2 text-sm font-bold text-[#10b981] bg-[#10b981]/10 px-3 py-1.5 rounded-full border border-[#10b981]/20">
+                  <DollarSign size={15} /> {opp.reward_pool}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Mission Briefing */}
-          <div className="glass-card p-8 border-l-4 border-l-[#ff5500] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-24 bg-[#ff5500]/5 blur-[100px] rounded-full group-hover:bg-[#ff5500]/10 transition-colors" />
-            <h3 className="text-sm font-mono uppercase tracking-[0.3em] text-[#ff5500] mb-6 flex items-center gap-3">
-              <Zap size={16} fill="currentColor" /> 01 // OVERVIEW
+          {/* Description */}
+          <div className="glass-card p-5 sm:p-8 border-l-4 border-l-[#ff5500] relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-[#ff5500]/5 blur-[100px] rounded-full pointer-events-none" />
+            <h3 className="text-sm font-semibold text-[#ff5500] mb-4 flex items-center gap-2">
+              <Info size={16} /> Overview
             </h3>
-            <div className="prose prose-invert prose-sm max-w-none text-gray-300 whitespace-pre-line leading-relaxed text-base font-medium">
+            <div className="prose prose-invert prose-sm max-w-none text-gray-300 whitespace-pre-line leading-relaxed text-[15px]">
               {opp.description}
             </div>
           </div>
 
-          {/* Requirements & Skills Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             {/* Operational Requirements */}
-            <div className="glass-card p-6 border border-white/5">
-              <h3 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-3">
-                <Shield size={14} /> 02 // REQUIREMENTS
+          {/* Requirements & Tags Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Requirements */}
+            <div className="glass-card p-5 sm:p-6">
+              <h3 className="text-sm font-semibold text-gray-400 mb-4 flex items-center gap-2">
+                <Shield size={15} /> Requirements
               </h3>
-              <div className="space-y-4">
-                {(opp.requirements?.length > 0 ? opp.requirements : ["Technical Proficiency", "Ecosystem Alignment", "Active Participation"]).map((req, i) => (
+              <div className="space-y-3">
+                {(opp.requirements?.length > 0 ? opp.requirements : ["Technical proficiency", "Ecosystem experience", "Active participation"]).map((req, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="mt-1 w-1.5 h-1.5 rounded-full bg-[#ff5500] shadow-[0_0_5px_#ff5500]" />
-                    <span className="text-sm text-gray-400">{req}</span>
+                    <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#ff5500] shrink-0" />
+                    <span className="text-sm text-gray-400 leading-relaxed">{req}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Tags & Tech Stack */}
-            <div className="glass-card p-6 border border-white/5">
-              <h3 className="text-[10px] font-mono uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-3">
-                <Zap size={14} /> 03 // INTELLIGENCE_TAGS
+            {/* Tags */}
+            <div className="glass-card p-5 sm:p-6">
+              <h3 className="text-sm font-semibold text-gray-400 mb-4 flex items-center gap-2">
+                <Tag size={15} /> Tags
               </h3>
               <div className="flex flex-wrap gap-2">
-                {(opp.tags?.length > 0 ? opp.tags : ["Web3", "Builder", "Early Signal"]).map((tag, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-mono text-gray-400 border border-white/10 hover:border-[#ffaa00]/50 hover:text-white transition-all cursor-crosshair">
-                    #{tag.toUpperCase()}
+                {(opp.tags?.length > 0 ? opp.tags : ["Web3", "Builder"]).map((tag, i) => (
+                  <span key={i} className="px-3 py-1.5 bg-white/5 rounded-lg text-xs font-medium text-gray-400 border border-white/10 hover:border-[#ffaa00]/40 hover:text-white transition-all">
+                    {tag}
                   </span>
                 ))}
               </div>
@@ -201,7 +234,7 @@ export default function OpportunityDetail({ params }) {
         </div>
 
         {/* Sidebar (Right, 4 cols) */}
-        <div className="lg:col-span-4 space-y-6 lg:ml-4">
+        <div className="lg:col-span-4 space-y-5">
           {/* AI Analysis Panel */}
           <AIAnalysisPanel 
             id={id}
@@ -212,88 +245,97 @@ export default function OpportunityDetail({ params }) {
             trust={opp.trust_score}
           />
 
-            {/* Actions */}
+          {/* Action Buttons */}
           <div className="space-y-3">
+            {/* Apply Now — primary action */}
             <button 
               onClick={() => {
                 if (isGuest) setIsLoginOpen(true);
                 else window.open(opp.url, '_blank');
               }}
-              className="btn btn-primary w-full justify-between items-center group py-4 px-6 text-sm"
+              className="btn btn-primary w-full justify-between items-center group py-4 px-5 text-sm font-semibold rounded-xl"
             >
-              DEPLOY_NOW <ExternalLink size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              Apply Now <ExternalLink size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </button>
+
+            {/* Save to Tracker */}
+            <button 
+              onClick={handleSaveToTracker}
+              disabled={isSaving}
+              className={`w-full flex items-center justify-between py-3.5 px-5 rounded-xl text-sm font-semibold border transition-all ${
+                isSaved 
+                  ? 'bg-[#10b981]/10 border-[#10b981]/30 text-[#10b981] hover:bg-[#10b981]/20' 
+                  : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
+              }`}
+            >
+              <span>{isSaved ? 'Saved — View Tracker' : 'Save to Tracker'}</span>
+              {isSaved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+            </button>
+
+            {/* Open Workspace */}
             <button 
               onClick={() => {
                 if (isGuest) setIsLoginOpen(true);
                 else router.push(`/dashboard/forge/workspace/${id}`);
               }}
-              className="btn btn-primary w-full justify-center py-4 text-sm font-mono group"
+              className="w-full flex items-center justify-between py-3.5 px-5 rounded-xl text-sm font-semibold bg-white/5 border border-white/10 text-gray-300 hover:bg-[#ff5500]/10 hover:border-[#ff5500]/30 hover:text-[#ff5500] transition-all group"
             >
-              <span>ENTER_FORGE_WORKSPACE</span> <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
+              <span>Open AI Workspace</span> <Sparkles size={18} className="group-hover:rotate-12 transition-transform" />
             </button>
             
+            {/* Admin Actions */}
             {user?.role === 'admin' && (
-              <div className="pt-4 space-y-3">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest border-b border-white/5 pb-2">Admin_Actions</div>
+              <div className="pt-3 space-y-2.5 border-t border-white/5">
+                <p className="text-xs font-medium text-gray-600 mb-2">Admin</p>
                 {!opp.is_verified && (
                   <button 
                     onClick={handleVerify}
-                    className="w-full flex items-center justify-between px-4 py-3 bg-[#10b981]/10 border border-[#10b981]/20 rounded text-[#10b981] text-xs font-mono uppercase hover:bg-[#10b981]/20 transition-all"
+                    className="w-full flex items-center justify-between px-4 py-3 bg-[#10b981]/10 border border-[#10b981]/20 rounded-xl text-[#10b981] text-sm font-medium hover:bg-[#10b981]/20 transition-all"
                   >
-                    <span>Verify_Mission</span>
+                    <span>Verify</span>
                     <ShieldCheck size={16} />
                   </button>
                 )}
                 <button 
                   onClick={handleFund}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-[#ff5500]/10 border border-[#ff5500]/20 rounded text-[#ffaa00] text-xs font-mono uppercase hover:bg-[#ff5500]/20 transition-all"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-[#ff5500]/10 border border-[#ff5500]/20 rounded-xl text-[#ffaa00] text-sm font-medium hover:bg-[#ff5500]/20 transition-all"
                 >
-                  <span>Bank_Protocol_Funding</span>
-                  <Zap size={16} />
+                  <span>Fund on Chain</span>
+                  <DollarSign size={16} />
                 </button>
                 <button 
                   onClick={handleDelete}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-red-500/10 border border-red-500/20 rounded text-red-500 text-xs font-mono uppercase hover:bg-red-500/20 transition-all"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-medium hover:bg-red-500/20 transition-all"
                 >
-                  <span>Abort_Mission</span>
+                  <span>Delete</span>
                   <Trash2 size={16} />
                 </button>
               </div>
             )}
           </div>
 
-          {/* Intelligence Metadata */}
-          <div className="glass-card p-6 border border-white/5 text-[10px] font-mono text-gray-500 space-y-4">
-             <div className="pb-3 border-b border-white/5 flex justify-between items-center text-[8px] tracking-[0.2em] text-gray-600">
-               <span>METADATA_EXTRACTED</span>
-               <div className="flex gap-1">
-                 <div className="w-1 h-1 bg-[#10b981]" />
-                 <div className="w-1 h-1 bg-[#10b981]" />
-                 <div className="w-1 h-1 bg-gray-800" />
-               </div>
-             </div>
+          {/* Details Card */}
+          <div className="glass-card p-5 space-y-3.5 text-sm">
+             <h4 className="text-xs font-semibold text-gray-500 pb-2 border-b border-white/5">Details</h4>
 
             <div className="flex justify-between items-center">
-              <span>SCAN_TIMESTAMP:</span>
-              <span className="text-white">{opp.created_at ? format(new Date(opp.created_at), 'MMM dd, yyyy') : 'JUST NOW'}</span>
+              <span className="text-gray-500">Added</span>
+              <span className="text-white font-medium">{opp.created_at ? format(new Date(opp.created_at), 'MMM dd, yyyy') : 'Recently'}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span>SOURCE_PROTOCOL:</span>
-              <span className="text-[#ff5500] font-bold">{opp.source.toUpperCase()}</span>
+              <span className="text-gray-500">Source</span>
+              <span className="text-[#ff5500] font-medium">{opp.source}</span>
             </div>
             <div className="flex justify-between items-center">
-               <span>CHAIN_CONTEXT:</span>
-               <span className="text-white">[{opp.chain.toUpperCase()}]</span>
+               <span className="text-gray-500">Chain</span>
+               <span className="text-white font-medium">{opp.chain}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span>RELIABILITY:</span>
-              <span className="text-[#10b981] font-bold">OPTIMAL_SCAN</span>
-            </div>
-            <div className="pt-2 flex justify-between items-center border-t border-white/5">
-              <span>UNIQUE_ID:</span>
-              <span className="text-gray-700 truncate ml-4">#{id.slice(0, 18)}...</span>
-            </div>
+            {opp.is_verified && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Status</span>
+                <span className="text-[#10b981] font-medium flex items-center gap-1"><ShieldCheck size={13} /> Verified</span>
+              </div>
+            )}
           </div>
 
         </div>
@@ -303,7 +345,7 @@ export default function OpportunityDetail({ params }) {
       <LoginModal 
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 
-        triggerText="Unlock This Mission"
+        triggerText="Sign in to continue"
       />
     </div>
   )

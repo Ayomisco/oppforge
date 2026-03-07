@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Clock, ArrowUpRight, ShieldCheck, Trash2, CheckCircle, Calendar, DollarSign } from 'lucide-react'
+import { Clock, ArrowUpRight, ShieldCheck, Trash2, CheckCircle, Calendar, DollarSign, Bookmark, BookmarkCheck } from 'lucide-react'
 import Link from 'next/link'
 import { formatMissionDeadline, getTrustStatus, truncate } from '@/lib/utils'
 import { useAuth } from '../providers/AuthProvider'
@@ -38,11 +38,30 @@ const ScoreRing = ({ score }) => {
 }
 
 export default function OpportunityCard({ opp, index, onRefresh }) {
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
+  const [isSaved, setIsSaved] = useState(false)
   
   if (!opp || !opp.id) {
     console.warn("OpportunityCard received invalid data:", opp);
     return null;
+  }
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isGuest) return;
+    try {
+      await api.post('/tracker', { opportunity_id: opp.id, status: 'Interested' })
+      setIsSaved(true)
+      toast.success('Saved to tracker')
+    } catch (err) {
+      if (err?.response?.status === 400) {
+        setIsSaved(true)
+        toast.success('Already saved')
+      } else {
+        toast.error('Failed to save')
+      }
+    }
   }
 
   const handleVerify = async (e) => {
@@ -171,6 +190,17 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
                    <Trash2 size={16} />
                 </button>
               </div>
+            )}
+            {!isGuest && (
+              <button
+                onClick={handleSave}
+                className={`p-2 rounded-lg transition-colors ${
+                  isSaved ? 'text-[#10b981] bg-[#10b981]/10' : 'text-gray-500 hover:bg-white/5 hover:text-[#ffaa00]'
+                }`}
+                title={isSaved ? 'Saved' : 'Save to Tracker'}
+              >
+                {isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+              </button>
             )}
             <div
               className="p-2.5 bg-gradient-to-r from-[#ff5500] to-[#cc4400] text-white rounded-lg hover:scale-105 active:scale-95 transition-all shadow-lg shadow-orange-500/20"
