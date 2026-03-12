@@ -19,7 +19,7 @@ class SubscriptionPayment(Base):
     
     # Payment Info
     tx_hash = Column(String, unique=True, index=True, nullable=False) # Blockchain Tx Hash
-    network = Column(String, default="arbitrum") # e.g., arbitrum, base, mainnet
+    network = Column(String, default="sepolia") # e.g., sepolia, arbitrum, mainnet
     amount = Column(Float, nullable=False)
     currency = Column(String, default="ETH")
     
