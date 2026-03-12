@@ -323,6 +323,8 @@ export default function LandingPage() {
         <div className="container flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[var(--text-tertiary)]">
           <div>© 2026 OppForge. Open Source (MIT).</div>
           <div className="flex gap-6">
+            <Link href="/privacy-policy" className="hover:text-[var(--text-primary)]">Privacy</Link>
+            <Link href="/terms-of-service" className="hover:text-[var(--text-primary)]">Terms</Link>
             <Link href="#" className="hover:text-[var(--text-primary)]">Twitter</Link>
             <Link href="#" className="hover:text-[var(--text-primary)]">GitHub</Link>
             <Link href="#" className="hover:text-[var(--text-primary)]">Discord</Link>
