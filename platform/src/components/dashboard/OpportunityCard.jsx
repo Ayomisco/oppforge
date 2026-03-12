@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Clock, ArrowUpRight, ShieldCheck, Trash2, CheckCircle, Calendar, DollarSign, Bookmark, BookmarkCheck } from 'lucide-react'
 import Link from 'next/link'
 import { formatMissionDeadline, getTrustStatus, truncate } from '@/lib/utils'
+import { getOppImage } from '@/lib/chainLogos'
 import { useAuth } from '../providers/AuthProvider'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
@@ -134,8 +135,19 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
 
         {/* Main Content Row */}
         <div className="flex items-start gap-3 sm:gap-4">
-          {/* Score Ring */}
-          <div className="shrink-0 hidden sm:block">
+          {/* Logo + Score */}
+          <div className="shrink-0 hidden sm:flex flex-col items-center gap-1.5">
+            {(() => {
+              const logoUrl = getOppImage(opp)
+              return logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={opp.chain || opp.source || ''}
+                  className="w-8 h-8 rounded-lg object-contain bg-white/5 border border-white/10 p-1"
+                  onError={(e) => { e.target.style.display = 'none' }}
+                />
+              ) : null
+            })()}
             <ScoreRing score={score} />
           </div>
 

@@ -96,6 +96,33 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginX = async (code, codeVerifier, redirectUri) => {
+    console.log("Executing loginX with OAuth2 PKCE...");
+    try {
+      const { data } = await api.post('/auth/x', { code, code_verifier: codeVerifier, redirect_uri: redirectUri });
+      console.log("X auth successful, received token:", !!data.access_token);
+      
+      const cookieOptions = { 
+        expires: 7, 
+        path: '/', 
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+      };
+
+      Cookies.set('token', data.access_token, cookieOptions);
+      const updatedUser = { ...data.user, is_new_user: data.is_new_user };
+      setUser(updatedUser);
+      setIsGuest(false);
+      
+      toast.success(`Welcome${data.is_new_user ? '' : ' back'}, ${data.user.first_name || 'Hunter'}!`);
+      return { success: true, isNewUser: data.is_new_user, user: updatedUser };
+    } catch (error) {
+      console.error("X login failed:", error);
+      toast.error("X authentication failed. Please try again.");
+      return { success: false };
+    }
+  };
+
   const logout = () => {
     Cookies.remove('token', { path: '/' });
     setUser(null);
@@ -106,7 +133,7 @@ export function AuthProvider({ children }) {
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
       <AuthContext.Provider value={{ 
-        user, loading, isGuest, loginGoogle, loginWallet, logout, setUser,
+        user, loading, isGuest, loginGoogle, loginWallet, loginX, logout, setUser,
         loginModalOpen,
         openLoginModal: () => setLoginModalOpen(true),
         closeLoginModal: () => setLoginModalOpen(false),

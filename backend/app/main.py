@@ -6,10 +6,11 @@ import os
 load_dotenv()
 
 # Routers
-from .routers import auth, opportunities, stats, tracker, notifications, chat, search, admin_audit, billing, admin as admin_router
+from .routers import auth, opportunities, stats, tracker, notifications, chat, search, admin_audit, billing, admin as admin_router, feedback
 from .database import engine, Base
 from .models.ecosystem import Ecosystem # Ensures table creation
 from .models.audit import AuditLog # Ensures table creation
+from .models.feedback import Feedback # Ensures table creation
 
 # Create Tables
 Base.metadata.create_all(bind=engine)
@@ -62,6 +63,7 @@ app.include_router(search.router)
 app.include_router(admin_audit.router)
 app.include_router(billing.router)
 app.include_router(admin_router.router)
+app.include_router(feedback.router)
 
 @app.get("/")
 def read_root():

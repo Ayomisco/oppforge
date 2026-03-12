@@ -19,6 +19,7 @@ class User(Base):
     
     google_id = Column(String, unique=True, index=True, nullable=True)
     wallet_address = Column(String, unique=True, index=True, nullable=True)
+    x_id = Column(String, unique=True, index=True, nullable=True)
     
     # Profile
     first_name = Column(String, nullable=True)

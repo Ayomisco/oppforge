@@ -17,6 +17,7 @@ class UserUpdate(BaseModel):
     # Profile
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    full_name: Optional[str] = None
     username: Optional[str] = None
     bio: Optional[str] = None
     wallet_address: Optional[str] = None
@@ -37,17 +38,22 @@ class UserUpdate(BaseModel):
     # Settings
     onboarded: Optional[bool] = None
     notification_settings: Optional[Dict[str, Any]] = None
-    
-    # Subscription
-    tier: Optional[str] = None
-    is_pro: Optional[bool] = None
-    subscription_status: Optional[str] = None
 
 class UserResponse(UserBase):
     id: uuid.UUID
     username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    bio: Optional[str] = None
     wallet_address: Optional[str] = None
     role: str
+    
+    # Socials
+    github_handle: Optional[str] = None
+    twitter_handle: Optional[str] = None
+    discord_handle: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    
     # Computed/Gamified
     xp: int
     level: int
@@ -66,6 +72,7 @@ class UserResponse(UserBase):
     subscription_status: str = "trialing"
     trial_started_at: Optional[datetime] = None
     subscription_expires_at: Optional[datetime] = None
+    notification_settings: Optional[Dict[str, Any]] = None
     
     created_at: datetime
 
@@ -100,10 +107,17 @@ class UserResponse(UserBase):
             "id": getattr(obj, "id"),
             "email": getattr(obj, "email"),
             "username": getattr(obj, "username", None),
+            "first_name": getattr(obj, "first_name", None),
+            "last_name": getattr(obj, "last_name", None),
             "full_name": getattr(obj, "full_name", None),
+            "bio": getattr(obj, "bio", None),
             "avatar_url": getattr(obj, "avatar_url", None),
             "wallet_address": getattr(obj, "wallet_address", None),
             "role": str(role_val),
+            "github_handle": getattr(obj, "github_handle", None),
+            "twitter_handle": getattr(obj, "twitter_handle", None),
+            "discord_handle": getattr(obj, "discord_handle", None),
+            "linkedin_url": getattr(obj, "linkedin_url", None),
             "xp": getattr(obj, "xp", 0),
             "level": getattr(obj, "level", 1),
             "rank_title": getattr(obj, "rank_title", "Novice Scout"),
@@ -117,6 +131,7 @@ class UserResponse(UserBase):
             "skills": getattr(obj, "skills", []),
             "preferred_chains": getattr(obj, "preferred_chains", []),
             "preferred_categories": getattr(obj, "preferred_categories", []),
+            "notification_settings": getattr(obj, "notification_settings", None),
             "created_at": getattr(obj, "created_at", datetime.utcnow())
         }
         

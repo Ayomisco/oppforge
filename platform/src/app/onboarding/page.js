@@ -132,14 +132,19 @@ export default function OnboardingPage() {
     setSubmitting(true);
     const toastId = toast.loading('Forging your identity...');
     try {
+      const nameParts = formData.fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       const { data } = await api.put('/auth/profile', {
         full_name: formData.fullName,
+        first_name: firstName,
+        last_name: lastName,
         bio: formData.bio,
         username: formData.username || user?.username,
         skills: selectedSkills,
         preferred_chains: selectedChains,
         wallet_address: address,
-        is_pro: false,
         onboarded: true,
       });
       setUser(data);

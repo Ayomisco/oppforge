@@ -2,22 +2,24 @@
 
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { useWriteContract, useAccount, useWaitForTransactionReceipt } from 'wagmi';
+import { useWriteContract, useAccount, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi';
 import { parseEther } from 'viem';
-import { Shield, Zap, Sparkles, Check, Crown, Clock, ArrowRight, Lock } from 'lucide-react';
+import { Shield, Zap, Sparkles, Check, Crown, Clock, ArrowRight, Lock, Gem } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { CONTRACTS, PROTOCOL_ABI, FOUNDER_NFT_ABI, TIER_ENUM } from '@/lib/contracts';
+import { sepolia } from 'wagmi/chains';
 
-// Pricing tiers
+// Pricing tiers — matches OppForgeProtocol.sol
 const TIERS = [
   {
     id: 'scout',
     name: 'Scout',
     tagline: 'Alpha Access',
-    price: '$0',
-    priceDetail: '7-Day Free Trial',
+    price: 'Free',
+    priceDetail: '7-Day Trial',
     ethPrice: '0',
     icon: Shield,
     description: 'Full platform access for 7 days. No credit card required.',
@@ -36,9 +38,10 @@ const TIERS = [
     id: 'hunter',
     name: 'Hunter',
     tagline: 'Most Popular',
-    price: '$2.9',
+    price: '0.05 ETH',
     priceDetail: '/month',
-    ethPrice: '0.0012', // ~$2.9 in ETH
+    ethPrice: '0.05',
+    contractTier: TIER_ENUM.HUNTER,
     icon: Zap,
     description: 'Unlimited AI power for serious builders & hunters.',
     features: [
@@ -55,12 +58,38 @@ const TIERS = [
     border: 'border-[#ff5500]/30',
     popular: true,
   },
+  {
+    id: 'founder',
+    name: 'Founder',
+    tagline: 'Lifetime Access',
+    price: '0.2 ETH',
+    priceDetail: 'one-time',
+    ethPrice: '0.2',
+    contractTier: TIER_ENUM.FOUNDER,
+    icon: Crown,
+    description: 'Lifetime access + Founder NFT. Never pay again.',
+    features: [
+      'Everything in Hunter',
+      'Lifetime Protocol Access',
+      'OppForge Founder NFT (ERC-721)',
+      'Early Feature Previews',
+      'Governance Voting Rights',
+      'Private Founder Channel',
+      'Custom AI Agent Tuning',
+      'Revenue Share (Future)',
+    ],
+    accent: '#ffaa00',
+    bg: 'from-[#ffaa00]/8 to-transparent',
+    border: 'border-[#ffaa00]/30',
+    lifetime: true,
+  },
 ];
 
 export default function SubscriptionPage() {
   const { user, setUser } = useAuth();
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { switchChainAsync } = useSwitchChain();
   const [loadingTier, setLoadingTier] = useState(null);
 
   // Trial info
@@ -87,41 +116,63 @@ export default function SubscriptionPage() {
     }
 
     setLoadingTier(tier.id);
-    const tid = toast.loading(`Confirm transaction in your wallet...`);
+    const tid = toast.loading('Preparing transaction...');
 
     try {
-      // 1. Send Transaction
-      // Using a simple transfer or calling the OppForgePayment contract if deployed
-      // For this demo, we'll use a direct transfer to the forge master wallet
-      const FORGE_MASTER = '0x15f79927627448e89E90f6FCE0e5f22E42Ead1a6'; 
-      
-      const hash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: address,
-          to: FORGE_MASTER,
-          value: parseEther(tier.ethPrice).toString(16),
-        }],
+      // Switch to Sepolia if not already on it
+      if (chainId !== sepolia.id) {
+        toast.loading('Switching to Sepolia testnet...', { id: tid });
+        await switchChainAsync({ chainId: sepolia.id });
+      }
+
+      toast.loading('Confirm transaction in your wallet...', { id: tid });
+
+      // Call upgradeTier on OppForgeProtocol contract
+      const hash = await writeContractAsync({
+        address: CONTRACTS.PROTOCOL.address,
+        abi: PROTOCOL_ABI,
+        functionName: 'upgradeTier',
+        args: [tier.contractTier],
+        value: parseEther(tier.ethPrice),
+        chainId: sepolia.id,
       });
 
-      toast.loading("Verifying transaction on-chain...", { id: tid });
+      toast.loading('Verifying on-chain...', { id: tid });
 
-      // 2. Verify with Backend
+      // If Founder tier, also mint the NFT
+      if (tier.id === 'founder') {
+        try {
+          toast.loading('Minting Founder NFT...', { id: tid });
+          await writeContractAsync({
+            address: CONTRACTS.FOUNDER_NFT.address,
+            abi: FOUNDER_NFT_ABI,
+            functionName: 'mint',
+            value: parseEther('0.01'),
+            chainId: sepolia.id,
+          });
+        } catch (nftErr) {
+          console.warn('NFT mint failed (non-critical):', nftErr);
+          // Don't block the tier upgrade if NFT mint fails
+        }
+      }
+
+      // Verify with backend
       const { data: updateResult } = await api.post('/billing/verify-payment', {
         tx_hash: hash,
         tier: tier.id,
-        network: "arbitrum", // Defaulting for demo
-        amount: parseFloat(tier.ethPrice)
+        network: 'sepolia',
+        amount: parseFloat(tier.ethPrice),
       });
 
-      // 3. Update local user state
+      // Update local user state
       const { data: userData } = await api.get('/auth/me');
       setUser(userData);
       
-      toast.success(`Clearance Level: ${tier.name} ACTIVATED. Welcome aboard, pilot.`, { id: tid });
+      toast.success(`${tier.name} tier activated via smart contract!`, { id: tid });
     } catch (error) {
-      console.error("Upgrade failed:", error);
-      toast.error(error.message || "Transaction cancelled or failed.", { id: tid });
+      console.error('Upgrade failed:', error);
+      const msg = error?.shortMessage || error?.message || 'Transaction cancelled or failed.';
+      toast.error(msg, { id: tid });
     } finally {
       setLoadingTier(null);
     }
@@ -133,7 +184,7 @@ export default function SubscriptionPage() {
     if (tier.id === 'scout') return { text: 'Free Trial', disabled: true, style: 'bg-white/5 text-gray-500 border border-white/10 cursor-default' };
     
     return { 
-      text: `Subscribe · ${tier.price}/mo`, 
+      text: tier.lifetime ? `Mint · ${tier.price}` : `Subscribe · ${tier.price}`, 
       disabled: false, 
     };
   };
@@ -181,7 +232,7 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {TIERS.map((tier, idx) => {
           const btn = getButtonState(tier);
           const TierIcon = tier.icon;
@@ -197,6 +248,11 @@ export default function SubscriptionPage() {
               {tier.popular && (
                 <div className="absolute top-4 right-4 bg-[#ff5500] text-white text-[9px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-[0_0_15px_rgba(255,85,0,0.4)]">
                   Elite_Pick
+                </div>
+              )}
+              {tier.lifetime && (
+                <div className="absolute top-4 right-4 bg-[#ffaa00] text-black text-[9px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-[0_0_15px_rgba(255,170,0,0.4)]">
+                  Lifetime
                 </div>
               )}
 
@@ -236,6 +292,8 @@ export default function SubscriptionPage() {
                 className={`w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-60 ${
                   btn.disabled 
                     ? btn.style
+                    : tier.lifetime
+                    ? 'bg-[#ffaa00] text-black hover:bg-[#ffc000] shadow-[0_0_25px_rgba(255,170,0,0.3)]'
                     : tier.popular
                     ? 'bg-[#ff5500] text-white hover:bg-[#ff7700] shadow-[0_0_25px_rgba(255,85,0,0.3)]'
                     : 'bg-white/[0.03] text-white border border-white/10 hover:bg-white/10'
@@ -247,7 +305,7 @@ export default function SubscriptionPage() {
               {/* Crypto payment note */}
               {!btn.disabled && tier.id !== 'scout' && (
                 <p className="text-[10px] text-gray-600 text-center font-mono">
-                  NETWORK: ARBITRUM · COST: {tier.ethPrice} ETH
+                  NETWORK: ETH SEPOLIA · {tier.ethPrice} ETH via Smart Contract
                 </p>
               )}
 

@@ -16,6 +16,8 @@ export default function SettingsPage() {
   const { address, isConnected } = useAccount();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const [skills, setSkills] = useState([]);
+  const [chains, setChains] = useState([]);
   const [formData, setFormData] = useState({
     username: '',
     first_name: '',
@@ -24,6 +26,8 @@ export default function SettingsPage() {
     wallet_address: '',
     github_handle: '',
     twitter_handle: '',
+    discord_handle: '',
+    linkedin_url: '',
   });
 
   // 1. Sync form with existing user data
@@ -38,7 +42,11 @@ export default function SettingsPage() {
         wallet_address: user.wallet_address || '',
         github_handle: user.github_handle || '',
         twitter_handle: user.twitter_handle || '',
+        discord_handle: user.discord_handle || '',
+        linkedin_url: user.linkedin_url || '',
       }));
+      setSkills(user.skills || []);
+      setChains(user.preferred_chains || []);
     }
   }, [user]);
 
@@ -57,7 +65,11 @@ export default function SettingsPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await api.put('/auth/profile', formData);
+      const { data } = await api.put('/auth/profile', {
+        ...formData,
+        skills,
+        preferred_chains: chains,
+      });
       setUser(data);
       toast.success("Identity profile forged!");
     } catch (error) {
@@ -588,6 +600,65 @@ export default function SettingsPage() {
                     />
                  </div>
                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+               <div className="space-y-2">
+                 <label className="text-[10px] font-mono text-gray-600 uppercase">Discord</label>
+                 <div className="relative">
+                    <input 
+                      name="discord_handle"
+                      value={formData.discord_handle}
+                      onChange={handleChange}
+                      className="w-full bg-[#0a0806] border border-[#1a1512] rounded px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#ff5500] transition-colors font-mono"
+                      placeholder="username#0000"
+                    />
+                 </div>
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-mono text-gray-600 uppercase">LinkedIn URL</label>
+                 <div className="relative">
+                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+                    <input 
+                      name="linkedin_url"
+                      value={formData.linkedin_url}
+                      onChange={handleChange}
+                      className="w-full bg-[#0a0806] border border-[#1a1512] rounded px-3 py-2.5 pl-9 text-sm text-white focus:outline-none focus:border-[#ff5500] transition-colors"
+                      placeholder="linkedin.com/in/username"
+                    />
+                 </div>
+               </div>
+            </div>
+          </div>
+
+          {/* Section: Skills & Ecosystems */}
+          <div className="glass-card p-6 space-y-6">
+            <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 pb-4">
+               // Superpowers & Ecosystems
+            </h3>
+            
+            <div className="space-y-3">
+              <label className="text-[10px] font-mono text-gray-600 uppercase">Skills</label>
+              <div className="flex flex-wrap gap-2">
+                {['Smart Contracts', 'Frontend', 'Backend', 'DeFi', 'Protocols', 'Security', 'Marketing', 'Content', 'DAO Ops', 'Rust', 'Solidity', 'Zero Knowledge', 'Governance', 'Tokenomics', 'Community', 'Design', 'Research', 'DevRel', 'Auditing', 'TypeScript', 'Python', 'Move', 'Vyper', 'Cairo', 'NFTs'].map(s => (
+                  <button key={s} type="button" onClick={() => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
+                    className={`px-3 py-1.5 rounded border text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
+                      skills.includes(s) ? 'border-[#ff5500]/40 bg-[#ff5500]/10 text-[#ff5500]' : 'border-white/10 bg-white/[0.02] text-gray-500 hover:text-gray-300'
+                    }`}>{s}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-mono text-gray-600 uppercase">Preferred Chains</label>
+              <div className="flex flex-wrap gap-2">
+                {['Solana', 'Ethereum', 'Arbitrum', 'Optimism', 'Base', 'Polygon', 'Monad', 'Berachain', 'Avalanche', 'Sui', 'Aptos', 'Near', 'Cosmos', 'Polkadot', 'Celestia', 'Starknet', 'zkSync', 'Linea', 'Scroll', 'Blast', 'Sei', 'Injective'].map(c => (
+                  <button key={c} type="button" onClick={() => setChains(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
+                    className={`px-3 py-1.5 rounded border text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
+                      chains.includes(c) ? 'border-[#ffaa00]/40 bg-[#ffaa00]/10 text-[#ffaa00]' : 'border-white/10 bg-white/[0.02] text-gray-500 hover:text-gray-300'
+                    }`}>{c}</button>
+                ))}
+              </div>
             </div>
           </div>
             </>

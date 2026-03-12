@@ -11,6 +11,7 @@ import api from '@/lib/api'
 import { formatMissionDeadline, getTrustStatus } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
 import AIAnalysisPanel from '@/components/dashboard/AIAnalysisPanel'
+import { getOppImage } from '@/lib/chainLogos'
 import { useWriteContract, useAccount } from 'wagmi'
 import { parseEther, keccak256, encodePacked } from 'viem'
 
@@ -168,8 +169,21 @@ export default function OpportunityDetail({ params }) {
               </div>
             </div>
             
-            {/* Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight">{opp.title}</h1>
+            {/* Title + Logo */}
+            <div className="flex items-center gap-4">
+              {(() => {
+                const logoUrl = getOppImage(opp)
+                return logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={opp.chain || opp.source || ''}
+                    className="w-12 h-12 rounded-xl object-contain bg-white/5 border border-white/10 p-1.5 shrink-0"
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                ) : null
+              })()}
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight">{opp.title}</h1>
+            </div>
             
             {/* Key Info Row */}
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">

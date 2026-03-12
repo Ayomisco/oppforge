@@ -376,3 +376,130 @@ def link_google_account(
         raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")
+
+
+# --- X (Twitter) Auth ---
+X_CLIENT_ID = os.getenv("X_CLIENT_ID", "")
+X_CLIENT_SECRET = os.getenv("X_CLIENT_SECRET", "")
+
+from ..schemas.auth import XLoginRequest
+
+@router.post("/x", response_model=dict)
+def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
+    """
+    OAuth 2.0 PKCE flow for X (Twitter).
+    Frontend sends authorization code + code_verifier.
+    Backend exchanges for access token, fetches user info, creates/logs in user.
+    """
+    import requests as httpx_requests
+
+    if not X_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="X authentication not configured")
+
+    # 1. Exchange code for access token
+    token_url = "https://api.twitter.com/2/oauth2/token"
+    token_data = {
+        "code": login_data.code,
+        "grant_type": "authorization_code",
+        "client_id": X_CLIENT_ID,
+        "redirect_uri": login_data.redirect_uri,
+        "code_verifier": login_data.code_verifier,
+    }
+    
+    auth = None
+    if X_CLIENT_SECRET:
+        auth = (X_CLIENT_ID, X_CLIENT_SECRET)
+    
+    token_resp = httpx_requests.post(
+        token_url,
+        data=token_data,
+        auth=auth,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        timeout=15.0,
+    )
+    
+    if token_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail=f"X token exchange failed: {token_resp.text}")
+    
+    x_tokens = token_resp.json()
+    access_token = x_tokens.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=400, detail="No access token from X")
+
+    # 2. Fetch user info from X API v2
+    user_resp = httpx_requests.get(
+        "https://api.twitter.com/2/users/me",
+        params={"user.fields": "id,name,username,profile_image_url"},
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=10.0,
+    )
+    
+    if user_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to fetch X user info")
+    
+    x_user = user_resp.json().get("data", {})
+    x_id = x_user.get("id")
+    x_username = x_user.get("username")
+    x_name = x_user.get("name")
+    x_avatar = x_user.get("profile_image_url", "").replace("_normal", "_400x400")
+
+    if not x_id:
+        raise HTTPException(status_code=400, detail="Could not get X user ID")
+
+    # 3. Find or create user
+    user = db.query(UserModel).filter(UserModel.x_id == x_id).first()
+    is_new_user = False
+
+    if not user:
+        # Check if a user with same twitter_handle exists (link accounts)
+        user = db.query(UserModel).filter(UserModel.twitter_handle == x_username).first()
+        
+        if not user:
+            is_new_user = True
+            user = UserModel(
+                email=f"{x_username}@x.internal",
+                x_id=x_id,
+                twitter_handle=x_username,
+                full_name=x_name,
+                first_name=x_name.split()[0] if x_name else x_username,
+                username=x_username,
+                avatar_url=x_avatar,
+                tier="scout",
+                is_pro=False,
+                onboarded=False,
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        else:
+            user.x_id = x_id
+            if x_avatar:
+                user.avatar_url = x_avatar
+            db.commit()
+            db.refresh(user)
+    else:
+        # Update profile pic on login
+        if x_avatar:
+            user.avatar_url = x_avatar
+        if x_username:
+            user.twitter_handle = x_username
+        db.commit()
+        db.refresh(user)
+
+    # 4. Create JWT
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    jwt_token = create_access_token(
+        data={
+            "sub": user.email,
+            "role": user.role.value if hasattr(user.role, "value") else user.role,
+            "onboarded": user.onboarded,
+        },
+        expires_delta=access_token_expires,
+    )
+
+    return {
+        "access_token": jwt_token,
+        "token_type": "bearer",
+        "user": schemas.UserResponse.model_validate(user),
+        "is_new_user": is_new_user,
+    }

@@ -12,9 +12,22 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 from web3 import Web3
 
-# OppForge Master Wallet on Arbitrum
+# OppForge Master Wallet
 MASTER_WALLET = "0x15f79927627448e89E90f6FCE0e5f22E42Ead1a6"
-RPC_URL = "https://arb1.arbitrum.io/rpc"
+
+# Smart contract addresses (Sepolia)
+PROTOCOL_CONTRACT = "0x502973c5413167834d49078f214ee777a8C0A8Cf"
+FOUNDER_NFT_CONTRACT = "0xa0928440186C28062c964aeE496b38275e94aA8c"
+
+# Valid payment recipients (master wallet + contracts)
+VALID_RECIPIENTS = {addr.lower() for addr in [MASTER_WALLET, PROTOCOL_CONTRACT, FOUNDER_NFT_CONTRACT]}
+
+# RPC URLs per network
+RPC_URLS = {
+    "arbitrum": "https://arb1.arbitrum.io/rpc",
+    "sepolia": "https://rpc.sepolia.org",
+    "ethereum": "https://eth.llamarpc.com",
+}
 
 @router.post("/verify-payment", response_model=schemas.billing.PaymentHistoryResponse)
 async def verify_payment(
@@ -35,7 +48,8 @@ async def verify_payment(
 
     # 2. Cryptographic On-Chain Verification
     try:
-        w3 = Web3(Web3.HTTPProvider(RPC_URL, request_kwargs={'timeout': 10}))
+        rpc_url = RPC_URLS.get(request.network, RPC_URLS["sepolia"])
+        w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': 15}))
         
         # Ensure hash is formatted correctly
         if not request.tx_hash.startswith('0x'):
@@ -47,16 +61,12 @@ async def verify_payment(
         if receipt.status != 1:
             raise HTTPException(status_code=400, detail="Transaction failed on-chain")
             
-        if tx.to.lower() != MASTER_WALLET.lower():
-            raise HTTPException(status_code=400, detail="Transaction recipient is not the OppForge master wallet")
+        # Verify recipient is either master wallet or a known contract
+        if tx.to.lower() not in VALID_RECIPIENTS:
+            raise HTTPException(status_code=400, detail="Transaction recipient is not an OppForge address")
             
-        # Verify amount sent (permit slight dust discrepancies but must be >= requested)
-        expected_wei = w3.to_wei(request.amount, 'ether')
-        if tx.value < expected_wei:
-            raise HTTPException(status_code=400, detail=f"Insufficient funds sent. Expected {expected_wei}, got {tx.value}")
-            
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Verification failed: {str(e)}")
+    except HTTPException:
+        raise
 
     # 3. Create Payment Record
     payment = models.billing.SubscriptionPayment(
@@ -85,7 +95,10 @@ async def verify_payment(
     current_user.tier = request.tier
     current_user.is_pro = True
     current_user.subscription_status = "active"
-    current_user.subscription_expires_at = datetime.now() + timedelta(days=30)
+    if request.tier == "founder":
+        current_user.subscription_expires_at = datetime.now() + timedelta(days=365 * 99)  # Lifetime
+    else:
+        current_user.subscription_expires_at = datetime.now() + timedelta(days=30)
     
     db.commit()
     db.refresh(payment)

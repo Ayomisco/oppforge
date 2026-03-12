@@ -20,7 +20,7 @@ const FEATURES = [
 ];
 
 export default function LoginPage() {
-  const { user, loginGoogle, loginWallet } = useAuth();
+  const { user, loginGoogle, loginWallet, loginX } = useAuth();
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
@@ -232,6 +232,48 @@ export default function LoginPage() {
               <span className="absolute right-4 text-[10px] font-mono uppercase bg-[#ff5500] text-white px-2 py-0.5 rounded tracking-wider">
                 Recommended
               </span>
+            </motion.button>
+
+            {/* X (Twitter) button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                const clientId = process.env.NEXT_PUBLIC_X_CLIENT_ID;
+                if (!clientId) {
+                  toast.error('X authentication not configured yet');
+                  return;
+                }
+                // Generate PKCE code_verifier and code_challenge
+                const array = new Uint8Array(32);
+                crypto.getRandomValues(array);
+                const codeVerifier = btoa(String.fromCharCode(...array)).replace(/[+/=]/g, c => c === '+' ? '-' : c === '/' ? '_' : '').slice(0, 64);
+                const state = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))).replace(/[+/=]/g, '').slice(0, 32);
+
+                sessionStorage.setItem('x_code_verifier', codeVerifier);
+                sessionStorage.setItem('x_oauth_state', state);
+
+                // S256 challenge
+                const encoder = new TextEncoder();
+                crypto.subtle.digest('SHA-256', encoder.encode(codeVerifier)).then(hash => {
+                  const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                  const redirectUri = `${window.location.origin}/auth/x/callback`;
+                  const params = new URLSearchParams({
+                    response_type: 'code',
+                    client_id: clientId,
+                    redirect_uri: redirectUri,
+                    scope: 'tweet.read users.read offline.access',
+                    state: state,
+                    code_challenge: codeChallenge,
+                    code_challenge_method: 'S256',
+                  });
+                  window.location.href = `https://twitter.com/i/oauth2/authorize?${params}`;
+                });
+              }}
+              className="w-full flex items-center justify-center gap-3 bg-black text-white font-semibold py-3.5 px-6 rounded-xl text-sm border border-white/10 transition-all hover:bg-white/5 mb-4"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              Continue with X
             </motion.button>
 
             {/* Divider */}
