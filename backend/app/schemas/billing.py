@@ -6,7 +6,7 @@ import uuid
 class PaymentVerifyRequest(BaseModel):
     tx_hash: str
     tier: str # hunter, founder
-    network: str = "sepolia"
+    network: str = "arbitrum"
     amount: float
 
 class InvoiceResponse(BaseModel):

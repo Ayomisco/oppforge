@@ -25,9 +25,11 @@ VALID_RECIPIENTS = {addr.lower() for addr in [MASTER_WALLET, PROTOCOL_CONTRACT, 
 # RPC URLs per network
 RPC_URLS = {
     "arbitrum": "https://arb1.arbitrum.io/rpc",
-    "sepolia": "https://rpc.sepolia.org",
+    "sepolia": "https://ethereum-sepolia-rpc.publicnode.com",
     "ethereum": "https://eth.llamarpc.com",
 }
+
+DEFAULT_NETWORK = "arbitrum"
 
 @router.post("/verify-payment", response_model=schemas.billing.PaymentHistoryResponse)
 async def verify_payment(
@@ -48,7 +50,7 @@ async def verify_payment(
 
     # 2. Cryptographic On-Chain Verification
     try:
-        rpc_url = RPC_URLS.get(request.network, RPC_URLS["sepolia"])
+        rpc_url = RPC_URLS.get(request.network, RPC_URLS[DEFAULT_NETWORK])
         w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': 15}))
         
         # Ensure hash is formatted correctly

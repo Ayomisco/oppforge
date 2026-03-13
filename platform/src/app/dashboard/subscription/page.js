@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import Link from 'next/link';
 import { CONTRACTS, PROTOCOL_ABI, FOUNDER_NFT_ABI, TIER_ENUM } from '@/lib/contracts';
-import { sepolia } from 'wagmi/chains';
+import { arbitrum } from 'wagmi/chains';
 
 // Pricing tiers — matches OppForgeProtocol.sol
 const TIERS = [
@@ -119,10 +119,10 @@ export default function SubscriptionPage() {
     const tid = toast.loading('Preparing transaction...');
 
     try {
-      // Switch to Sepolia if not already on it
-      if (chainId !== sepolia.id) {
-        toast.loading('Switching to Sepolia testnet...', { id: tid });
-        await switchChainAsync({ chainId: sepolia.id });
+      // Switch to Arbitrum One if not already on it
+      if (chainId !== arbitrum.id) {
+        toast.loading('Switching to Arbitrum One...', { id: tid });
+        await switchChainAsync({ chainId: arbitrum.id });
       }
 
       toast.loading('Confirm transaction in your wallet...', { id: tid });
@@ -134,7 +134,7 @@ export default function SubscriptionPage() {
         functionName: 'upgradeTier',
         args: [tier.contractTier],
         value: parseEther(tier.ethPrice),
-        chainId: sepolia.id,
+        chainId: arbitrum.id,
       });
 
       toast.loading('Verifying on-chain...', { id: tid });
@@ -148,7 +148,7 @@ export default function SubscriptionPage() {
             abi: FOUNDER_NFT_ABI,
             functionName: 'mint',
             value: parseEther('0.01'),
-            chainId: sepolia.id,
+            chainId: arbitrum.id,
           });
         } catch (nftErr) {
           console.warn('NFT mint failed (non-critical):', nftErr);
@@ -160,7 +160,7 @@ export default function SubscriptionPage() {
       const { data: updateResult } = await api.post('/billing/verify-payment', {
         tx_hash: hash,
         tier: tier.id,
-        network: 'sepolia',
+        network: 'arbitrum',
         amount: parseFloat(tier.ethPrice),
       });
 
@@ -305,7 +305,7 @@ export default function SubscriptionPage() {
               {/* Crypto payment note */}
               {!btn.disabled && tier.id !== 'scout' && (
                 <p className="text-[10px] text-gray-600 text-center font-mono">
-                  NETWORK: ETH SEPOLIA · {tier.ethPrice} ETH via Smart Contract
+                  NETWORK: ARBITRUM ONE · {tier.ethPrice} ETH via Smart Contract
                 </p>
               )}
 

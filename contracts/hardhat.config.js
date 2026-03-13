@@ -39,7 +39,9 @@ module.exports = {
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     },
     arbitrumOne: {
-      url: "https://arb1.arbitrum.io/rpc",
+      url: ALCHEMY_API_KEY
+        ? `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+        : "https://arb1.arbitrum.io/rpc",
       chainId: 42161,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     }

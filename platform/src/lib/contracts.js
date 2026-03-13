@@ -1,18 +1,18 @@
-import { sepolia } from 'wagmi/chains'
+import { arbitrum } from 'wagmi/chains'
 
-// Deployed on ETH Sepolia — verified on Etherscan
+// Deployed on Arbitrum One — verified on Arbiscan
 export const CONTRACTS = {
   PROTOCOL: {
     address: '0x502973c5413167834d49078f214ee777a8C0A8Cf',
-    chainId: sepolia.id,
+    chainId: arbitrum.id,
   },
   FOUNDER_NFT: {
     address: '0xa0928440186C28062c964aeE496b38275e94aA8c',
-    chainId: sepolia.id,
+    chainId: arbitrum.id,
   },
   MISSION: {
     address: '0x654b689f316c5E2D1c6860d2446A73538B146722',
-    chainId: sepolia.id,
+    chainId: arbitrum.id,
   },
 }
 
