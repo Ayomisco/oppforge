@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import Link from 'next/link';
-import { CONTRACTS, PROTOCOL_ABI, FOUNDER_NFT_ABI, TIER_ENUM, PAYMENT_SETTINGS } from '@/lib/contracts';
+import { CONTRACTS, PROTOCOL_ABI, FOUNDER_NFT_ABI, TIER_ENUM, PAYMENT_CHAIN, PAYMENT_NETWORK, PAYMENT_NETWORK_LABEL } from '@/lib/contracts';
 
 // Pricing tiers — matches OppForgeProtocol.sol
 const TIERS = [
@@ -105,15 +105,9 @@ export default function SubscriptionPage() {
 
   const currentTier = user?.tier || 'scout';
   const isActive = user?.subscription_status === 'active' || user?.is_pro || trialInfo.isAdmin;
-  const paymentReady = Boolean(CONTRACTS.PROTOCOL.address);
 
   const handleUpgrade = async (tier) => {
     if (tier.id === 'scout') return;
-
-    if (!paymentReady) {
-      toast.error('Payments are being configured. Please try again shortly.');
-      return;
-    }
     
     if (!isConnected) {
       toast.error("Connect your wallet to subscribe with crypto.", { icon: '🔗' });
@@ -124,10 +118,9 @@ export default function SubscriptionPage() {
     const tid = toast.loading('Preparing transaction...');
 
     try {
-      // Switch to configured payment chain if not already on it
-      if (chainId !== CONTRACTS.PROTOCOL.chainId) {
-        toast.loading(`Switching to ${PAYMENT_SETTINGS.chainLabel}...`, { id: tid });
-        await switchChainAsync({ chainId: CONTRACTS.PROTOCOL.chainId });
+      if (chainId !== PAYMENT_CHAIN.id) {
+        toast.loading(`Switching to ${PAYMENT_NETWORK_LABEL}...`, { id: tid });
+        await switchChainAsync({ chainId: PAYMENT_CHAIN.id });
       }
 
       toast.loading('Confirm transaction in your wallet...', { id: tid });
@@ -139,7 +132,7 @@ export default function SubscriptionPage() {
         functionName: 'upgradeTier',
         args: [tier.contractTier],
         value: parseEther(tier.ethPrice),
-        chainId: CONTRACTS.PROTOCOL.chainId,
+        chainId: PAYMENT_CHAIN.id,
       });
 
       toast.loading('Verifying on-chain...', { id: tid });
@@ -153,7 +146,7 @@ export default function SubscriptionPage() {
             abi: FOUNDER_NFT_ABI,
             functionName: 'mint',
             value: parseEther('0.01'),
-            chainId: CONTRACTS.FOUNDER_NFT.chainId,
+            chainId: PAYMENT_CHAIN.id,
           });
         } catch (nftErr) {
           console.warn('NFT mint failed (non-critical):', nftErr);
@@ -165,7 +158,7 @@ export default function SubscriptionPage() {
       const { data: updateResult } = await api.post('/billing/verify-payment', {
         tx_hash: hash,
         tier: tier.id,
-        network: PAYMENT_SETTINGS.network,
+        network: PAYMENT_NETWORK,
         amount: parseFloat(tier.ethPrice),
       });
 
@@ -310,7 +303,7 @@ export default function SubscriptionPage() {
               {/* Crypto payment note */}
               {!btn.disabled && tier.id !== 'scout' && (
                 <p className="text-[10px] text-gray-600 text-center font-mono">
-                  NETWORK: {PAYMENT_SETTINGS.chainLabel} · {tier.ethPrice} ETH via Smart Contract
+                  NETWORK: {PAYMENT_NETWORK_LABEL} · {tier.ethPrice} ETH via Smart Contract
                 </p>
               )}
 

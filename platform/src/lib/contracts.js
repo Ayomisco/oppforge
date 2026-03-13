@@ -1,42 +1,42 @@
 import { arbitrum, sepolia } from 'wagmi/chains'
 
-const PAYMENT_NETWORK = (process.env.NEXT_PUBLIC_PAYMENT_NETWORK || 'sepolia').toLowerCase()
-const ACTIVE_CHAIN = PAYMENT_NETWORK === 'arbitrum' ? arbitrum : sepolia
-
-const DEFAULT_ADDRESSES = {
+const DEFAULT_DEPLOYMENTS = {
   sepolia: {
     PROTOCOL: '0x502973c5413167834d49078f214ee777a8C0A8Cf',
     FOUNDER_NFT: '0xa0928440186C28062c964aeE496b38275e94aA8c',
     MISSION: '0x654b689f316c5E2D1c6860d2446A73538B146722',
   },
   arbitrum: {
-    PROTOCOL: process.env.NEXT_PUBLIC_PROTOCOL_CONTRACT || '',
-    FOUNDER_NFT: process.env.NEXT_PUBLIC_FOUNDER_NFT_CONTRACT || '',
-    MISSION: process.env.NEXT_PUBLIC_MISSION_CONTRACT || '',
+    PROTOCOL: process.env.NEXT_PUBLIC_PROTOCOL_CONTRACT_ADDRESS || '',
+    FOUNDER_NFT: process.env.NEXT_PUBLIC_FOUNDER_NFT_CONTRACT_ADDRESS || '',
+    MISSION: process.env.NEXT_PUBLIC_MISSION_CONTRACT_ADDRESS || '',
   },
 }
 
-const selected = DEFAULT_ADDRESSES[PAYMENT_NETWORK] || DEFAULT_ADDRESSES.sepolia
+const CHAIN_MAP = {
+  sepolia,
+  arbitrum,
+}
+
+export const PAYMENT_NETWORK = process.env.NEXT_PUBLIC_PAYMENT_NETWORK || 'sepolia'
+export const PAYMENT_CHAIN = CHAIN_MAP[PAYMENT_NETWORK] || sepolia
+export const PAYMENT_NETWORK_LABEL = PAYMENT_NETWORK === 'arbitrum' ? 'ARBITRUM ONE' : 'ETH SEPOLIA'
+
+const deployment = DEFAULT_DEPLOYMENTS[PAYMENT_NETWORK] || DEFAULT_DEPLOYMENTS.sepolia
 
 export const CONTRACTS = {
   PROTOCOL: {
-    address: process.env.NEXT_PUBLIC_PROTOCOL_CONTRACT || selected.PROTOCOL,
-    chainId: ACTIVE_CHAIN.id,
+    address: deployment.PROTOCOL,
+    chainId: PAYMENT_CHAIN.id,
   },
   FOUNDER_NFT: {
-    address: process.env.NEXT_PUBLIC_FOUNDER_NFT_CONTRACT || selected.FOUNDER_NFT,
-    chainId: ACTIVE_CHAIN.id,
+    address: deployment.FOUNDER_NFT,
+    chainId: PAYMENT_CHAIN.id,
   },
   MISSION: {
-    address: process.env.NEXT_PUBLIC_MISSION_CONTRACT || selected.MISSION,
-    chainId: ACTIVE_CHAIN.id,
+    address: deployment.MISSION,
+    chainId: PAYMENT_CHAIN.id,
   },
-}
-
-export const PAYMENT_SETTINGS = {
-  network: PAYMENT_NETWORK,
-  chainId: ACTIVE_CHAIN.id,
-  chainLabel: PAYMENT_NETWORK === 'arbitrum' ? 'ARBITRUM ONE' : 'ETH SEPOLIA',
 }
 
 // Minimal ABIs — only the functions we call from the frontend

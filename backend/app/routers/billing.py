@@ -13,18 +13,14 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 from web3 import Web3
 
-# Payment config (env-driven so we can switch networks without code changes)
-MASTER_WALLET = os.getenv("MASTER_WALLET", "0xE5978059D18c0B840A3F33389dc4425465442E69")
-
-PROTOCOL_CONTRACT = os.getenv("PROTOCOL_CONTRACT", "0x502973c5413167834d49078f214ee777a8C0A8Cf")
-FOUNDER_NFT_CONTRACT = os.getenv("FOUNDER_NFT_CONTRACT", "0xa0928440186C28062c964aeE496b38275e94aA8c")
+# Active payment network config
+DEFAULT_NETWORK = os.getenv("PAYMENT_NETWORK", "sepolia")
+MASTER_WALLET = os.getenv("OPPFORGE_MASTER_WALLET", "")
+PROTOCOL_CONTRACT = os.getenv("PROTOCOL_CONTRACT_ADDRESS", "0x502973c5413167834d49078f214ee777a8C0A8Cf")
+FOUNDER_NFT_CONTRACT = os.getenv("FOUNDER_NFT_CONTRACT_ADDRESS", "0xa0928440186C28062c964aeE496b38275e94aA8c")
 
 # Valid payment recipients (master wallet + contracts)
-VALID_RECIPIENTS = {
-    addr.lower()
-    for addr in [MASTER_WALLET, PROTOCOL_CONTRACT, FOUNDER_NFT_CONTRACT]
-    if addr
-}
+VALID_RECIPIENTS = {addr.lower() for addr in [MASTER_WALLET, PROTOCOL_CONTRACT, FOUNDER_NFT_CONTRACT] if addr}
 
 # RPC URLs per network
 RPC_URLS = {
@@ -32,8 +28,6 @@ RPC_URLS = {
     "sepolia": os.getenv("SEPOLIA_RPC_URL", "https://ethereum-sepolia-rpc.publicnode.com"),
     "ethereum": os.getenv("ETHEREUM_RPC_URL", "https://eth.llamarpc.com"),
 }
-
-DEFAULT_NETWORK = os.getenv("PAYMENT_NETWORK", "sepolia")
 
 @router.post("/verify-payment", response_model=schemas.billing.PaymentHistoryResponse)
 async def verify_payment(
