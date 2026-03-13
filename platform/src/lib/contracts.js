@@ -1,19 +1,42 @@
-import { arbitrum } from 'wagmi/chains'
+import { arbitrum, sepolia } from 'wagmi/chains'
 
-// Deployed on Arbitrum One — verified on Arbiscan
+const PAYMENT_NETWORK = (process.env.NEXT_PUBLIC_PAYMENT_NETWORK || 'sepolia').toLowerCase()
+const ACTIVE_CHAIN = PAYMENT_NETWORK === 'arbitrum' ? arbitrum : sepolia
+
+const DEFAULT_ADDRESSES = {
+  sepolia: {
+    PROTOCOL: '0x502973c5413167834d49078f214ee777a8C0A8Cf',
+    FOUNDER_NFT: '0xa0928440186C28062c964aeE496b38275e94aA8c',
+    MISSION: '0x654b689f316c5E2D1c6860d2446A73538B146722',
+  },
+  arbitrum: {
+    PROTOCOL: process.env.NEXT_PUBLIC_PROTOCOL_CONTRACT || '',
+    FOUNDER_NFT: process.env.NEXT_PUBLIC_FOUNDER_NFT_CONTRACT || '',
+    MISSION: process.env.NEXT_PUBLIC_MISSION_CONTRACT || '',
+  },
+}
+
+const selected = DEFAULT_ADDRESSES[PAYMENT_NETWORK] || DEFAULT_ADDRESSES.sepolia
+
 export const CONTRACTS = {
   PROTOCOL: {
-    address: '0x502973c5413167834d49078f214ee777a8C0A8Cf',
-    chainId: arbitrum.id,
+    address: process.env.NEXT_PUBLIC_PROTOCOL_CONTRACT || selected.PROTOCOL,
+    chainId: ACTIVE_CHAIN.id,
   },
   FOUNDER_NFT: {
-    address: '0xa0928440186C28062c964aeE496b38275e94aA8c',
-    chainId: arbitrum.id,
+    address: process.env.NEXT_PUBLIC_FOUNDER_NFT_CONTRACT || selected.FOUNDER_NFT,
+    chainId: ACTIVE_CHAIN.id,
   },
   MISSION: {
-    address: '0x654b689f316c5E2D1c6860d2446A73538B146722',
-    chainId: arbitrum.id,
+    address: process.env.NEXT_PUBLIC_MISSION_CONTRACT || selected.MISSION,
+    chainId: ACTIVE_CHAIN.id,
   },
+}
+
+export const PAYMENT_SETTINGS = {
+  network: PAYMENT_NETWORK,
+  chainId: ACTIVE_CHAIN.id,
+  chainLabel: PAYMENT_NETWORK === 'arbitrum' ? 'ARBITRUM ONE' : 'ETH SEPOLIA',
 }
 
 // Minimal ABIs — only the functions we call from the frontend
