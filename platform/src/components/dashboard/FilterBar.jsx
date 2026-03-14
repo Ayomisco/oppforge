@@ -1,16 +1,7 @@
 'use client'
 
 import React from 'react'
-
-import { 
-  Hash, 
-  Rocket, 
-  Zap, 
-  Target, 
-  Sparkles, 
-  Users, 
-  Activity 
-} from 'lucide-react'
+import { Hash, Rocket, Zap, Target, Sparkles, Users, Activity } from 'lucide-react'
 
 const categories = [
   { id: 'all', label: 'All', icon: Hash },
@@ -25,20 +16,19 @@ const categories = [
 export default function FilterBar({ activeCategory, onCategoryChange }) {
   return (
     <div className="flex flex-col gap-4 mb-6">
-      {/* Category Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
         {categories.map((cat) => (
           <button
             key={cat.id}
             onClick={() => onCategoryChange(cat.id)}
             className={`
-              flex items-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-lg text-xs font-semibold transition-all duration-200 border
-              ${activeCategory === cat.id 
-                ? 'bg-[#ff5500] text-white border-[#ff5500] shadow-[0_0_15px_rgba(255,85,0,0.3)]' 
-                : 'bg-[#0a0806] border-[#1a1512] text-gray-400 hover:text-white hover:border-gray-600'}
+              flex items-center gap-2 whitespace-nowrap px-3.5 py-2 rounded-md text-xs font-medium transition-all duration-150 border
+              ${activeCategory === cat.id
+                ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)] shadow-[0_0_12px_rgba(255,85,0,0.2)]'
+                : 'bg-[var(--bg-secondary)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-muted)]'}
             `}
           >
-            <cat.icon size={14} className={activeCategory === cat.id ? 'text-white' : 'text-gray-500'} />
+            <cat.icon size={14} className={activeCategory === cat.id ? 'text-white' : 'text-[var(--text-tertiary)]'} />
             {cat.label}
           </button>
         ))}

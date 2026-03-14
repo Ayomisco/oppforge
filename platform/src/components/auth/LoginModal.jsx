@@ -15,7 +15,6 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
   const { address, isConnected } = useAccount();
   const loginAttempted = useRef(false);
 
-  // Auto-login when wallet connects
   useEffect(() => {
     if (isConnected && address && !user && !loginAttempted.current) {
       loginAttempted.current = true;
@@ -28,11 +27,8 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
     }
   }, [isConnected, address, user, loginWallet, onClose]);
 
-  // Reset ref when modal closes
   useEffect(() => {
-    if (!isOpen) {
-      loginAttempted.current = false;
-    }
+    if (!isOpen) loginAttempted.current = false;
   }, [isOpen]);
 
   const handleGoogleSuccess = async (response) => {
@@ -52,64 +48,59 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md border-[#ff5500]/20 bg-[#0D0A07] text-white">
+      <DialogContent className="sm:max-w-md border-[var(--border-default)] bg-[var(--bg-primary)] text-[var(--text-primary)]">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-[#ff5500]/10 border border-[#ff5500]/20">
-              <Shield className="w-5 h-5 text-[#ff5500]" />
+            <div className="p-2 rounded-md bg-[var(--accent-primary-muted)] border border-[var(--accent-primary)]/20">
+              <Shield className="w-5 h-5 text-[var(--accent-primary)]" />
             </div>
-            <DialogTitle className="text-xl font-bold text-white">
+            <DialogTitle className="text-xl font-bold text-[var(--text-primary)]">
               Access The Forge
             </DialogTitle>
           </div>
-          <DialogDescription className="text-gray-400">
+          <DialogDescription className="text-[var(--text-secondary)]">
             Sign in to unlock AI-powered opportunity tracking, personalized scoring, and application drafting tools.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="flex flex-col gap-4 py-4">
-          {/* Google Login */}
+          {/* Google */}
           <button
             onClick={() => loginWithGoogle()}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-medium py-3 px-4 rounded-lg transition-all"
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-medium py-3 px-4 rounded-lg transition-all active:scale-[0.98]"
           >
-            <img 
-              src="https://www.google.com/favicon.ico" 
-              alt="Google" 
-              className="w-5 h-5"
-            />
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
             Continue with Google
           </button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-[#333]" />
+              <span className="w-full border-t border-[var(--border-default)]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0D0A07] px-2 text-gray-500">Or</span>
+              <span className="bg-[var(--bg-primary)] px-2 text-[var(--text-tertiary)]">Or</span>
             </div>
           </div>
 
-          {/* Wallet Connect with RainbowKit */}
+          {/* Wallet */}
           <div className="w-full [&>div]:w-full [&>div>button]:w-full [&>div>button]:justify-center">
             <ConnectButton.Custom>
               {({ openConnectModal, connectModalOpen }) => (
                 <button
                   onClick={openConnectModal}
                   disabled={connectModalOpen}
-                  className="w-full flex items-center justify-center gap-3 bg-[#1a1512] hover:bg-[#ff5500]/10 border border-[#ff5500]/30 text-white font-medium py-3 px-4 rounded-lg transition-all"
+                  className="w-full flex items-center justify-center gap-3 bg-[var(--bg-tertiary)] hover:bg-[var(--accent-primary-muted)] border border-[var(--accent-primary)]/30 text-[var(--text-primary)] font-medium py-3 px-4 rounded-lg transition-all active:scale-[0.98]"
                 >
-                  <Wallet className="w-5 h-5 text-[#ff5500]" />
+                  <Wallet className="w-5 h-5 text-[var(--accent-primary)]" />
                   Connect Wallet
                 </button>
               )}
             </ConnectButton.Custom>
           </div>
 
-          {/* Features teaser */}
-          <div className="mt-2 p-3 rounded-lg bg-[#ff5500]/5 border border-[#ff5500]/10">
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <Zap className="w-3 h-3 text-[#ff5500]" />
+          <div className="mt-2 p-3 rounded-lg bg-[var(--accent-primary-muted)] border border-[var(--accent-primary)]/10">
+            <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+              <Zap className="w-3 h-3 text-[var(--accent-primary)]" />
               <span>Unlock AI scoring, proposal drafting, and 24/7 opportunity monitoring</span>
             </div>
           </div>

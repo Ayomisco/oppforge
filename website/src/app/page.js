@@ -3,43 +3,44 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check, Bug, Code2, FlaskConical, Building2, Megaphone, Star, ShieldCheck, Wallet, Crown } from 'lucide-react'
+import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check, Bug, Code2, FlaskConical, Building2, Megaphone, Star, ShieldCheck, Crown } from 'lucide-react'
 import PricingSection from '@/components/PricingSection'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--glass-border)] bg-transparent">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-default)] bg-[var(--bg-primary)]/95 backdrop-blur-md">
       <div className="container h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <img src="/oppforge_logo.png" alt="OppForge Logo" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
-          <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-forge)] transition-colors">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <img src="/oppforge_logo.png" alt="OppForge" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
+          <span className="font-bold text-lg tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
             OppForge
           </span>
         </Link>
         <div className="hidden md:flex items-center gap-8">
-          <Link href="#features" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</Link>
-          <Link href="#use-cases" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Use Cases</Link>
-          <Link href="#how-it-works" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it Works</Link>
-          <Link href="#pricing" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
+          <Link href="#features" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</Link>
+          <Link href="#use-cases" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Use Cases</Link>
+          <Link href="#how-it-works" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it Works</Link>
+          <Link href="#pricing" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
         </div>
-        <div className="hidden md:flex items-center gap-4">
-          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-sm shadow-[0_0_15px_rgba(255,85,0,0.4)] hover:shadow-[0_0_25px_rgba(255,85,0,0.6)]">
+        <div className="hidden md:flex items-center gap-3">
+          <Link href="https://app.oppforge.xyz" className="btn btn-primary shadow-[0_0_16px_rgba(255,85,0,0.25)]">
             Launch App <ArrowRight size={16} />
           </Link>
         </div>
-        <button className="md:hidden text-[var(--text-primary)]" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        <button className="md:hidden text-[var(--text-primary)] p-2" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
       <AnimatePresence>
         {isOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-b border-[var(--border-subtle)] bg-[var(--bg-espresso)] overflow-hidden">
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-b border-[var(--border-default)] bg-[var(--bg-primary)] overflow-hidden">
             <div className="container py-4 flex flex-col gap-4">
-              <Link href="#features" className="text-base font-medium text-[var(--text-secondary)]">Features</Link>
-              <Link href="#use-cases" className="text-base font-medium text-[var(--text-secondary)]">Use Cases</Link>
-              <Link href="#how-it-works" className="text-base font-medium text-[var(--text-secondary)]">How it Works</Link>
+              <Link href="#features" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Features</Link>
+              <Link href="#use-cases" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Use Cases</Link>
+              <Link href="#how-it-works" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">How it Works</Link>
+              <Link href="#pricing" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Pricing</Link>
               <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full justify-center">Launch App</Link>
             </div>
           </motion.div>
@@ -50,284 +51,228 @@ const Navbar = () => {
 }
 
 const FeatureCard = ({ icon: Icon, title, description, delay }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.5 }} viewport={{ once: true }} className="glass-card p-6 flex flex-col gap-4 group hover:bg-[var(--bg-walnut)] transition-colors">
-    <div className="w-12 h-12 rounded-lg bg-[var(--bg-mahogany)] flex items-center justify-center text-[var(--accent-forge)] group-hover:scale-110 transition-transform">
-      <Icon size={24} />
+  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.5 }} viewport={{ once: true }} className="glass-card p-6 flex flex-col gap-4 group hover:border-[var(--accent-primary)]/30 transition-colors">
+    <div className="w-11 h-11 rounded-lg bg-[var(--accent-primary-muted)] flex items-center justify-center text-[var(--accent-primary)] group-hover:scale-110 transition-transform">
+      <Icon size={22} />
     </div>
-    <h3 className="text-lg font-bold text-[var(--text-primary)]">{title}</h3>
+    <h3 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h3>
     <p className="text-[var(--text-secondary)] leading-relaxed text-sm">{description}</p>
   </motion.div>
 )
 
 const Statistic = ({ value, label }) => (
   <div className="text-center">
-    <div className="text-3xl md:text-4xl font-bold text-[var(--accent-forge)] font-mono mb-1">{value}</div>
+    <div className="text-3xl md:text-4xl font-bold text-[var(--accent-primary)] font-mono mb-1">{value}</div>
     <div className="text-xs uppercase tracking-wider text-[var(--text-tertiary)]">{label}</div>
   </div>
 )
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col pt-[var(--header-height)] bg-[var(--bg-espresso)] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1A1410] via-[#0D0A07] to-[#0D0A07] relative">
-      
-      {/* Fixed Galaxy Video Background for Entire Page */}
-      <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-full h-full object-cover z-0 opacity-30 mix-blend-screen pointer-events-none filter sepia-[0.3] hue-rotate-[320deg]">
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4" />
-      </video>
-      
-      {/* Fixed Additional Galaxy Overlay */}
-      <motion.div 
-        animate={{ scale: [1, 1.05, 1] }} 
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        className="fixed top-0 left-0 w-[110vw] h-[110vh] -translate-x-[5vw] -translate-y-[5vh] z-0 opacity-20 mix-blend-screen pointer-events-none"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')", backgroundSize: "cover", backgroundPosition: "center" }}
-      />
-      
-      <div className="fixed inset-0 pointer-events-none scanlines z-10" />
-
+    <div className="min-h-screen flex flex-col pt-16 bg-[var(--bg-canvas)] relative">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden flex flex-col justify-center min-h-[90vh] z-10 border-b border-[var(--glass-border)]">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[var(--accent-forge)]/15 blur-[150px] rounded-full pointer-events-none z-0" />
-        <div className="container relative z-10 text-center max-w-5xl mx-auto mt-10">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease: "easeOut" }}>
-            <motion.div 
-              animate={{ y: [0, -10, 0] }} 
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-walnut)]/80 border border-[var(--accent-forge)]/30 text-[var(--accent-forge)] text-xs lg:text-sm font-mono mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(255,85,0,0.2)]"
-            >
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-forge)] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#ffaa00]"></span>
+      {/* ═══ Hero ═══ */}
+      <section className="relative py-24 md:py-32 overflow-hidden border-b border-[var(--border-default)]">
+        {/* Ambient glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[var(--accent-primary)]/[0.06] blur-[140px] rounded-full pointer-events-none" />
+
+        <div className="container relative z-10 text-center max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] text-[var(--accent-primary)] text-xs font-medium mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-primary)] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-secondary)]" />
               </span>
-              OppForge AI Agent — v1.0 Public Beta is Live
-            </motion.div>
-            
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.1] mb-8 tracking-tight drop-shadow-2xl">
-              Forge Your Next <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-forge)] via-[#ffaa00] to-[var(--accent-gold)] filter drop-shadow-[0_0_15px_rgba(255,85,0,0.3)]">
+              v1.0 Public Beta is Live
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] mb-6 tracking-tight">
+              Forge Your Next<br />
+              <span className="bg-gradient-to-r from-[var(--accent-primary)] via-[var(--accent-secondary)] to-[var(--accent-gold)] bg-clip-text text-transparent">
                 Web3 Opportunity
               </span>
             </h1>
-            
-            <p className="text-lg md:text-2xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed">
-              Discover <span className="text-white font-medium">Grants, Elite Hackathons, Bounties, Jobs, Testnets,</span> and <span className="text-white font-medium">Early Alphas</span>. The ultimate command center for <span className="text-[var(--accent-forge)] font-semibold">every Web3 individual</span>. Our autonomous AI monitors X (Twitter), direct ecosystems, and other trusted platforms 24/7—providing verifiable opportunities, scoring every drop, and drafting your winning proposals.
+
+            <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
+              Discover <span className="text-[var(--text-primary)] font-medium">Grants, Hackathons, Bounties, Testnets,</span> and <span className="text-[var(--text-primary)] font-medium">Early Alphas</span>. AI agents monitor trusted platforms 24/7, scoring and verifying every opportunity for{' '}
+              <span className="text-[var(--accent-primary)] font-semibold">every Web3 builder</span>.
             </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full sm:w-auto text-xl px-10 py-5 group shadow-[0_0_30px_rgba(255,85,0,0.3)] hover:shadow-[0_0_50px_rgba(255,85,0,0.5)]">
-                Launch Mission Control <Rocket size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="https://app.oppforge.xyz" className="btn btn-primary text-base px-8 py-3 w-full sm:w-auto shadow-[0_0_24px_rgba(255,85,0,0.25)] hover:shadow-[0_0_40px_rgba(255,85,0,0.4)]">
+                Launch Mission Control <Rocket size={18} />
               </Link>
-              <Link href="#how-it-works" className="btn btn-ghost w-full sm:w-auto text-xl px-10 py-5 border border-[var(--glass-border)] hover:bg-[var(--glass-border)] backdrop-blur-md">
+              <Link href="#how-it-works" className="btn btn-secondary text-base px-8 py-3 w-full sm:w-auto">
                 View Architecture
               </Link>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-24 p-8 glass-card border-[var(--border-subtle)] bg-[var(--bg-espesso)]/50 backdrop-blur-xl">
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-20 p-6 bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl">
               <Statistic value="50+" label="Supported Chains" />
               <Statistic value="0.4s" label="Scan Latency" />
               <Statistic value="$50M+" label="Tracked Value" />
-              <Statistic value="98%" label="AI Match Accuracy" />
+              <Statistic value="98%" label="AI Accuracy" />
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-32 relative border-y border-[var(--glass-border)] overflow-hidden z-10">
-        <div className="absolute inset-0 bg-[var(--bg-walnut)]/60 backdrop-blur-md -z-10" />
+      {/* ═══ Features ═══ */}
+      <section id="features" className="py-24 border-b border-[var(--border-default)] bg-[var(--bg-primary)]">
         <div className="container">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Intelligence & Verifiable Alpha</h2>
-            <p className="text-xl text-[var(--text-secondary)] leading-relaxed">
-              Anyone can aggregate links. OppForge uses LangChain AI agents to strictly monitor trusted platforms, <span className="text-white">scoring verified opportunities out of 100</span> based on your skills, parsing submission requirements, and generating draft proposals that win.
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Intelligence & Verifiable Alpha</h2>
+            <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
+              OppForge uses AI agents to monitor trusted platforms, <span className="text-[var(--text-primary)]">scoring opportunities out of 100</span> and generating winning proposals.
             </p>
           </motion.div>
-          
-          <div className="grid lg:grid-cols-3 gap-8">
-            <FeatureCard icon={Search} title="Autonomous Alpha Monitoring" description="AI agents continuously monitor official protocol blogs, X (Twitter), direct ecosystems, and trusted ecosystem forums. We surface verifiable, high-signal alpha the second it drops." delay={0.1} />
-            <FeatureCard icon={Zap} title="Hyper-Personalized Scoring" description="Stop sifting through irrelevant noise. Your dashboard ranks opportunities precisely for your technical stack (Rust, Solidity, Python) and ecosystem." delay={0.2} />
-            <FeatureCard icon={Terminal} title="Forge AI Chat Assistant" description="A context-aware chat interface. Ask 'Give me a step-by-step farming plan for this testnet' or 'Draft a 500-word grant proposal' and get it instantly." delay={0.3} />
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <FeatureCard icon={Search} title="Autonomous Monitoring" description="AI agents scan official blogs, X (Twitter), and ecosystem forums. High-signal alpha surfaced the second it drops." delay={0.1} />
+            <FeatureCard icon={Zap} title="Personalized Scoring" description="Opportunities ranked for your technical stack — Rust, Solidity, Python — and preferred ecosystems." delay={0.2} />
+            <FeatureCard icon={Terminal} title="Forge AI Assistant" description="Context-aware chat. Draft grant proposals, get farming plans, or receive architecture advice instantly." delay={0.3} />
           </div>
         </div>
       </section>
 
-      {/* Pricing Section - INJECTED HERE */}
+      {/* ═══ Pricing ═══ */}
       <PricingSection />
 
-      {/* Target Audiences / Use Cases */}
-      <section id="use-cases" className="py-24 relative z-10 border-t border-[var(--glass-border)] bg-[var(--bg-espresso)]/80">
+      {/* ═══ Use Cases ═══ */}
+      <section id="use-cases" className="py-24 border-t border-[var(--border-default)] bg-[var(--bg-canvas)]">
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Who Forges With Us?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Who Forges With Us?</h2>
             <p className="text-[var(--text-secondary)] text-lg">
-              OppForge is designed to give you an unfair advantage, no matter what part of Web3 you operate in.
+              An unfair advantage for every part of Web3.
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Bounty Hunters */}
-            <div className="glass-card p-6 border-t-2 border-[#10b981] hover:-translate-y-2 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-[#10b981]/10 flex items-center justify-center mb-4 border border-[#10b981]/20 group-hover:scale-110 transition-transform">
-                <Bug size={22} className="text-[#10b981]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">Bounty Hunters</h3>
-              <p className="text-[10px] uppercase font-mono text-[#10b981] tracking-widest mb-3">Bug Bounties · Dev Tasks</p>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                Stop checking 14 different boards. Get pinged the second a bounty or dev task matches your stack (Rust, Solidity, etc.).
-              </p>
-            </div>
 
-            {/* Hackathon Devs */}
-            <div className="glass-card p-6 border-t-2 border-[var(--accent-forge)] hover:-translate-y-2 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent-forge)]/10 flex items-center justify-center mb-4 border border-[var(--accent-forge)]/20 group-hover:scale-110 transition-transform">
-                <Code2 size={22} className="text-[var(--accent-forge)]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">Hackathon Devs</h3>
-              <p className="text-[10px] uppercase font-mono text-[var(--accent-forge)] tracking-widest mb-3">ETHGlobal · Superteam</p>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                Discover under-the-radar global and local hackathons. Use our AI to instantly draft winning architectures and submissions.
-              </p>
-            </div>
-
-            {/* Testnet Degens */}
-            <div className="glass-card p-6 border-t-2 border-[#3b82f6] hover:-translate-y-2 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-[#3b82f6]/10 flex items-center justify-center mb-4 border border-[#3b82f6]/20 group-hover:scale-110 transition-transform">
-                <FlaskConical size={22} className="text-[#3b82f6]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">Testnet Degens</h3>
-              <p className="text-[10px] uppercase font-mono text-[#3b82f6] tracking-widest mb-3">Airdrops · Node Running</p>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                Never fall for a fake RPC again. Our Risk AI verifies protocol authenticity before you sign a single transaction.
-              </p>
-            </div>
-
-            {/* Ecosystem DAOs */}
-            <div className="glass-card p-6 border-t-2 border-[var(--accent-gold)] hover:-translate-y-2 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent-gold)]/10 flex items-center justify-center mb-4 border border-[var(--accent-gold)]/20 group-hover:scale-110 transition-transform">
-                <Building2 size={22} className="text-[var(--accent-gold)]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">Ecosystem DAOs</h3>
-              <p className="text-[10px] uppercase font-mono text-[var(--accent-gold)] tracking-widest mb-3">Grants · Governance</p>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                Monitor where builders are migrating. Track grant volumes across chains and structure funding proposals for your missions.
-              </p>
-            </div>
-
-            {/* Community Managers */}
-            <div className="glass-card p-6 border-t-2 border-[#a855f7] hover:-translate-y-2 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-[#a855f7]/10 flex items-center justify-center mb-4 border border-[#a855f7]/20 group-hover:scale-110 transition-transform">
-                <Megaphone size={22} className="text-[#a855f7]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">Community Managers</h3>
-              <p className="text-[10px] uppercase font-mono text-[#a855f7] tracking-widest mb-3">Growth · Moderation · Ops</p>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                Find protocols actively granting funds for growth and community moderation roles. Get matched directly with ecosystem leads.
-              </p>
-            </div>
-
-            {/* Web3 Ambassadors */}
-            <div className="glass-card p-6 border-t-2 border-[#ec4899] hover:-translate-y-2 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-[#ec4899]/10 flex items-center justify-center mb-4 border border-[#ec4899]/20 group-hover:scale-110 transition-transform">
-                <Star size={22} className="text-[#ec4899]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">Web3 Ambassadors</h3>
-              <p className="text-[10px] uppercase font-mono text-[#ec4899] tracking-widest mb-3">DevRel · Brand Programs</p>
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                Discover brand ambassador and DevRel programs early. Forge AI drafts high-converting applications based on your past wins.
-              </p>
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: Bug, title: 'Bounty Hunters', sub: 'Bug Bounties · Dev Tasks', desc: 'Get pinged the second a bounty matches your stack.', color: 'var(--status-success)' },
+              { icon: Code2, title: 'Hackathon Devs', sub: 'ETHGlobal · Superteam', desc: 'Discover under-the-radar hackathons. AI drafts winning submissions.', color: 'var(--accent-primary)' },
+              { icon: FlaskConical, title: 'Testnet Degens', sub: 'Airdrops · Node Running', desc: 'Risk AI verifies protocols before you sign a transaction.', color: 'var(--status-info)' },
+              { icon: Building2, title: 'Ecosystem DAOs', sub: 'Grants · Governance', desc: 'Track grant volumes across chains and structure proposals.', color: 'var(--accent-gold)' },
+              { icon: Megaphone, title: 'Community Managers', sub: 'Growth · Ops', desc: 'Find protocols granting funds for community growth roles.', color: '#a855f7' },
+              { icon: Star, title: 'Web3 Ambassadors', sub: 'DevRel · Brand Programs', desc: 'Discover ambassador programs early. AI drafts applications.', color: '#ec4899' },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                viewport={{ once: true }}
+                className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl p-6 hover:border-opacity-50 transition-all group"
+                style={{ borderTopColor: item.color, borderTopWidth: '2px' }}
+              >
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 border transition-transform group-hover:scale-110"
+                  style={{ backgroundColor: `${item.color}15`, borderColor: `${item.color}30`, color: item.color }}>
+                  <item.icon size={20} />
+                </div>
+                <h3 className="text-base font-semibold text-[var(--text-primary)] mb-0.5">{item.title}</h3>
+                <p className="text-[10px] uppercase font-mono tracking-widest mb-3" style={{ color: item.color }}>{item.sub}</p>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Interactive Terminal Demo Preview */}
-      <section id="how-it-works" className="py-24 border-t border-[var(--glass-border)] overflow-hidden bg-[#0A0705]">
+      {/* ═══ How It Works ═══ */}
+      <section id="how-it-works" className="py-24 border-t border-[var(--border-default)] bg-[var(--bg-primary)]">
         <div className="container">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Built for Hunters, <br/> by Hunters.</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-8 tracking-tight">Built for Hunters,<br />by Hunters.</h2>
               <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">1</div>
-                  <div><h3 className="text-xl font-bold mb-2">Connect Your Profile</h3><p className="text-[var(--text-secondary)]">Tell OppForge your skills (Rust, Solidity, Design) and preferred chains.</p></div>
+                {[
+                  { step: '1', title: 'Connect Your Profile', desc: 'Tell OppForge your skills (Rust, Solidity, Design) and preferred chains.' },
+                  { step: '2', title: 'Receive Curated Alpha', desc: 'Get a personalized feed of high-probability opportunities, filtered by AI.' },
+                  { step: '3', title: 'Execute & Win', desc: 'Use the AI assistant to draft proposals and track your applications.' },
+                ].map(item => (
+                  <div key={item.step} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-md bg-[var(--accent-primary-muted)] flex items-center justify-center shrink-0 text-[var(--accent-primary)] font-bold text-sm border border-[var(--accent-primary)]/20">
+                      {item.step}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">{item.title}</h3>
+                      <p className="text-sm text-[var(--text-secondary)]">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Terminal Preview */}
+            <div className="lg:w-1/2 w-full">
+              <div className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl overflow-hidden shadow-[var(--shadow-xl)]">
+                <div className="bg-[var(--bg-tertiary)] h-9 flex items-center px-4 gap-2 border-b border-[var(--border-default)]">
+                  <div className="w-3 h-3 rounded-full bg-[var(--status-danger)]/50" />
+                  <div className="w-3 h-3 rounded-full bg-[var(--status-warning)]/50" />
+                  <div className="w-3 h-3 rounded-full bg-[var(--status-success)]/50" />
+                  <span className="ml-2 text-xs text-[var(--text-tertiary)] font-mono">forge_agent</span>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">2</div>
-                  <div><h3 className="text-xl font-bold mb-2">Receive Curated Alpha</h3><p className="text-[var(--text-secondary)]">Get a personalized feed of high-probability opportunities, filtered by AI.</p></div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded bg-[var(--bg-mahogany)] flex items-center justify-center shrink-0 text-[var(--accent-forge)]">3</div>
-                  <div><h3 className="text-xl font-bold mb-2">Execute & Win</h3><p className="text-[var(--text-secondary)]">Use the AI assistant to draft proposals and track your applications.</p></div>
+                <div className="p-5 font-mono text-sm space-y-4">
+                  <div className="text-[var(--text-tertiary)]">
+                    $ initializing forge_agent... <span className="text-[var(--status-success)]">done</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--accent-primary)]">➜</span> <span className="text-[var(--text-primary)]">scan --target solana --type grant</span>
+                  </div>
+                  <div className="text-[var(--text-tertiary)]">
+                    <span className="text-[var(--status-info)]">INFO</span> Scanning 14 sources...<br />
+                    <span className="text-[var(--status-info)]">INFO</span> Found 3 matches for &apos;Rust Developer&apos;:
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { name: 'Solana Foundation Data Grant', match: '98%', color: 'var(--accent-primary)' },
+                      { name: 'Superteam Radar Hackathon', match: '85%', color: 'var(--accent-secondary)' },
+                      { name: 'Anza Validator Program', match: 'New!', color: 'var(--status-info)' },
+                    ].map(item => (
+                      <div key={item.name} className="p-3 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-md flex justify-between items-center hover:border-[var(--accent-primary)]/30 cursor-pointer transition-colors">
+                        <span className="text-[var(--text-secondary)]">{item.name}</span>
+                        <span style={{ color: item.color }} className="font-semibold">{item.match}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="lg:w-1/2 w-full">
-               {/* Mock UI Card */}
-               <div className="glass-card p-1 border border-[var(--border-glow)] shadow-2xl shadow-[var(--accent-forge)]/10 rounded-xl overflow-hidden relative">
-                 <div className="bg-[var(--bg-walnut)] h-8 flex items-center px-4 gap-2 border-b border-[var(--border-subtle)]">
-                    <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                 </div>
-                 <div className="p-6 font-mono text-sm h-[320px] overflow-y-auto">
-                   <div className="mb-4 text-[var(--text-secondary)]">
-                     $ initializing forge_agent... <span className="text-green-500">done</span>
-                   </div>
-                   <div className="mb-4">
-                     <span className="text-[var(--accent-forge)]">➜</span> <span className="text-[var(--text-primary)]">scan --target solana --type grant</span>
-                   </div>
-                   <div className="mb-4 text-[var(--text-secondary)]">
-                     <span className="text-blue-400">INFO</span> Scanning 14 sources...<br/>
-                     <span className="text-blue-400">INFO</span> Found 3 new matches for profile 'Rust Developer':
-                   </div>
-                   <div className="space-y-3">
-                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
-                       <span>Solana Foundation Data Grant</span>
-                       <span className="text-[var(--accent-forge)]">98% Match</span>
-                     </div>
-                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
-                       <span>Superteam Radar Hackathon</span>
-                       <span className="text-[var(--accent-amber)]">85% Match</span>
-                     </div>
-                     <div className="p-3 bg-[var(--bg-espresso)] border border-[var(--border-subtle)] rounded flex justify-between items-center hover:border-[var(--accent-forge)] cursor-pointer">
-                       <span>Anza Validator Program</span>
-                       <span className="text-[var(--accent-cyan)]">New!</span>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Footer */}
-      <section className="py-32 bg-[var(--bg-walnut)] border-t border-[var(--border-subtle)] relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent-forge)]/5 blur-[100px] rounded-full pointer-events-none" />
+      {/* ═══ CTA ═══ */}
+      <section className="py-24 md:py-32 border-t border-[var(--border-default)] relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--accent-primary)]/[0.04] blur-[100px] rounded-full pointer-events-none" />
         <div className="container text-center relative z-10">
-          <h2 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight">Ready to Forge Your Future?</h2>
-          <p className="text-xl text-[var(--text-secondary)] mb-12 max-w-2xl mx-auto">
-            Join the elite builders capturing the web3 opportunities everyone else is missing.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 tracking-tight">Ready to Forge Your Future?</h2>
+          <p className="text-lg text-[var(--text-secondary)] mb-10 max-w-xl mx-auto">
+            Join the elite builders capturing Web3 opportunities everyone else is missing.
           </p>
-          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-2xl px-12 py-6 shadow-[0_0_40px_rgba(255,85,0,0.3)] hover:scale-105">
-            Launch Platform
+          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-lg px-10 py-4 shadow-[0_0_32px_rgba(255,85,0,0.25)] hover:shadow-[0_0_48px_rgba(255,85,0,0.4)]">
+            Launch Platform <ArrowRight size={20} />
           </Link>
-          <div className="mt-8 text-[var(--text-secondary)] text-sm">
-            No credit card required • Open Source • Built for Web3
+          <div className="mt-6 text-sm text-[var(--text-tertiary)]">
+            No credit card required · Open Source · Built for Web3
           </div>
         </div>
       </section>
 
-      <footer className="py-8 border-t border-[var(--border-subtle)] bg-[var(--bg-espresso)]">
+      {/* ═══ Footer ═══ */}
+      <footer className="py-8 border-t border-[var(--border-default)] bg-[var(--bg-primary)]">
         <div className="container flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[var(--text-tertiary)]">
-          <div>© 2026 OppForge. Open Source (MIT).</div>
+          <div>© {new Date().getFullYear()} OppForge. Open Source (MIT).</div>
           <div className="flex gap-6">
-            <Link href="/privacy-policy" className="hover:text-[var(--text-primary)]">Privacy</Link>
-            <Link href="/terms-of-service" className="hover:text-[var(--text-primary)]">Terms</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)]">Twitter</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)]">GitHub</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)]">Discord</Link>
+            <Link href="/privacy-policy" className="hover:text-[var(--text-primary)] transition-colors">Privacy</Link>
+            <Link href="/terms-of-service" className="hover:text-[var(--text-primary)] transition-colors">Terms</Link>
+            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Twitter</Link>
+            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">GitHub</Link>
+            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Discord</Link>
           </div>
         </div>
       </footer>

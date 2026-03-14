@@ -10,54 +10,69 @@ import { formatDistanceToNow } from 'date-fns'
 
 const fetcher = url => api.get(url).then(res => res.data)
 
+/* ── Modern Animated Hamburger ── */
+const AnimatedMenuIcon = ({ isOpen, ...props }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="transition-transform duration-200" {...props}>
+    <rect
+      x="2" y={isOpen ? "9" : "4"} width="16" height="2" rx="1" fill="currentColor"
+      className="transition-all duration-300 origin-center"
+      style={{ transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
+    />
+    <rect
+      x="2" y="9" width="16" height="2" rx="1" fill="currentColor"
+      className="transition-opacity duration-200"
+      style={{ opacity: isOpen ? 0 : 1 }}
+    />
+    <rect
+      x="2" y={isOpen ? "9" : "14"} width="16" height="2" rx="1" fill="currentColor"
+      className="transition-all duration-300 origin-center"
+      style={{ transform: isOpen ? 'rotate(-45deg)' : 'rotate(0deg)' }}
+    />
+  </svg>
+)
+
 function NotificationPanel({ onClose }) {
-  const { data: notifs, mutate } = useSWR('/notifications', fetcher, { 
+  const { data: notifs, mutate } = useSWR('/notifications', fetcher, {
     refreshInterval: 300000,
     dedupingInterval: 60000,
     revalidateOnFocus: false,
     shouldRetryOnError: false
   })
-  
+
   const markRead = async (id) => {
-    try {
-      await api.put(`/notifications/${id}/read`)
-      mutate()
-    } catch {}
+    try { await api.put(`/notifications/${id}/read`); mutate() } catch {}
   }
   const markAllRead = async () => {
-    try {
-      await api.put('/notifications/read-all')
-      mutate()
-    } catch {}
+    try { await api.put('/notifications/read-all'); mutate() } catch {}
   }
 
   return (
-    <div className="absolute right-0 top-14 w-80 max-h-96 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-400">Notifications</span>
+    <div className="absolute right-0 top-14 w-80 max-h-96 bg-[var(--bg-overlay)] border border-[var(--border-default)] rounded-xl shadow-[var(--shadow-xl)] z-50 overflow-hidden">
+      <div className="px-4 py-3 border-b border-[var(--border-default)] flex items-center justify-between">
+        <span className="text-xs font-semibold text-[var(--text-secondary)]">Notifications</span>
         <div className="flex items-center gap-3">
-          <button onClick={markAllRead} className="text-[10px] font-medium text-[#ff5500] hover:text-white transition-colors flex items-center gap-1">
+          <button onClick={markAllRead} className="text-[10px] font-medium text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1">
             <CheckCheck size={12} /> Mark all read
           </button>
-          <button onClick={onClose} className="text-gray-500 hover:text-white p-1"><X size={16} /></button>
+          <button onClick={onClose} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1"><X size={16} /></button>
         </div>
       </div>
       <div className="overflow-y-auto max-h-72">
         {(notifs || []).length === 0 && (
-          <div className="p-8 text-center text-gray-500 text-sm">No notifications yet</div>
+          <div className="p-8 text-center text-[var(--text-tertiary)] text-sm">No notifications yet</div>
         )}
         {(notifs || []).map(n => (
-          <div 
-            key={n.id} 
+          <div
+            key={n.id}
             onClick={() => { markRead(n.id); if (n.link) window.location.href = n.link }}
-            className={`px-4 py-3 border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors ${!n.is_read ? 'bg-[#ff5500]/[0.03]' : ''}`}
+            className={`px-4 py-3 border-b border-[var(--border-muted)] cursor-pointer hover:bg-[var(--bg-tertiary)] transition-colors ${!n.is_read ? 'bg-[var(--accent-primary-muted)]' : ''}`}
           >
             <div className="flex items-start gap-3">
-              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!n.is_read ? 'bg-[#ff5500] shadow-[0_0_6px_#ff5500]' : 'bg-gray-700'}`} />
+              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!n.is_read ? 'bg-[var(--accent-primary)] shadow-[0_0_6px_var(--accent-primary)]' : 'bg-[var(--border-default)]'}`} />
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-white font-semibold truncate">{n.title}</div>
-                {n.message && <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</div>}
-                <div className="text-[11px] text-gray-600 mt-1">
+                <div className="text-sm text-[var(--text-primary)] font-medium truncate">{n.title}</div>
+                {n.message && <div className="text-xs text-[var(--text-tertiary)] mt-0.5 line-clamp-2">{n.message}</div>}
+                <div className="text-[11px] text-[var(--text-tertiary)] mt-1">
                   {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                 </div>
               </div>
@@ -77,8 +92,8 @@ export default function Header({ onMenuClick }) {
   const [showMobileSearch, setShowMobileSearch] = useState(false)
   const notifRef = useRef(null)
   const mobileSearchRef = useRef(null)
-  
-  const { data: unreadData } = useSWR(!isGuest ? '/notifications/unread-count' : null, fetcher, { 
+
+  const { data: unreadData } = useSWR(!isGuest ? '/notifications/unread-count' : null, fetcher, {
     refreshInterval: 300000,
     dedupingInterval: 60000,
     revalidateOnFocus: false,
@@ -92,11 +107,8 @@ export default function Header({ onMenuClick }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Auto-focus mobile search input
   useEffect(() => {
-    if (showMobileSearch && mobileSearchRef.current) {
-      mobileSearchRef.current.focus()
-    }
+    if (showMobileSearch && mobileSearchRef.current) mobileSearchRef.current.focus()
   }, [showMobileSearch])
 
   const handleSearch = (e) => {
@@ -108,54 +120,53 @@ export default function Header({ onMenuClick }) {
 
   return (
     <>
-      <header className="h-14 border-b border-[var(--glass-border)] bg-[var(--bg-espresso)]/90 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4">
-        
-        {/* Left: Mobile Toggle */}
+      <header className="h-14 border-b border-[var(--border-default)] bg-[var(--bg-primary)] sticky top-0 z-30 flex items-center justify-between px-4">
+
+        {/* Left: Mobile Toggle + Title */}
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={onMenuClick}
-            className="md:hidden p-2.5 -ml-1 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="md:hidden p-2 -ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-md hover:bg-[var(--bg-tertiary)] transition-colors"
             aria-label="Open menu"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <AnimatedMenuIcon isOpen={false} />
           </button>
-          
-          <span className="hidden md:block text-sm font-semibold text-gray-400">
+          <span className="hidden md:block text-sm font-medium text-[var(--text-secondary)]">
             Dashboard
           </span>
         </div>
 
-        {/* Middle: Search (Desktop) */}
-        <div className="hidden md:flex flex-1 max-w-md mx-8 relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#ff5500] transition-colors" size={16} />
-          <input 
-            type="text" 
-            placeholder="Search opportunities..." 
+        {/* Center: Search (Desktop) */}
+        <div className="hidden md:flex flex-1 max-w-md mx-6 relative group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] group-focus-within:text-[var(--accent-primary)] transition-colors" size={16} />
+          <input
+            type="text"
+            placeholder="Search opportunities..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleSearch}
-            className="w-full bg-[#1a1512] border border-[#2a1a12] rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#ff5500] focus:ring-1 focus:ring-[#ff5500]/20 transition-all placeholder-gray-600"
+            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-lg py-2 pl-10 pr-12 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)]/20 transition-all placeholder-[var(--text-placeholder)]"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <kbd className="inline-flex items-center bg-[#111] border border-[#222] rounded px-1.5 py-0.5 text-[10px] font-mono text-gray-500">⌘K</kbd>
+            <kbd className="inline-flex items-center bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded px-1.5 py-0.5 text-[10px] font-mono text-[var(--text-tertiary)]">⌘K</kbd>
           </div>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Mobile Search Toggle */}
-          <button 
+        <div className="flex items-center gap-1">
+          {/* Mobile Search */}
+          <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className="md:hidden p-2.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-md hover:bg-[var(--bg-tertiary)] transition-colors"
             aria-label="Search"
           >
-            <Search size={20} />
+            <Search size={18} />
           </button>
 
           {isGuest ? (
-            <button 
+            <button
               onClick={openLoginModal}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5500] hover:bg-[#ff6600] text-white text-sm font-semibold rounded-lg transition-all shadow-[0_0_15px_rgba(255,85,0,0.3)] hover:shadow-[0_0_25px_rgba(255,85,0,0.5)]"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-sm font-semibold rounded-md transition-all shadow-[0_0_12px_rgba(255,85,0,0.2)]"
             >
               <Wallet className="w-4 h-4" />
               <span className="hidden sm:inline">Connect Wallet</span>
@@ -163,14 +174,14 @@ export default function Header({ onMenuClick }) {
             </button>
           ) : (
             <div className="relative" ref={notifRef}>
-              <button 
+              <button
                 onClick={() => setShowNotifs(!showNotifs)}
-                className="p-2.5 relative text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                className="p-2 relative text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-all"
                 aria-label="Notifications"
               >
-                <Bell size={20} />
+                <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-[#ff5500] text-[9px] font-bold text-white px-1 shadow-[0_0_8px_#ff5500]">
+                  <span className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-[var(--accent-primary)] text-[9px] font-bold text-white px-1 shadow-[0_0_6px_var(--accent-primary)]">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -183,21 +194,21 @@ export default function Header({ onMenuClick }) {
 
       {/* Mobile Search Overlay */}
       {showMobileSearch && (
-        <div className="md:hidden fixed inset-x-0 top-14 z-40 bg-[var(--bg-espresso)] border-b border-[var(--glass-border)] px-3 py-3 shadow-xl">
+        <div className="md:hidden fixed inset-x-0 top-14 z-40 bg-[var(--bg-primary)] border-b border-[var(--border-default)] px-4 py-3 shadow-[var(--shadow-lg)]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-            <input 
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" size={16} />
+            <input
               ref={mobileSearchRef}
-              type="text" 
-              placeholder="Search opportunities..." 
+              type="text"
+              placeholder="Search opportunities..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleSearch}
-              className="w-full bg-[#1a1512] border border-[#2a1a12] rounded-lg py-3 pl-10 pr-10 text-sm text-white focus:outline-none focus:border-[#ff5500] placeholder-gray-600"
+              className="w-full bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-lg py-2.5 pl-10 pr-10 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] placeholder-[var(--text-placeholder)]"
             />
-            <button 
+            <button
               onClick={() => { setShowMobileSearch(false); setQuery('') }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
             >
               <X size={18} />
             </button>
@@ -207,4 +218,3 @@ export default function Header({ onMenuClick }) {
     </>
   )
 }
-

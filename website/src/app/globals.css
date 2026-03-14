@@ -1,134 +1,163 @@
 @import "tailwindcss";
 
 :root {
-  /* --- Cy-Wood Palette 2.0: Deep & Glowing --- */
-  
-  /* Backgrounds: Darker, warmer, cleaner */
-  --bg-void: #050403;       /* Absolute void */
-  --bg-espresso: #0a0806;   /* Primary dark wood */
-  --bg-walnut: #14100d;     /* Secondary panel */
-  --bg-mahogany: #2a1a12;   /* Interactive hover */
-  
-  /* Accents: Neon piercing through smoke */
-  --accent-forge: #ff5500;  /* Main Brand: Burning ember */
-  --accent-amber: #ffaa00;  /* Secondary: Gold circuitry */
-  --accent-holo: #00f0ff;   /* Digital: Blue screen */
-  --accent-acid: #ccff00;   /* Success/Active */
+  /* ═══ OppForge Website Design System v2 ═══ */
+  /* Matching platform tokens */
 
-  /* Text: High contrast terminal */
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --text-dim: #4b5563;
+  /* Backgrounds */
+  --bg-canvas: #010409;
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-overlay: #1c2128;
 
-  /* Glassmorphism */
-  --glass-panel: rgba(20, 16, 13, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shine: rgba(255, 255, 255, 0.03);
+  /* Borders */
+  --border-default: #30363d;
+  --border-muted: #21262d;
+  --border-subtle: rgba(240, 246, 252, 0.1);
 
-  /* Dimensions & Spacing - "Small Components" */
-  --header-height: 3.5rem;
-  --sidebar-width: 240px;
-  --radius-xs: 2px;
+  /* Text */
+  --text-primary: #f0f6fc;
+  --text-secondary: #848d97;
+  --text-tertiary: #484f58;
+
+  /* Brand Accents */
+  --accent-primary: #ff5500;
+  --accent-primary-hover: #ff6a1a;
+  --accent-primary-muted: rgba(255, 85, 0, 0.15);
+  --accent-secondary: #ffaa00;
+  --accent-secondary-muted: rgba(255, 170, 0, 0.15);
+  --accent-gold: #D4AF37;
+
+  /* Status */
+  --status-success: #3fb950;
+  --status-danger: #f85149;
+  --status-warning: #d29922;
+  --status-info: #58a6ff;
+
+  /* Dimensions */
+  --header-height: 4rem;
   --radius-sm: 6px;
-  --radius-md: 12px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 0 rgba(1, 4, 9, 0.8);
+  --shadow-md: 0 3px 6px rgba(1, 4, 9, 0.5);
+  --shadow-lg: 0 8px 24px rgba(1, 4, 9, 0.75);
+  --shadow-xl: 0 12px 48px rgba(1, 4, 9, 0.85);
+
+  /* Legacy aliases */
+  --bg-void: var(--bg-canvas);
+  --bg-espresso: var(--bg-primary);
+  --bg-walnut: var(--bg-secondary);
+  --bg-mahogany: var(--bg-tertiary);
+  --accent-forge: var(--accent-primary);
+  --accent-amber: var(--accent-secondary);
+  --accent-cyan: var(--status-info);
+  --glass-border: var(--border-default);
+  --glass-panel: rgba(22, 27, 34, 0.6);
+  --border-glow: rgba(255, 85, 0, 0.3);
 }
 
-/* Hard Reset */
 * {
-  border-color: var(--glass-border);
+  border-color: var(--border-default);
 }
 
 html, body {
   height: 100%;
-  background-color: var(--bg-void);
-  background-image: 
-    radial-gradient(circle at 50% 0%, #1a100a 0%, transparent 60%),
-    linear-gradient(to bottom, transparent, rgba(0,0,0,0.8));
+  background-color: var(--bg-canvas);
   color: var(--text-primary);
-  font-family: var(--font-mono), monospace; /* Default to Code font for "Future" feel */
-  font-size: 13px; /* High density 13px base */
-  line-height: 1.4;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Utility: Centered Container */
 .container {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
 
-/* Typography Overrides */
-h1, h2, h3, .font-heading {
-  font-family: var(--font-sans);
-  letter-spacing: -0.03em;
-  font-weight: 700;
+h1, h2, h3, h4, .font-heading {
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.025em;
+  font-weight: 600;
 }
 
-/* --- Component Systems --- */
-
-/* 1. The Holographic Card */
+/* Card System */
 .glass-card {
-  background: linear-gradient(180deg, rgba(30,25,20,0.4) 0%, rgba(20,16,13,0.6) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* Top sheen effect */
 .glass-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240, 246, 252, 0.06), transparent);
+  pointer-events: none;
 }
-
 .glass-card:hover {
-  background: linear-gradient(180deg, rgba(40,30,25,0.5) 0%, rgba(30,25,20,0.7) 100%);
-  border-color: rgba(255, 85, 0, 0.3); /* Forge orange glow */
-  box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255, 85, 0, 0.1);
-  transform: translateY(-1px);
+  border-color: rgba(255, 85, 0, 0.25);
 }
 
-/* 2. Cyberpunk Buttons */
+/* Buttons */
 .btn {
-  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md font-mono text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer;
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all duration-150 cursor-pointer;
+  border-radius: var(--radius-sm);
 }
-
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-forge), #cc4400);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.3);
+  background-color: var(--accent-primary);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 .btn-primary:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 20px rgba(255, 85, 0, 0.5);
+  background-color: var(--accent-primary-hover);
+  box-shadow: 0 0 24px rgba(255, 85, 0, 0.3);
 }
-
 .btn-secondary {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--glass-border);
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
   color: var(--text-secondary);
 }
 .btn-secondary:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: var(--text-primary);
+  background-color: var(--bg-overlay);
+  color: var(--text-primary);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+.btn-ghost:hover {
+  background-color: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
-/* 3. Tech Decorators */
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* Decorators */
+.scanlines {
+  background: repeating-linear-gradient(transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
+}
 .tech-border-b {
   position: relative;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--border-default);
 }
 .tech-border-b::after {
   content: '';
@@ -137,15 +166,14 @@ h1, h2, h3, .font-heading {
   left: 0;
   width: 20px;
   height: 1px;
-  background: var(--accent-forge);
+  background: var(--accent-primary);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-void); }
-::-webkit-scrollbar-thumb { background: var(--bg-mahogany); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-forge); }
-
-/* Utility */
-.text-forge { color: var(--accent-forge); }
+/* Utilities */
+.text-forge { color: var(--accent-primary); }
 .text-xs-tech { @apply text-[10px] uppercase tracking-widest text-[var(--text-secondary)]; }
+
+::selection {
+  background-color: rgba(255, 85, 0, 0.3);
+  color: #fff;
+}

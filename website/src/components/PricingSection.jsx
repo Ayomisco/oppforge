@@ -3,11 +3,10 @@ import { Check } from 'lucide-react'
 
 export default function PricingSection() {
   return (
-    <section id="pricing" className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[var(--bg-walnut)]/20 skew-y-3 transform origin-bottom-left" />
+    <section id="pricing" className="py-24 border-t border-[var(--border-default)] bg-[var(--bg-canvas)] relative overflow-hidden">
       <div className="container relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Invest in Your Alpha</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Invest in Your Alpha</h2>
           <p className="text-[var(--text-secondary)] text-lg">
             One grant win pays for a lifetime of OppForge. Choose your weapon.
           </p>
@@ -15,62 +14,45 @@ export default function PricingSection() {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Free Tier */}
-          <div className="glass-card p-8 border-t-4 border-[#10b981] relative flex flex-col bg-[#10b981]/5">
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl p-8 border-t-4 border-t-[var(--status-success)] relative flex flex-col">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-[#10b981] uppercase tracking-widest">Scout</h3>
-              <div className="text-4xl font-bold mt-2 text-white">$0 <span className="text-sm text-gray-500 font-normal uppercase font-mono">/ 7 Days</span></div>
-              <p className="text-sm text-gray-400 mt-2 font-mono uppercase">Full Access Alpha Trial.</p>
+              <h3 className="text-xl font-bold text-[var(--status-success)] uppercase tracking-widest">Scout</h3>
+              <div className="text-4xl font-bold mt-2 text-[var(--text-primary)]">$0 <span className="text-sm text-[var(--text-tertiary)] font-normal uppercase font-mono">/ 7 Days</span></div>
+              <p className="text-sm text-[var(--text-tertiary)] mt-2 font-mono uppercase">Full Access Alpha Trial.</p>
             </div>
             <ul className="space-y-4 mb-8 flex-1">
-              <li className="flex gap-3 text-sm text-[var(--text-secondary)] font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[#10b981]" /> Full AI Analysis & Scoring
-              </li>
-              <li className="flex gap-3 text-sm text-[var(--text-secondary)] font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[#10b981]" /> Priority Alpha Feed
-              </li>
-              <li className="flex gap-3 text-sm text-[var(--text-secondary)] font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[#10b981]" /> 5 AI Proposal Generations
-              </li>
-              <li className="flex gap-3 text-sm text-[var(--text-secondary)] font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[#10b981]" /> Mission Tracking (5 slots)
-              </li>
+              {['Full AI Analysis & Scoring', 'Priority Alpha Feed', '5 AI Proposal Generations', 'Mission Tracking (5 slots)'].map(item => (
+                <li key={item} className="flex gap-3 text-[10px] text-[var(--text-secondary)] font-mono uppercase">
+                  <Check size={16} className="text-[var(--status-success)] shrink-0" /> {item}
+                </li>
+              ))}
             </ul>
-            <Link href="https://app.oppforge.xyz" className="btn btn-ghost w-full border border-[var(--border-subtle)] hover:bg-[#10b981]/10 text-[#10b981] font-mono uppercase py-3 transition-colors">
+            <Link href="https://app.oppforge.xyz" className="btn btn-secondary w-full justify-center py-3 font-mono uppercase border-[var(--status-success)]/30 text-[var(--status-success)] hover:bg-[var(--status-success)]/10">
               Initialize_Trial
             </Link>
           </div>
 
-          {/* Pro Tier (Highlighted) */}
-          <div className="glass-card p-8 border-t-4 border-[var(--accent-forge)] relative flex flex-col transform md:-translate-y-4 shadow-[0_0_40px_rgba(255,107,26,0.15)] bg-[#ff5500]/5">
-            <div className="absolute top-0 right-0 bg-[var(--accent-forge)] text-white shadow-[0_0_15px_rgba(255,85,0,0.5)] text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-bl font-mono">
+          {/* Pro Tier */}
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl p-8 border-t-4 border-t-[var(--accent-primary)] relative flex flex-col transform md:-translate-y-4 shadow-[0_0_40px_rgba(255,85,0,0.12)]">
+            <div className="absolute top-0 right-0 bg-[var(--accent-primary)] text-white shadow-[0_0_15px_rgba(255,85,0,0.5)] text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-bl font-mono">
               Most Popular
             </div>
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-[var(--accent-forge)] uppercase tracking-widest">Hunter</h3>
+              <h3 className="text-xl font-bold text-[var(--accent-primary)] uppercase tracking-widest">Hunter</h3>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-bold text-white">$2.9</span>
-                <span className="text-sm text-gray-400 font-normal font-mono">/ month</span>
+                <span className="text-4xl font-bold text-[var(--text-primary)]">$2.9</span>
+                <span className="text-sm text-[var(--text-tertiary)] font-normal font-mono">/ month</span>
               </div>
-              <p className="text-[10px] text-gray-500 mt-1 font-mono uppercase">Pay via Crypto (~0.0012 ETH)</p>
+              <p className="text-[10px] text-[var(--text-tertiary)] mt-1 font-mono uppercase">Pay via Crypto (~0.0012 ETH)</p>
             </div>
             <ul className="space-y-4 mb-8 flex-1">
-              <li className="flex gap-3 text-sm text-white font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[var(--accent-forge)]" /> Everything in Scout
-              </li>
-              <li className="flex gap-3 text-sm text-white font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[var(--accent-forge)]" /> Unlimited AI Proposal Generation
-              </li>
-              <li className="flex gap-3 text-sm text-white font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[var(--accent-forge)]" /> Unlimited Forge AI Chat
-              </li>
-              <li className="flex gap-3 text-sm text-white font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[var(--accent-forge)]" /> Sub-5s Real-Time Alerts
-              </li>
-              <li className="flex gap-3 text-sm text-white font-mono uppercase text-[10px]">
-                <Check size={16} className="text-[var(--accent-forge)]" /> Priority Support
-              </li>
+              {['Everything in Scout', 'Unlimited AI Proposal Generation', 'Unlimited Forge AI Chat', 'Sub-5s Real-Time Alerts', 'Priority Support'].map(item => (
+                <li key={item} className="flex gap-3 text-[10px] text-[var(--text-primary)] font-mono uppercase">
+                  <Check size={16} className="text-[var(--accent-primary)] shrink-0" /> {item}
+                </li>
+              ))}
             </ul>
-            <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full py-4 text-sm shadow-[0_0_20px_rgba(255,107,26,0.4)] font-mono uppercase transition-all hover:scale-105">
+            <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full justify-center py-4 text-sm shadow-[0_0_20px_rgba(255,85,0,0.3)] font-mono uppercase hover:scale-[1.02] transition-transform">
               Secure_Access
             </Link>
           </div>
