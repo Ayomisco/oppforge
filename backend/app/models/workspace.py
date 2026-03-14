@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, BigInteger
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from ..database import Base
 
@@ -7,7 +8,7 @@ class WorkspaceUpload(Base):
     __tablename__ = "workspace_uploads"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     filename = Column(String(255), nullable=False)  # Original filename
     file_path = Column(String(512), nullable=False)  # Server storage path
     file_size = Column(BigInteger, nullable=False)  # Size in bytes
@@ -23,7 +24,7 @@ class WorkspaceChat(Base):
     __tablename__ = "workspace_chats"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     role = Column(String(20), nullable=False)  # 'user' or 'assistant'
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
