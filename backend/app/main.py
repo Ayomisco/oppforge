@@ -6,7 +6,7 @@ import os
 load_dotenv()
 
 # Routers
-from .routers import auth, opportunities, stats, tracker, notifications, chat, search, admin_audit, billing, admin as admin_router, feedback
+from .routers import auth, opportunities, stats, tracker, notifications, chat, search, admin_audit, billing, admin as admin_router, feedback, workspace
 from .database import engine, Base
 from .models.ecosystem import Ecosystem # Ensures table creation
 from .models.audit import AuditLog # Ensures table creation
@@ -59,6 +59,7 @@ app.include_router(stats.router)
 app.include_router(tracker.router)
 app.include_router(notifications.router)
 app.include_router(chat.router)
+app.include_router(workspace.router)
 app.include_router(search.router)
 app.include_router(admin_audit.router)
 app.include_router(billing.router)

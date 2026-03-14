@@ -4,3 +4,4 @@ from .tracking import TrackedApplication
 from .chat import ChatMessage
 from .notification import Notification
 from .billing import SubscriptionPayment, Invoice
+from .workspace import WorkspaceUpload, WorkspaceChat
