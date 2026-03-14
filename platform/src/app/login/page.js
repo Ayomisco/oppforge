@@ -50,6 +50,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)] relative overflow-hidden px-4">
+      {/* Background Video */}
+      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-20">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-digital-network-of-luminous-lines-25300-large.mp4" type="video/mp4" />
+      </video>
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-canvas)] via-[var(--bg-canvas)]/95 to-[var(--bg-primary)]/90 pointer-events-none" />
       {/* Subtle ambient glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent-primary)]/[0.04] rounded-full blur-[120px] pointer-events-none" />
 

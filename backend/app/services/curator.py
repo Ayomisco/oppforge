@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+import re
 from typing import List, Dict, Optional
 from datetime import datetime
 from dotenv import load_dotenv
@@ -10,6 +11,46 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
+
+def parse_reward_to_usd(reward_str: str) -> float:
+    """
+    Parse reward_pool string to USD float.
+    Examples:
+      "$50,000" -> 50000.0
+      "$1M" -> 1000000.0
+      "5000 USDC" -> 5000.0
+      "Alpha" -> 0.0
+      "TBD" -> 0.0
+    """
+    if not reward_str or not isinstance(reward_str, str):
+        return 0.0
+    
+    # Remove common noise
+    reward_str = reward_str.upper().strip()
+    
+    # Non-monetary keywords
+    if any(x in reward_str for x in ["ALPHA", "TBD", "VARIES", "SEE DETAILS", "TOKEN ALLOCATION", "FUTURE"]):
+        return 0.0
+    
+    # Extract number pattern
+    # Match patterns like: $1,000,000 or 50K or 1.5M
+    match = re.search(r'[\$]?\s*([0-9]+[,\.]?[0-9]*)\s*([KMB])?', reward_str)
+    if not match:
+        return 0.0
+    
+    num_str = match.group(1).replace(',', '')
+    multiplier_str = match.group(2) or ''
+    
+    try:
+        base_value = float(num_str)
+    except ValueError:
+        return 0.0
+    
+    # Apply multiplier
+    multipliers = {'K': 1_000, 'M': 1_000_000, 'B': 1_000_000_000}
+    multiplier = multipliers.get(multiplier_str, 1)
+    
+    return base_value * multiplier
 
 class AgentCurator:
     """
@@ -94,6 +135,7 @@ class AgentCurator:
                     "title": refined.get("title", title),
                     "category": refined.get("category", "Uncategorized"),
                     "reward_pool": refined.get("reward_pool"),
+                    "estimated_value_usd": parse_reward_to_usd(refined.get("reward_pool", "")),
                     "deadline": deadline_dt,
                     "chain": refined.get("chain", "Multi-chain"),
                     "required_skills": refined.get("required_skills", []),

@@ -105,7 +105,7 @@ def get_priority_stream(
 ):
     """
     Personalized priority stream.
-    Returns open/future opportunities sorted by AI score + user match bonus.
+    Returns ALL open/future opportunities sorted by AI score + user match bonus.
     Fast: no per-item AI engine calls — uses pre-computed scores from DB.
     """
     from datetime import datetime
@@ -119,11 +119,11 @@ def get_priority_stream(
         )
     )
     
-    # If logged in, boost scores for matching skills/chains (in-memory, lightweight)
+    # Get ALL opportunities (no limit) for consistent counts
     all_opps = query.order_by(
         Opportunity.deadline.asc().nullslast(),
         desc(Opportunity.created_at)
-    ).limit(50).all()
+    ).all()
     
     if current_user:
         user_skills = set(s.lower() for s in (current_user.skills or []))
@@ -147,7 +147,7 @@ def get_priority_stream(
         
         all_opps.sort(key=lambda x: (x.ai_score or 0), reverse=True)
     
-    return all_opps[:20]
+    return all_opps
 
 @router.get("/testnets", response_model=List[schemas.OpportunityResponse])
 def get_testnets(db: Session = Depends(database.get_db)):

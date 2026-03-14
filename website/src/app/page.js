@@ -74,6 +74,12 @@ export default function LandingPage() {
 
       {/* ═══ Hero ═══ */}
       <section className="relative py-24 md:py-32 overflow-hidden border-b border-[var(--border-default)]">
+        {/* Background Video */}
+        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.15]">
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-digital-network-of-luminous-lines-25300-large.mp4" type="video/mp4" />
+        </video>
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-canvas)]/80 via-[var(--bg-canvas)]/90 to-[var(--bg-canvas)] pointer-events-none" />
         {/* Ambient glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[var(--accent-primary)]/[0.06] blur-[140px] rounded-full pointer-events-none" />
 
@@ -89,15 +95,16 @@ export default function LandingPage() {
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] mb-6 tracking-tight">
-              Forge Your Next<br />
+              Every Web3 Opportunity.<br />
               <span className="bg-gradient-to-r from-[var(--accent-primary)] via-[var(--accent-secondary)] to-[var(--accent-gold)] bg-clip-text text-transparent">
-                Web3 Opportunity
+                One Platform.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
-              Discover <span className="text-[var(--text-primary)] font-medium">Grants, Hackathons, Bounties, Testnets,</span> and <span className="text-[var(--text-primary)] font-medium">Early Alphas</span>. AI agents monitor trusted platforms 24/7, scoring and verifying every opportunity for{' '}
-              <span className="text-[var(--accent-primary)] font-semibold">every Web3 builder</span>.
+              <span className="text-[var(--text-primary)] font-medium">Grants. Hackathons. Bounties. Testnets. Ambassador Programs. Content Creator Deals. Volunteer Roles. Early Alphas. Jobs.</span>
+              <br className="hidden sm:block" />
+              AI agents monitor <span className="text-[var(--accent-primary)] font-semibold">hundreds of platforms 24/7</span>, scoring and verifying every opportunity so you never miss out.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

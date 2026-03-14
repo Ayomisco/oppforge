@@ -11,26 +11,27 @@ import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
 const ScoreRing = ({ score }) => {
-  const circumference = 2 * Math.PI * 16
+  const radius = 14
+  const circumference = 2 * Math.PI * radius
   if (!score || score === 0) {
     return (
-      <div className="relative w-11 h-11 flex items-center justify-center">
+      <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
         <svg className="w-full h-full -rotate-90">
-          <circle cx="22" cy="22" r="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--border-default)]" />
+          <circle cx="18" cy="18" r={radius} fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--border-default)]" />
         </svg>
-        <span className="absolute text-[9px] font-semibold text-[var(--text-tertiary)]">New</span>
+        <span className="absolute text-[9px] font-bold text-[var(--text-tertiary)]">New</span>
       </div>
     )
   }
   const color = score >= 90 ? 'var(--accent-primary)' : score >= 70 ? 'var(--accent-secondary)' : score >= 40 ? 'var(--status-info)' : 'var(--text-tertiary)'
   const offset = circumference - (score / 100) * circumference
   return (
-    <div className="relative w-11 h-11 flex items-center justify-center">
+    <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
       <svg className="w-full h-full -rotate-90">
-        <circle cx="22" cy="22" r="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--border-default)]" />
-        <circle cx="22" cy="22" r="16" fill="none" stroke={color} strokeWidth="2.5" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--border-default)]" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke={color} strokeWidth="2.5" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
       </svg>
-      <span className="absolute text-[11px] font-bold text-[var(--text-primary)]">{score}</span>
+      <span className="absolute text-[10px] font-bold text-[var(--text-primary)] tabular-nums">{score}</span>
     </div>
   )
 }

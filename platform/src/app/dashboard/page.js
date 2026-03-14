@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Rocket, Clock, Award, TrendingUp, RefreshCw } from 'lucide-react'
+import { Rocket, Clock, Award, TrendingUp } from 'lucide-react'
 import useSWR from 'swr'
 import api from '@/lib/api'
 import OpportunityCard from '@/components/dashboard/OpportunityCard'
@@ -50,9 +50,6 @@ export default function DashboardPage() {
             <span><span className="text-[var(--accent-primary)] font-semibold">{stats?.targets_identified || 0}</span> opportunities found</span>
           </p>
         </div>
-        <button className="btn btn-secondary text-sm self-start sm:self-auto" onClick={() => window.location.reload()}>
-          <RefreshCw size={14} /> Refresh
-        </button>
       </div>
 
       {/* Main Grid */}
