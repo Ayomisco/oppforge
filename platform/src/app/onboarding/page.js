@@ -9,7 +9,7 @@ import { useAccount } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Zap, ChevronRight, Check, Hammer, Globe, Search, User,
-  FileText, X, Hash, Rocket, Wallet, Sparkles
+  FileText, X, Hash, Rocket, Wallet, Sparkles, Upload, FileUp, CheckCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -42,6 +42,13 @@ const steps = [
     subtitle: 'Which chains and protocols do you build on?',
     color: '#a78bfa',
   },
+  {
+    id: 'cv',
+    icon: FileUp,
+    title: 'Upload Your CV (Optional)',
+    subtitle: 'Get personalized AI experience tailored to your profile',
+    color: '#10b981',
+  },
 ];
 
 const SKILLS = [
@@ -68,6 +75,8 @@ export default function OnboardingPage() {
   const [selectedChains, setSelectedChains] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const { user, setUser, loading } = useAuth();
   const { address, isConnected } = useAccount();
@@ -154,6 +163,45 @@ export default function OnboardingPage() {
       toast.error('Failed to save preferences.', { id: toastId });
       setSubmitting(false);
     }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowed = ['.pdf', '.doc', '.docx', '.txt', '.md'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+    if (!allowed.includes(ext)) {
+      toast.error('Only PDF, DOC, DOCX, TXT, or MD files are allowed');
+      return;
+    }
+    if (file.size > maxSize) {
+      toast.error('File must be smaller than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      await api.post('/workspace/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setUploadedFile({ name: file.name, size: file.size });
+      toast.success('CV uploaded successfully!');
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Upload failed';
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeFile = () => {
+    setUploadedFile(null);
+    toast.success('File removed');
   };
 
   if (loading) {
@@ -412,6 +460,88 @@ export default function OnboardingPage() {
 
                   <p className="text-[10px] text-gray-700">
                     {currentSelected.length} selected · Used by AI to rank opportunities most relevant to you
+                  </p>
+                </div>
+              )}
+
+              {/* ─── Step 4: CV Upload ─── */}
+              {currentStep === 4 && (
+                <div className="flex flex-col items-center gap-6 py-4">
+                  <motion.div
+                    animate={uploadedFile
+                      ? { scale: [1, 1.05, 1], filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)'] }
+                      : { y: [0, -8, 0] }
+                    }
+                    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative"
+                  >
+                    <div
+                      className="w-28 h-28 rounded-3xl flex items-center justify-center"
+                      style={{
+                        background: uploadedFile ? 'rgba(16,185,129,0.1)' : 'rgba(255,85,0,0.08)',
+                        border: `2px solid ${uploadedFile ? 'rgba(16,185,129,0.3)' : 'rgba(255,85,0,0.2)'}`,
+                        boxShadow: uploadedFile ? '0 0 40px rgba(16,185,129,0.2)' : '0 0 40px rgba(255,85,0,0.15)',
+                      }}
+                    >
+                      <FileUp size={44} className={uploadedFile ? 'text-green-400' : 'text-[#ff5500]'} />
+                    </div>
+                    {uploadedFile && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center border-2 border-[#050403]"
+                      >
+                        <CheckCircle size={14} className="text-black" />
+                      </motion.div>
+                    )}
+                  </motion.div>
+
+                  <div className="text-center">
+                    <p className="text-white font-medium mb-1">
+                      {uploadedFile ? 'CV Uploaded!' : 'Upload Your CV or Resume'}
+                    </p>
+                    <p className="text-gray-500 text-sm max-w-sm leading-relaxed">
+                      {uploadedFile
+                        ? 'Your CV will be analyzed by our AI to provide personalized opportunity recommendations and tailored proposals.'
+                        : 'Upload your CV, resume, or portfolio. Our AI will analyze it to give you a personalized experience, better scores, and highly relevant workspace responses.'}
+                    </p>
+                  </div>
+
+                  {uploadedFile ? (
+                    <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-4 w-full max-w-md flex items-center gap-3">
+                      <FileText size={20} className="text-green-400" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{uploadedFile.name}</p>
+                        <p className="text-gray-600 text-xs">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <button
+                        onClick={removeFile}
+                        className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.txt,.md"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                      <div className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all bg-[#10b981] text-black hover:bg-[#059669]">
+                        <Upload size={16} />
+                        {uploading ? 'Uploading...' : 'Choose File'}
+                      </div>
+                    </label>
+                  )}
+
+                  <p className="text-xs text-gray-700 text-center max-w-md">
+                    Supported: PDF, DOC, DOCX, TXT, MD · Max 5MB · Limit: 3 uploads per day
+                  </p>
+                  <p className="text-xs text-gray-600 text-center max-w-md mt-2">
+                    Optional but highly recommended. You can always upload later from Settings.
                   </p>
                 </div>
               )}

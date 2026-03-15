@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt, Mail, Eye, EyeOff, Key, Smartphone, AlertTriangle, Clock, Filter, Volume2, VolumeX } from 'lucide-react';
+import useSWR from 'swr';
+import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt, Mail, Eye, EyeOff, Key, Smartphone, AlertTriangle, Clock, Filter, Volume2, VolumeX, FileText, Upload, X, CheckCircle } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useGoogleLogin } from '@react-oauth/google';
 import Cookies from 'js-cookie';
 import FeatureGate from '@/components/ui/FeatureGate';
+
+const fetcher = url => api.get(url).then(res => res.data);
 
 export default function SettingsPage() {
   const { user, loading: authLoading, setUser } = useAuth();
@@ -18,6 +21,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [skills, setSkills] = useState([]);
   const [chains, setChains] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     first_name: '',
@@ -28,6 +32,12 @@ export default function SettingsPage() {
     twitter_handle: '',
     discord_handle: '',
     linkedin_url: '',
+  });
+
+  // Fetch uploaded CVs
+  const { data: uploads, error: uploadsError, mutate: mutateUploads } = useSWR('/workspace/uploads', fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 30000,
   });
 
   // 1. Sync form with existing user data
@@ -137,6 +147,53 @@ export default function SettingsPage() {
       localStorage.setItem('oppforge_alert_prefs', JSON.stringify(alertPrefs));
       toast.success('Alert preferences saved locally');
       console.error('Failed to sync alert prefs to backend:', error);
+    }
+  };
+
+  // CV Upload handlers
+  const handleCVUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowed = ['.pdf', '.doc', '.docx', '.txt', '.md'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+    if (!allowed.includes(ext)) {
+      toast.error('Only PDF, DOC, DOCX, TXT, or MD files are allowed');
+      return;
+    }
+    if (file.size > maxSize) {
+      toast.error('File must be smaller than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      await api.post('/workspace/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      mutateUploads(); // Refresh uploads list
+      toast.success('CV uploaded successfully!');
+      e.target.value = ''; // Reset input
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Upload failed';
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteCV = async (id) => {
+    if (!confirm('Delete this CV? This cannot be undone.')) return;
+    try {
+      await api.delete(`/workspace/uploads/${id}`);
+      mutateUploads(); // Refresh uploads list
+      toast.success('CV deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete CV');
     }
   };
 
@@ -659,6 +716,91 @@ export default function SettingsPage() {
                     }`}>{c}</button>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* Section: CV Upload */}
+          <div className="glass-card p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <h3 className="text-xs font-mono font-bold text-gray-500 uppercase tracking-widest">
+                // CV / Resume Management
+              </h3>
+              <div className="text-[9px] text-gray-600 font-mono">MAX 3 UPLOADS/DAY</div>
+            </div>
+
+            <p className="text-[11px] text-gray-400 leading-relaxed">
+              Upload your CV, resume, or portfolio. Our AI will analyze it to provide personalized opportunity recommendations, better scores, and tailored workspace responses.
+            </p>
+
+            {/* Upload Button */}
+            <label className={`cursor-pointer block ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.txt,.md"
+                onChange={handleCVUpload}
+                disabled={uploading}
+                className="hidden"
+              />
+              <div className="flex items-center justify-center gap-3 py-4 px-6 rounded-lg border-2 border-dashed border-white/10 hover:border-[#ff5500]/40 bg-white/[0.02] hover:bg-[#ff5500]/5 transition-all group">
+                <Upload size={20} className="text-gray-500 group-hover:text-[#ff5500] transition-colors" />
+                <div className="text-center">
+                  <p className="text-sm text-white font-bold group-hover:text-[#ff5500] transition-colors">
+                    {uploading ? 'Uploading...' : 'Upload CV or Resume'}
+                  </p>
+                  <p className="text-[10px] text-gray-600 font-mono mt-0.5">
+                    PDF, DOC, DOCX, TXT, MD · Max 5MB
+                  </p>
+                </div>
+              </div>
+            </label>
+
+            {/* Uploaded Files List */}
+            {uploads && uploads.length > 0 ? (
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono text-gray-600 uppercase">Your Uploads ({uploads.length})</label>
+                <div className="space-y-2">
+                  {uploads.map(upload => (
+                    <div key={upload.id} className="flex items-center justify-between p-3 bg-white/[0.02] rounded border border-white/5 group hover:border-[#ff5500]/20 transition-all">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <FileText size={18} className="text-green-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white font-medium truncate">{upload.filename}</p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <p className="text-[10px] text-gray-600 font-mono">{(upload.file_size / 1024).toFixed(1)} KB</p>
+                            <p className="text-[10px] text-gray-600 font-mono">{new Date(upload.uploaded_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteCV(upload.id)}
+                        className="p-2 text-gray-600 hover:text-red-400 hover:bg-red-400/10 rounded transition-all opacity-0 group-hover:opacity-100"
+                        title="Delete"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : uploadsError ? (
+              <div className="text-center py-4 text-[11px] text-gray-600">
+                Failed to load uploads
+              </div>
+            ) : uploads && uploads.length === 0 ? (
+              <div className="text-center py-4 text-[11px] text-gray-600 italic">
+                No CVs uploaded yet
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin w-5 h-5 border-2 border-[#ff5500] border-t-transparent rounded-full" />
+              </div>
+            )}
+
+            <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded">
+              <p className="text-[10px] text-blue-400 leading-relaxed">
+                <CheckCircle size={12} className="inline mr-1" />
+                Your CV is analyzed to enhance AI scoring, workspace responses, and opportunity matching. Daily limit: 3 uploads.
+              </p>
             </div>
           </div>
             </>
