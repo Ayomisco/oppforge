@@ -37,6 +37,9 @@ export default function FeedPage() {
   const [reward, setReward] = useState('all')
   const observerTarget = useRef(null)
 
+  // Get total count from dashboard stats
+  const { data: stats } = useSWR('/stats/dashboard', fetcher, { dedupingInterval: 60000, revalidateOnFocus: false })
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500)
     return () => clearTimeout(timer)
@@ -158,7 +161,8 @@ export default function FeedPage() {
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">Live Feed</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {filteredOpportunities.length} opportunities available
+            {stats?.active_grants || filteredOpportunities.length} opportunities available
+            {filteredOpportunities.length > 0 && filteredOpportunities.length < (stats?.active_grants || 0) && <span className="text-[var(--text-tertiary)]"> · showing {filteredOpportunities.length}</span>}
             {activeFiltersCount > 0 && <span className="text-[var(--text-tertiary)]"> · {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active</span>}
           </p>
         </div>

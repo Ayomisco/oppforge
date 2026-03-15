@@ -57,39 +57,57 @@ def create_opportunity(
 
 @router.get("", response_model=List[schemas.OpportunityResponse])
 def read_opportunities(
+    page: int = 1,
     skip: int = 0, 
     limit: int = 50, 
     category: Optional[str] = None,
     chain: Optional[str] = None,
     db: Session = Depends(database.get_db)
 ):
-    # is_open != False includes both True AND NULL (scraped items that haven't been explicitly closed)
-    query = db.query(Opportunity).filter(Opportunity.is_open != False)
+    from datetime import datetime
+    # Open and not expired
+    query = db.query(Opportunity).filter(
+        Opportunity.is_open != False,
+        or_(
+            Opportunity.deadline == None,
+            Opportunity.deadline >= datetime.now()
+        )
+    )
     
     if category and category.lower() not in ("all", ""):
         query = query.filter(Opportunity.category.ilike(category))
     
     if chain and chain.lower() not in ("all", ""):
         query = query.filter(Opportunity.chain.ilike(chain))
-        
-    return query.order_by(desc(Opportunity.created_at)).offset(skip).limit(limit).all()
+
+    # Support both page-based and skip-based pagination
+    offset = max(0, (page - 1) * limit) if page > 1 else skip
+    return query.order_by(desc(Opportunity.created_at)).offset(offset).limit(limit).all()
 
 @router.get("/search", response_model=List[schemas.OpportunityResponse])
 def search_opportunities(
     q: str = Query(..., min_length=3),
+    page: int = 1,
+    limit: int = 50,
     db: Session = Depends(database.get_db)
 ):
     """
     Full-text search on title, description, and tags.
     """
+    from datetime import datetime
     search_term = f"%{q}%"
+    offset = max(0, (page - 1) * limit)
     return db.query(Opportunity).filter(
+        Opportunity.is_open != False,
+        or_(
+            Opportunity.deadline == None,
+            Opportunity.deadline >= datetime.now()
+        ),
         or_(
             Opportunity.title.ilike(search_term),
             Opportunity.description.ilike(search_term),
-            # Opportunity.tags.cast(String).ilike(search_term) # JSON casting varies by DB
         )
-    ).limit(50).all()
+    ).order_by(desc(Opportunity.created_at)).offset(offset).limit(limit).all()
 
 @router.get("/trending", response_model=List[schemas.OpportunityResponse])
 def get_trending(db: Session = Depends(database.get_db)):
