@@ -240,20 +240,7 @@ export default function DashboardPage() {
                     {/* Reset Filters */}
                     {activeFiltersCount > 0 && (
                       <button
-                        onClick={() => { setDeadline('all'); setReward('all'); setChainer border-[var(--border-default)] rounded px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                      >
-                        <option value="all">All Rewards</option>
-                        <option value="low">Low ($0 - $5K)</option>
-                        <option value="medium">Medium ($5K - $50K)</option>
-                        <option value="high">High ($50K - $500K)</option>
-                        <option value="veryhigh">Very High ($500K+)</option>
-                      </select>
-                    </div>
-
-                    {/* Reset Filters */}
-                    {activeFiltersCount > 0 && (
-                      <button
-                        onClick={() => { setDeadline('all'); setReward('all'); }}
+                        onClick={() => { setDeadline('all'); setReward('all'); setChain('all'); }}
                         className="w-full text-[10px] text-[var(--accent-primary)] hover:underline font-medium"
                       >
                         Clear All Filters
