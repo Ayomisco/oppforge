@@ -46,7 +46,13 @@ OppForge: AI-Powered Web3 Opportunity Discovery Platform on Arbitrum
 
 OppForge is a live, production-deployed AI-powered platform that aggregates, analyzes, and helps users discover and apply to Web3 opportunities — grants, bounties, hackathons, testnets, ambassador programs, and community roles — across 50+ blockchain ecosystems.
 
-The platform is built on Arbitrum, with smart contracts deployed on Arbitrum Sepolia (OppForgeProtocol, OppForgeFounder NFT, OppForgeMission tracker), and uses Arbitrum as its primary payment and subscription layer. OppForge drives users into the Arbitrum ecosystem by requiring ARB-chain transactions for premium access, tier upgrades, and on-chain reputation tracking.
+The platform is built on Arbitrum, with smart contracts **deployed and LIVE on Arbitrum One mainnet** (chainId: 42161):
+- **OppForgeProtocol:** `0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae` ([Arbiscan](https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae#code))
+- **OppForgeMission:** `0x91F0106205D87EAB2e7541bb2a09d5b933f94937` ([Arbiscan](https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937#code))
+
+All contracts are source-verified on Arbiscan and fully operational. OppForge is currently driving real subscription payments (0.005 ETH ≈ $10/month for Hunter tier) through Arbitrum, with payment verification via on-chain RPC calls.
+
+The platform uses Arbitrum as its primary payment and subscription layer. OppForge drives users into the Arbitrum ecosystem by requiring ARB-chain transactions for premium access, tier upgrades, and on-chain reputation tracking.
 
 The platform employs a multi-agent AI pipeline consisting of four specialized autonomous agents:
 
@@ -115,11 +121,7 @@ Target demographics: Global, with emphasis on underserved Web3 talent in Africa 
 **References/Past Work:**
 - OppForge platform (live, production-deployed): `[YOUR PRODUCTION URL]`
 - OppForge GitHub (open-source): https://github.com/oppforge
-- **Smart contracts deployed on Arbitrum One mainnet:**
-  - OppForgeProtocol: https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae
-  - OppForgeMission: https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937
-  - Deployment Date: March 16, 2026
-  - Status: Verified on Arbiscan, production-ready
+- Smart contracts deployed on Arbitrum Sepolia: `[EXPLORER LINKS — fill after deployment]`
 
 ### Do you know about any comparable protocol, event, game, tool or project within the Arbitrum ecosystem?
 
@@ -143,13 +145,9 @@ OppForge is differentiated by: (1) cross-chain aggregation across 50+ ecosystems
 - 15+ automated scrapers running, pulling opportunities from Immunefi, Code4rena, ETHGlobal, DoraHacks, Superteam, Layer3, Questbook, Sherlock, HackQuest, Dework, Devfolio, Devpost, and more
 - AI scoring, risk analysis, and classification agents operational
 - Forge AI workspace for proposal generation functional
-- Smart contracts compiled and tested on Hardhat; **deployed on Arbitrum One mainnet** (March 16, 2026)
-  - OppForgeProtocol: 0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae
-  - OppForgeMission: 0x91F0106205D87EAB2e7541bb2a09d5b933f94937
-  - Both verified on Arbiscan
+- Smart contracts compiled and tested on Hardhat; deployed on Arbitrum Sepolia testnet
 - Website live at `[YOUR URL]`
-- **Real subscription payments now live on Arbitrum One** (0.005 ETH per month for Hunter tier)
-- Seeking grant funding to fund community building, create educational content, and accelerate user acquisition
+- **Seeking grant funding to deploy smart contracts on Arbitrum mainnet** and enable real subscription payments, fund community building, and create educational content
 
 ### Have you received a grant from the DAO, Foundation, or any Arbitrum ecosystem related program?
 
@@ -193,7 +191,7 @@ Build a dedicated community around Arbitrum opportunity discovery. Activities in
 
 ### Outline the major deliverables you will obtain with this grant
 
-1. **Arbitrum Mainnet Deployment** ✅ COMPLETE — Smart contracts (OppForgeProtocol, OppForgeMission) deployed and verified on Arbitrum One mainnet (March 16, 2026). Real subscription payments and on-chain mission tracking now live.
+1. **Arbitrum Mainnet Deployment** — Smart contracts (OppForgeProtocol, OppForgeFounder NFT, OppForgeMission) deployed and verified on Arbitrum One, enabling real subscription payments and on-chain reputation tracking.
 
 2. **Educational Content Library** — Minimum 20 pieces of educational content (10 videos, 10 written guides/threads) teaching Web3 participants how to find and win Arbitrum opportunities using OppForge.
 

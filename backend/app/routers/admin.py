@@ -68,6 +68,10 @@ class DashboardStats(BaseModel):
     pro_users: int
     admin_users: int
     sub_admin_users: int
+    total_revenue_eth: float
+    revenue_this_month_eth: float
+    total_payments: int
+    payments_this_month: int
 
 class UserGrowthPoint(BaseModel):
     date: str
@@ -168,6 +172,14 @@ def get_dashboard_stats(
     admins = db.query(func.count(User.id)).filter(User.role == UserRole.ADMIN).scalar()
     sub_admins = db.query(func.count(User.id)).filter(User.role == UserRole.SUB_ADMIN).scalar()
 
+    from ..models.billing import SubscriptionPayment
+    total_payments = db.query(func.count(SubscriptionPayment.id)).scalar()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    payments_month = db.query(func.count(SubscriptionPayment.id)).filter(SubscriptionPayment.created_at >= month_start).scalar()
+    
+    total_revenue = db.query(func.sum(SubscriptionPayment.amount)).scalar()
+    revenue_month = db.query(func.sum(SubscriptionPayment.amount)).filter(SubscriptionPayment.created_at >= month_start).scalar()
+
     return DashboardStats(
         total_users=total_users or 0,
         new_users_today=new_today or 0,
@@ -180,6 +192,10 @@ def get_dashboard_stats(
         pro_users=pro or 0,
         admin_users=admins or 0,
         sub_admin_users=sub_admins or 0,
+        total_revenue_eth=float(total_revenue or 0),
+        revenue_this_month_eth=float(revenue_month or 0),
+        total_payments=total_payments or 0,
+        payments_this_month=payments_month or 0,
     )
 
 
@@ -252,6 +268,39 @@ def get_top_opportunities(
             "track_count": r.track_count,
         }
         for r in rows
+    ]
+
+
+@router.get("/dashboard/payments")
+def get_payment_history(
+    limit: int = 50,
+    offset: int = 0,
+    db: Session = Depends(database.get_db),
+    current_user=Depends(require_staff)
+):
+    """Payment history for admin dashboard. ADMIN and SUB_ADMIN can view."""
+    from ..models.billing import SubscriptionPayment
+    
+    payments = (
+        db.query(SubscriptionPayment)
+        .order_by(desc(SubscriptionPayment.created_at))
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+    
+    return [
+        {
+            "id": str(p.id),
+            "user_id": str(p.user_id),
+            "tx_hash": p.tx_hash,
+            "network": p.network,
+            "amount": float(p.amount) if p.amount else 0.0,
+            "tier": p.tier,
+            "status": str(p.status),
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+        }
+        for p in payments
     ]
 
 

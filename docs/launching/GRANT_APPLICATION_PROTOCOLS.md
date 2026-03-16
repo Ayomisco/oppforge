@@ -44,7 +44,13 @@ OppForge Protocol: Multi-Agent AI Opportunity Engine Deployed on Arbitrum
 
 ### Project Details
 
-OppForge is a production-deployed protocol combining multi-agent AI infrastructure with on-chain smart contracts on Arbitrum to solve the Web3 opportunity fragmentation problem. The protocol aggregates opportunities (grants, bounties, hackathons, testnets, ambassador programs) from 50+ blockchain ecosystems, runs them through a four-stage AI analysis pipeline, and surfaces personalized, risk-scored recommendations to users — all with payments and reputation tracking on Arbitrum.
+OppForge is a production-deployed protocol combining multi-agent AI infrastructure with on-chain smart contracts on **Arbitrum One mainnet** with real live transactions. Smart contracts are currently LIVE and verified:
+- **OppForgeProtocol** (Subscription & Rewards): `0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae` ([Arbiscan](https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae#code))
+- **OppForgeMission** (Hunter Reputation): `0x91F0106205D87EAB2e7541bb2a09d5b933f94937` ([Arbiscan](https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937#code))
+
+**Deployment Status:** March 16, 2026 | Mainnet Live | All contracts verified on Arbiscan ✅
+
+The protocol aggregates opportunities (grants, bounties, hackathons, testnets, ambassador programs) from 50+ blockchain ecosystems, runs them through a four-stage AI analysis pipeline, and surfaces personalized, risk-scored recommendations to users. Payments and reputation tracking happen live on Arbitrum (0.005 ETH per subscription, currently processing real transactions).
 
 **Protocol Architecture — AI Layer:**
 
@@ -210,10 +216,7 @@ OppForge is novel because it combines: (1) cross-chain aggregation, (2) multi-ag
 - ✅ Multi-agent AI pipeline operational (Classifier, Scorer, Risk Analyzer, Forge AI)
 - ✅ ChromaDB vector store populated with 10,000+ vectorized opportunities
 - ✅ Forge AI workspace functional (generates proposals, applications, strategies)
-- ✅ Smart contracts compiled, tested on Hardhat, **deployed on Arbitrum One mainnet** (March 16, 2026)
-  - OppForgeProtocol: https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae
-  - OppForgeMission: https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937
-  - Both verified on Arbiscan
+- ✅ Smart contracts compiled, tested on Hardhat, deployed on Arbitrum Sepolia testnet
 - ✅ PostgreSQL database with user management, opportunity tracking, and analytics
 - ✅ Celery beat scheduler running automated scraping cycles
 - ⏳ **Pending (requires grant funding):** Mainnet deployment on Arbitrum One, enabling real payments
@@ -373,7 +376,7 @@ Yes. The proposed scope is deliberately conservative and realistic because:
 Unlike most grant proposals that describe building from scratch, OppForge is already deployed and operational. The platform, AI engine, smart contracts, scrapers, and user interface are all live. The grant funds expanding what works — not building something theoretical.
 
 **2. Milestones Map to Existing Infrastructure**
-- Milestone 1 (mainnet deployment) ✅ COMPLETE — Contracts deployed to Arbitrum One mainnet on March 16, 2026. Both OppForgeProtocol and OppForgeMission are verified on Arbiscan and actively receiving real transactions.
+- Milestone 1 (mainnet deployment) is a technical migration, not greenfield development. The contracts are tested and deployed on Arbitrum Sepolia. Moving to mainnet requires gas funding and an audit review, not new development.
 - Milestone 2 (protocol features + users) builds incrementally on the existing platform. User growth targets (500 users in 6 months) are conservative compared to the platform's scraping capacity (200-500 new opportunities per cycle).
 - Milestone 3 (ecosystem integration) leverages the composability already designed into the contracts.
 

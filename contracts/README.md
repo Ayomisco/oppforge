@@ -1,202 +1,237 @@
 # OppForge Smart Contracts
 
-Production-ready Solidity smart contracts for OppForge subscription payments and mission tracking on Arbitrum One.
+Production deployment is now on **Arbitrum One mainnet** (chainId: 42161).
 
-## 🚀 Live Contracts (Arbitrum One Mainnet)
+## 🚀 Arbitrum One Mainnet Deployments (PROD)
 
-| Contract | Address | Arbiscan Link |
-|----------|---------|---------------|
-| **OppForgeProtocol** | `0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae` | [View Contract ↗](https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae#code) |
-| **OppForgeMission** | `0x91F0106205D87EAB2e7541bb2a09d5b933f94937` | [View Contract ↗](https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937#code) |
-
-Both contracts verified on Arbiscan ✅
+| Contract | Address | Arbiscan | Status |
+|---|---|---|---|
+| **OppForgeProtocol** | `0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae` | [View Contract ↗](https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae#code) | ✅ Live |
+| **OppForgeMission** | `0x91F0106205D87EAB2e7541bb2a09d5b933f94937` | [View Contract ↗](https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937#code) | ✅ Live |
+| OppForgeFounder (ERC-721) | ❌ Not Deployed | N/A | Removed (2-tier model) |
 
 **Deployment Date:** March 16, 2026  
-**Chain ID:** 42161 (Arbitrum One)  
-**Status:** PRODUCTION READY ✅
+**Deployer:** `0xE5978059D18c0B840A3F33389dc4425465442E69`  
+**All contracts verified on Arbiscan ✅**
+
+### Network Details
+- **Chain:** Arbitrum One
+- **Chain ID:** 42161
+- **RPC Endpoint:** `https://arb1.arbitrum.io/rpc`
+- **Gas Token:** ETH
+- **Block Time:** ~0.25 seconds
 
 ---
 
-## 📋 Contract Overview
+## Legacy Deployments (Sepolia Testnet)
 
-### OppForgeProtocol.sol (CORE - REQUIRED)
+Maintained for development/testing only. **DO NOT USE FOR PRODUCTION.**
 
-**Purpose:** Subscription payment processor and mission reward vault
+| Contract | Address | Etherscan |
+|---|---|---|
+| OppForgeProtocol | `0x502973c5413167834d49078f214ee777a8C0A8Cf` | [View ↗](https://sepolia.etherscan.io/address/0x502973c5413167834d49078f214ee777a8C0A8Cf#code) |
+| OppForgeMission | `0x654b689f316c5E2D1c6860d2446A73538B146722` | [View ↗](https://sepolia.etherscan.io/address/0x654b689f316c5E2D1c6860d2446A73538B146722#code) |
+
+---
+
+## Contract Overview
+
+### OppForgeProtocol (Core Revenue Contract)
+
+**Purpose:** Subscription tier management and mission reward vault
 
 **Key Functions:**
-- `upgradeTier(uint8 _tier)` - User pays 0.005 ETH → gets 30-day Hunter access
-- `fundMission(bytes32 _missionId)` - Create bounty/reward pool
-- `releaseReward(bytes32 _missionId, address _hunter)` - Distribute mission payouts
-- `withdrawTreasury()` - Owner withdraws accumulated subscription revenue
+- `upgradeTier(uint8 _tier)` — User pays 0.005 ETH (≈$10/month) for Hunter tier
+- `fundMission(bytes32 _missionId)` — Fund bounties (min 0.0001 ETH)
+- `releaseReward(bytes32 _missionId, address payable _hunter)` — Distribute rewards to hunters
+- `withdrawTreasury()` — Admin withdraw accumulated revenue
+- `getMissionFunding(bytes32 _missionId)` — View mission vault balance
 
-**Pricing:** Hunter tier = **0.005 ETH/month** (~$10)
+**Tier Pricing:**
+- SCOUT (0): Free, 7-day trial
+- HUNTER (1): 0.005 ETH/month (~$10)
 
-**Featured Security:**
-- ✅ ReentrancyGuard on all ETH transfers
-- ✅ Safe `.call{value:}()` pattern (no `.transfer()` vulnerability)
-- ✅ Minimum funding enforcement (0.0001 ETH)
-- ✅ Checks-effects-interactions pattern
-
-**Read Contract:** [Arbiscan Read ↗](https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae#readContract)
+**Security Measures:**
+- ✅ Reentrancy guard on all ETH transfers
+- ✅ Safe `.call{value:}()` pattern (no silent failures)
+- ✅ Minimum funding check (0.0001 ETH)
+- ✅ Owner-only treasury withdrawal
+- ✅ Solidity 0.8.20 with optimizations
 
 ---
 
-### OppForgeMission.sol (OPTIONAL - PHASE 2)
+### OppForgeMission (On-Chain Hunter Tracking)
 
-**Purpose:** On-chain hunter mission tracking and reputation ledger
-
-**Status:** Deployed but not actively used in v1. Fully integrated in Phase 2.
+**Purpose:** Immutable mission lifecycle and hunter reputation ledger
 
 **Key Functions:**
-- `startMission(bytes32 _missionId)` - Hunter claims opportunity
-- `completeMission(bytes32, uint256 _reward)` - Admin marks done + awards reputation
-- `getHunterStats(address)` - Fetch reputation/earnings immutably
+- `startMission(bytes32 _missionId)` — Hunter claims mission (on-chain lock)
+- `completeMission(bytes32 _missionId, uint256 _reward, uint256 _repBonus)` — Admin marks complete + awards rep
+- `getHunterStats(address _hunter)` → `(reputation, earnings)` — View hunter profile
 
-**When Needed:** When OppForge implements on-chain mission completion workflow (Phase 2)
-
-**Read Contract:** [Arbiscan Read ↗](https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937#readContract)
+**Status:** Deployed but not actively used in MVP. Ready for future implementation.
 
 ---
 
-## 💰 Payment Flow
+## Environment Configuration
 
-```
-1. Frontend: User clicks "Subscribe · 0.005 ETH"
-   → MetaMask popup: upgradeTier(1) transaction
-
-2. User confirms: 0.005 ETH leaves wallet  
-   → ETH stored in OppForgeProtocol contract
-
-3. Frontend: Gets TX hash (0x123abc...)
-   → Sends to backend: POST /billing/verify-payment
-
-4. Backend: Queries Arbitrum RPC
-   → Verifies: TX successful + recipient = Protocol contract
-   → Creates SubscriptionPayment record in DB
-   → Sets user.tier = "hunter", subscription_expires_at = now + 30 days
-   → Sends receipt email with invoice
-
-5. Frontend: User unlocked → Workspace + AI features enabled
-   → 30 days of access (auto-expires at deadline)
-
-6. After 30 days: User prompted to subscribe again
-```
-
----
-
-## 🔐 Configuration
-
-### Backend (FastAPI)
-
-**File:** `backend/.env`
+### Backend (.env)
 
 ```env
+# Production (Arbitrum One)
 PAYMENT_NETWORK=arbitrum
 PROTOCOL_CONTRACT_ADDRESS=0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae
 ARBITRUM_RPC_URL=https://arb1.arbitrum.io/rpc
+SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+ETHEREUM_RPC_URL=https://eth.llamarpc.com
+OPPFORGE_MASTER_WALLET=<optional-treasury-wallet>
 ```
 
-**Verify Payment Endpoint:**
-```python
-POST /billing/verify-payment
-Body: {
-  "tx_hash": "0x...",
-  "network": "arbitrum",
-  "amount": "0.005",
-  "tier": "hunter"
-}
-
-Response: {
-  "id": "uuid",
-  "user_id": "uuid",
-  "tx_hash": "0x...",
-  "status": "COMPLETED",
-  "created_at": "2026-03-16T..."
-}
-```
-
-**Admin Endpoints:**
-```
-GET /billing/admin/payments     → All payments (requires admin role)
-GET /billing/admin/invoices     → All invoices
-GET /billing/admin/revenue      → Revenue analytics
-```
-
-### Frontend (Next.js)
-
-**File:** `platform/.env.local`
+### Frontend (.env.local)
 
 ```env
+# Production (Arbitrum One)
 NEXT_PUBLIC_PAYMENT_NETWORK=arbitrum
 NEXT_PUBLIC_PROTOCOL_CONTRACT_ADDRESS=0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae
 NEXT_PUBLIC_MISSION_CONTRACT_ADDRESS=0x91F0106205D87EAB2e7541bb2a09d5b933f94937
 ```
 
-**Reference:** `platform/src/lib/contracts.js`
+---
+
+## Subscription Flow (User Perspective)
+
+```
+1. User creates account → 7-day free trial (Scout tier)
+2. Trial expires → prompted to subscribe
+3. User clicks "Subscribe · 0.005 ETH"
+4. MetaMask popup → User confirms transaction
+5. Frontend sends tx_hash to backend
+6. Backend verifies on-chain (Arbitrum RPC):
+   - Transaction succeeded (status=1)
+   - Recipient is Protocol contract
+7. Backend updates user:
+   - tier = "hunter"
+   - subscription_expires_at = now + 30 days
+8. Frontend shows "HUNTER" badge
+9. User unlocked: workspace, AI features, advanced tools
+10. At expiry: subscription_status set to "expired", prompt to renew
+```
 
 ---
 
-## 👨‍💻 Development
+## Payment Verification (Backend Logic)
 
-### Install Dependencies
+```python
+# Backend: POST /billing/verify-payment
+1. Receive: { tx_hash, amount, network, tier }
+2. Check: No duplicate tx_hash
+3. Fetch: tx = RPC.get_transaction(tx_hash)
+4. Verify:
+   - receipt.status == 1 (success)
+   - tx.to.lower() == PROTOCOL_CONTRACT (correct recipient)
+   - amount >= tierPrices[tier]
+5. Create: Payment record + Invoice
+6. Update: User tier + subscription_expires_at
+7. Email: Receipt to user
+```
+
+---
+
+## Admin Dashboard Metrics
+
+Admin users can view:
+- **Payment Ledger:** All transactions, amounts, networks, tx hashes
+- **Revenue Dashboard:** Total ETH, monthly revenue, payment count
+- **Payment Status:** Completed, pending, failed transactions
+- **Direct Explorer Links:** Click to Arbiscan for tx verification
+
+Path: `/admin/billing`
+
+---
+
+## Testing Locally
+
+### Deploy to Sepolia Testnet
 
 ```bash
 cd contracts
 npm install
+npx hardhat run scripts/deploy.js --network sepolia
 ```
 
-### Compile
-
-```bash
-npm run compile
-```
-
-### Test
+### Run Contract Tests
 
 ```bash
 npm test
-# Expected: 3 passing
 ```
 
-### Deploy to Arbitrum Sepolia (Testnet)
-
-```bash
-npm run deploy:arbitrum-sepolia
-# Outputs deployed-addresses.json
-```
-
-### Deploy to Arbitrum One (MAINNET - PRODUCTION)
-
-```bash
-npm run deploy:arbitrum
-# ⚠️ Costs real money. Verify setup first.
-```
+All 3 tests passing:
+- ✅ Should set correct tier prices (0.005 ETH for HUNTER)
+- ✅ Should allow upgrading tier
+- ✅ Should allow funding missions
 
 ---
 
-## 🛠️ Troubleshooting
+## Security Audit Notes
 
-| Issue | Solution |
-|-------|----------|
-| "Insufficient payment" on subscribe | Send exactly 0.005 ETH or more |
-| TX fails but appears on Arbiscan | Verify transaction status is "1" (success) |
-| Contract won't deploy | Check PRIVATE_KEY in .env, ensure wallet has ETH for gas |
-| Verification fails on Arbiscan | Wait 30 seconds, contracts auto-verify after deploy |
+✅ **Fixes Applied in Production:**
+- Changed `releaseReward()` from unsafe `.transfer()` to safe `.call{value:}()`
+- Added minimum funding requirement (0.0001 ETH)
+- Added `getMissionFunding()` getter for transparency
+- Protected `withdrawTreasury()` with reentrancy guard
+
+❌ **Removed from Production:**
+- OppForgeFounder (ERC-721 NFT) — Redundant in 2-tier model
+
+🔄 **Future Iterations:**
+- On-chain mission completion flow (Mission contract integration)
+- Dispute/appeal mechanism for hunter-admin conflicts
+- Automated reward distribution via Chainlink
 
 ---
 
-## 📞 Useful Links
+## Deployment Checklist
 
-- **Protocol Contract:** https://arbiscan.io/address/0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae
-- **Mission Contract:** https://arbiscan.io/address/0x91F0106205D87EAB2e7541bb2a09d5b933f94937
-- **Admin Dashboard:** https://app.oppforge.xyz/admin/billing
+- ✅ Contracts compiled (Solidity 0.8.20, 0 warnings)
+- ✅ Unit tests passing (3/3)
+- ✅ Verified on Arbiscan
+- ✅ Frontend env vars updated
+- ✅ Backend env vars updated
+- ✅ Admin dashboard integrated
+- ✅ Payment verification endpoint live
+- ✅ Trial → subscription flow tested
+
+---
+
+## Links
+
 - **Arbitrum Docs:** https://docs.arbitrum.io/
+- **Arbiscan:** https://arbiscan.io/
+- **Contract Source (GitHub):** https://github.com/oppforge/smart-contracts
+- **Deployed Addresses JSON:** `./deployed-addresses.json`
 
----
 
-**Last Updated:** March 16, 2026  
-**Solidity:** 0.8.20  
-**License:** MIT
+
+```env
+NEXT_PUBLIC_PAYMENT_NETWORK=sepolia
+NEXT_PUBLIC_PROTOCOL_CONTRACT_ADDRESS=0x502973c5413167834d49078f214ee777a8C0A8Cf
+NEXT_PUBLIC_FOUNDER_NFT_CONTRACT_ADDRESS=0xa0928440186C28062c964aeE496b38275e94aA8c
+NEXT_PUBLIC_MISSION_CONTRACT_ADDRESS=0x654b689f316c5E2D1c6860d2446A73538B146722
+```
+
+When Arbitrum One is deployed later, change only the env vars and redeploy.# OppForge Smart Contracts
+
+# OppForge Smart Contracts
+
+Solidity contracts powering OppForge's on-chain payment and membership system.
+
+## Contracts
+
+
+| Contract           | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| `OppForgeProtocol` | Core payment processor — handles tier subscriptions (Pro, Elite, Team) |
+| `OppForgeFounder`  | Founder lifetime membership NFT (ERC-721)                               |
 | `OppForgeMission`  | Mission/opportunity tracking on-chain                                   |
 
 ---

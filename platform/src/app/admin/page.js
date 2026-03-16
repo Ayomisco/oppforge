@@ -2,55 +2,96 @@
 
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Users, Server, ShieldCheck, Activity, Database, AlertTriangle } from 'lucide-react';
-
-const mockStats = {
-  total_users: 124,
-  active_users: 42,
-  total_opps: 85,
-  scrapers: [
-    { name: 'Superteam', status: 'operational', synced: '2m ago' },
-    { name: 'DoraHacks', status: 'operational', synced: '15m ago' },
-    { name: 'HackQuest', status: 'degraded', synced: '1h ago', error: '404' },
-    { name: 'Gitcoin', status: 'offline', synced: 'Never' },
-  ]
-};
+import { Users, Server, ShieldCheck, Activity, Database, AlertTriangle, CreditCard, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminOverview() {
-  // In real implementation, fetch from /admin/stats
-  const stats = mockStats; 
+  // Fetch real dashboard stats from backend
+  const { data: stats, isLoading, error } = useQuery({
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: async () => {
+      const res = await api.get('/admin/dashboard/stats');
+      return res.data;
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold font-mono tracking-tight">MISSION_CONTROL_OVERVIEW</h1>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-6 bg-[#111] border border-[#222] rounded-xl animate-pulse">
+              <div className="h-8 bg-white/5 rounded mb-2" />
+              <div className="h-4 bg-white/5 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-900/20 border border-red-700/50 rounded-xl">
+        <h2 className="text-red-400 font-bold">Error Loading Dashboard</h2>
+        <p className="text-red-300 text-sm mt-2">{error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold font-mono tracking-tight">MISSION_CONTROL_OVERVIEW</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold font-mono tracking-tight">MISSION_CONTROL_OVERVIEW</h1>
+        <Link href="/admin/billing" className="text-[#ff5500] hover:text-[#ff6600] font-mono text-sm underline">
+          → VIEW PAYMENTS
+        </Link>
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard title="Total Users" value={stats.total_users} icon={Users} color="text-blue-400" />
-        <StatCard title="Active Protocol" value={stats.active_users} icon={Activity} color="text-green-400" />
-        <StatCard title="Total Missions" value={stats.total_opps} icon={Database} color="text-[#D4AF37]" />
-        <StatCard title="System Health" value="98%" icon={Server} color="text-purple-400" />
+        <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} color="text-blue-400" />
+        <StatCard title="Pro Users" value={stats?.pro_users || 0} icon={Activity} color="text-green-400" />
+        <StatCard title="Total Missions" value={stats?.total_opportunities || 0} icon={Database} color="text-[#D4AF37]" />
+        <StatCard title="Total Revenue" value={`${(stats?.total_revenue_eth || 0).toFixed(4)} ETH`} icon={CreditCard} color="text-purple-400" />
       </div>
 
-      {/* Scraper Health Grid */}
+      {/* Payment Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard title="Payments This Month" value={stats?.payments_this_month || 0} icon={TrendingUp} color="text-orange-400" />
+        <StatCard title="Revenue This Month" value={`${(stats?.revenue_this_month_eth || 0).toFixed(4)} ETH`} icon={TrendingUp} color="text-orange-400" />
+        <StatCard title="Total Payments" value={stats?.total_payments || 0} icon={CreditCard} color="text-amber-400" />
+      </div>
+
+      {/* Opportunities Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <MetricBox title="Active Opportunities" value={stats?.active_opportunities || 0} />
+        <MetricBox title="Verified Opportunities" value={stats?.verified_opportunities || 0} />
+        <MetricBox title="Expired Opportunities" value={stats?.expired_opportunities || 0} />
+        <MetricBox title="Total Tracked Applications" value={stats?.total_tracked || 0} />
+      </div>
+
+      {/* Staff Breakdown */}
       <div className="bg-[#111] border border-[#222] rounded-xl p-6">
         <h2 className="text-sm font-mono uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
-            <ShieldCheck size={16} /> Data_Pipeline_Status
+          <ShieldCheck size={16} /> Staff_Configuration
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.scrapers.map((s) => (
-                <div key={s.name} className="p-4 bg-[#0A0A0A] border border-[#222] rounded-lg space-y-3">
-                    <div className="flex justify-between items-start">
-                        <span className="font-bold text-gray-300">{s.name}</span>
-                        <StatusDot status={s.status} />
-                    </div>
-                    <div className="text-xs text-gray-500 font-mono">
-                        <div>SYNC: {s.synced}</div>
-                        {s.error && <div className="text-red-500 mt-1">ERR: {s.error}</div>}
-                    </div>
-                </div>
-            ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 bg-[#0A0A0A] border border-[#222] rounded-lg">
+            <div className="text-2xl font-bold text-white">{stats?.admin_users || 0}</div>
+            <div className="text-xs text-gray-500 font-mono uppercase tracking-wider mt-2">Admins</div>
+          </div>
+          <div className="p-4 bg-[#0A0A0A] border border-[#222] rounded-lg">
+            <div className="text-2xl font-bold text-white">{stats?.sub_admin_users || 0}</div>
+            <div className="text-xs text-gray-500 font-mono uppercase tracking-wider mt-2">Sub-Admins</div>
+          </div>
+          <div className="p-4 bg-[#0A0A0A] border border-[#222] rounded-lg">
+            <div className="text-2xl font-bold text-white">{(stats?.total_users || 0) - (stats?.admin_users || 0) - (stats?.sub_admin_users || 0)}</div>
+            <div className="text-xs text-gray-500 font-mono uppercase tracking-wider mt-2">Regular Users</div>
+          </div>
         </div>
       </div>
     </div>
@@ -67,6 +108,15 @@ function StatCard({ title, value, icon: Icon, color }) {
                 <div className="text-2xl font-bold text-white">{value}</div>
                 <div className="text-xs text-gray-500 font-mono uppercase tracking-wider">{title}</div>
             </div>
+        </div>
+    )
+}
+
+function MetricBox({ title, value }) {
+    return (
+        <div className="p-4 bg-[#111] border border-[#222] rounded-xl">
+            <div className="text-xs text-gray-500 font-mono uppercase tracking-wider mb-3">{title}</div>
+            <div className="text-3xl font-bold text-white">{value}</div>
         </div>
     )
 }

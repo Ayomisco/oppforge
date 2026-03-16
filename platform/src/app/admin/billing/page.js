@@ -2,224 +2,155 @@
 
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { DollarSign, TrendingUp, Users, Zap, Download, Filter } from 'lucide-react';
-import { format } from 'date-fns';
+import { CreditCard, ExternalLink, Copy } from 'lucide-react';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
-export default function BillingDashboard() {
-  const [filterTier, setFilterTier] = useState('all');
-  const [filterNetwork, setFilterNetwork] = useState('all');
+export default function AdminBilling() {
+  const [limit, setLimit] = useState(50);
+  const [offset, setOffset] = useState(0);
+  const [copiedTx, setCopiedTx] = useState(null);
 
-  // Fetch revenue summary
-  const { data: revenue, isLoading: revenueLoading } = useQuery({
-    queryKey: ['admin-revenue'],
+  const { data: payments, isLoading, error, refetch } = useQuery({
+    queryKey: ['admin-payments', limit, offset],
     queryFn: async () => {
-      const res = await api.get('/billing/admin/revenue');
+      const res = await api.get('/admin/dashboard/payments', {
+        params: { limit, offset }
+      });
       return res.data;
     },
+    refetchInterval: 60000, // Refetch every 60 seconds
   });
 
-  // Fetch all payments
-  const { data: payments, isLoading: paymentsLoading } = useQuery({
-    queryKey: ['admin-payments'],
-    queryFn: async () => {
-      const res = await api.get('/billing/admin/payments');
-      return res.data;
-    },
-  });
-
-  // Fetch all invoices
-  const { data: invoices, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['admin-invoices'],
-    queryFn: async () => {
-      const res = await api.get('/billing/admin/invoices');
-      return res.data;
-    },
-  });
-
-  // Filter payments
-  const filteredPayments = payments?.filter(p => {
-    if (filterTier !== 'all' && p.tier !== filterTier) return false;
-    if (filterNetwork !== 'all' && p.network !== filterNetwork) return false;
-    return true;
-  }) || [];
-
-  const handleExportCSV = () => {
-    if (!payments) return;
-    
-    const csv = [
-      ['Date', 'User ID', 'Amount (ETH)', 'Tier', 'Network', 'TX Hash', 'Status'],
-      ...payments.map(p => [
-        new Date(p.created_at).toISOString(),
-        p.user_id,
-        p.amount,
-        p.tier,
-        p.network,
-        p.tx_hash,
-        p.status
-      ])
-    ].map(row => row.join(',')).join('\n');
-    
-    const link = document.createElement('a');
-    link.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
-    link.download = `payments_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+  const copyToClipboard = (text, txHash) => {
+    navigator.clipboard.writeText(text);
+    setCopiedTx(txHash);
+    toast.success('Copied to clipboard');
+    setTimeout(() => setCopiedTx(null), 2000);
   };
 
-  if (revenueLoading || paymentsLoading || invoicesLoading) {
-    return <div className="animate-pulse">Loading dashboard...</div>;
+  const getNetworkLabel = (network) => {
+    const labels = {
+      arbitrum: '🔴 Arbitrum One',
+      sepolia: '🔵 Ethereum Sepolia',
+      ethereum: '⚪ Ethereum Mainnet',
+    };
+    return labels[network] || network;
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'PaymentStatus.COMPLETED': 'bg-green-900/30 text-green-400 border-green-700/50',
+      'PaymentStatus.PENDING': 'bg-yellow-900/30 text-yellow-400 border-yellow-700/50',
+      'PaymentStatus.FAILED': 'bg-red-900/30 text-red-400 border-red-700/50',
+    };
+    return colors[status] || 'bg-gray-900/30 text-gray-400 border-gray-700/50';
+  };
+
+  if (isLoading) {
+    return <LoadingState />;
   }
+
+  if (error) {
+    return <ErrorState error={error} />;
+  }
+
+  const totalRevenue = (payments || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
 
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold font-mono tracking-tight">BILLING_DASHBOARD</h1>
-          <p className="text-sm text-gray-500 font-mono">Revenue analytics & payment tracking</p>
-        </div>
+        <h1 className="text-3xl font-bold font-mono tracking-tight flex items-center gap-2">
+          <CreditCard size={28} /> PAYMENT_LEDGER
+        </h1>
         <button
-          onClick={handleExportCSV}
-          className="px-4 py-2 bg-green-600/20 border border-green-600/50 rounded text-sm font-mono text-green-400 hover:bg-green-600/30 transition flex items-center gap-2"
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-[#ff5500]/20 hover:bg-[#ff5500]/30 border border-[#ff5500]/50 rounded text-[#ff5500] text-sm font-mono transition"
         >
-          <Download size={16} /> EXPORT CSV
+          ⟳ Refresh
         </button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Revenue"
-          value={`${revenue?.total_eth?.toFixed(4) || '0'} ETH`}
-          icon={DollarSign}
-          color="text-green-400"
-          subtext={`${revenue?.total_payments || 0} payments`}
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <SummaryCard 
+          label="Total Payments" 
+          value={payments?.length || 0}
+          subtext={(payments || []).length === limit ? `Showing latest ${limit}...` : 'Complete list'}
         />
-        <StatCard
-          title="Active Hunters"
-          value={revenue?.active_hunters || 0}
-          icon={Users}
-          color="text-blue-400"
-          subtext={`paid subscribers`}
+        <SummaryCard 
+          label="Total Revenue (ETH)" 
+          value={totalRevenue.toFixed(6)}
+          subtext="Across all networks"
         />
-        <StatCard
-          title="Revenue by Tier"
-          value={revenue?.by_tier?.hunter?.count || 0}
-          icon={Zap}
-          color="text-orange-400"
-          subtext={`Hunter tier sales`}
-        />
-        <StatCard
-          title="Network Breakdown"
-          value={revenue?.by_network?.arbitrum?.count || 0}
-          icon={TrendingUp}
-          color="text-purple-400"
-          subtext={`Arbitrum transactions`}
+        <SummaryCard 
+          label="Avg Payment (ETH)" 
+          value={(payments?.length ? (totalRevenue / payments.length) : 0).toFixed(6)}
+          subtext="Average transaction size"
         />
       </div>
 
-      {/* Revenue by Tier */}
-      {revenue?.by_tier && (
-        <div className="bg-[#111] border border-[#222] rounded-xl p-6">
-          <h2 className="text-sm font-mono uppercase tracking-widest text-gray-500 mb-4">
-            Revenue by Tier
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {Object.entries(revenue.by_tier).map(([tier, data]) => (
-              <div key={tier} className="p-4 bg-[#0A0A0A] border border-[#222] rounded-lg">
-                <div className="text-sm font-bold text-gray-300 uppercase">{tier}</div>
-                <div className="text-2xl font-bold text-white mt-2">{data.total_eth.toFixed(4)} ETH</div>
-                <div className="text-xs text-gray-500 mt-2">{data.count} transactions</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex gap-4 flex-wrap">
-        <select
-          value={filterTier}
-          onChange={(e) => setFilterTier(e.target.value)}
-          className="px-3 py-2 bg-[#111] border border-[#222] rounded text-xs font-mono text-gray-300 hover:border-[#444] transition"
-        >
-          <option value="all">All Tiers</option>
-          <option value="hunter">Hunter</option>
-          <option value="scout">Scout</option>
-        </select>
-
-        <select
-          value={filterNetwork}
-          onChange={(e) => setFilterNetwork(e.target.value)}
-          className="px-3 py-2 bg-[#111] border border-[#222] rounded text-xs font-mono text-gray-300 hover:border-[#444] transition"
-        >
-          <option value="all">All Networks</option>
-          <option value="arbitrum">Arbitrum One</option>
-          <option value="sepolia">Sepolia</option>
-        </select>
-      </div>
-
-      {/* Recent Payments Table */}
+      {/* Payment Table */}
       <div className="bg-[#111] border border-[#222] rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-[#222]">
-          <h2 className="text-sm font-mono uppercase tracking-widest text-gray-500">
-            Recent Payments ({filteredPayments.length})
-          </h2>
-        </div>
-        
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#0A0A0A] text-gray-500 border-b border-[#222]">
-                <th className="p-4 font-mono">Date</th>
-                <th className="p-4 font-mono">User</th>
-                <th className="p-4 font-mono">Amount</th>
-                <th className="p-4 font-mono">Tier</th>
-                <th className="p-4 font-mono">Network</th>
-                <th className="p-4 font-mono">TX Hash</th>
-                <th className="p-4 font-mono">Status</th>
+              <tr className="border-b border-[#222] bg-[#0A0A0A]">
+                <th className="px-6 py-4 text-left text-xs font-mono uppercase tracking-wider text-gray-500">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-mono uppercase tracking-wider text-gray-500">Amount</th>
+                <th className="px-6 py-4 text-left text-xs font-mono uppercase tracking-wider text-gray-500">Network</th>
+                <th className="px-6 py-4 text-left text-xs font-mono uppercase tracking-wider text-gray-500">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-mono uppercase tracking-wider text-gray-500">Transaction</th>
+                <th className="px-6 py-4 text-left text-xs font-mono uppercase tracking-wider text-gray-500">Action</th>
               </tr>
             </thead>
-            <tbody>
-              {filteredPayments.length === 0 ? (
+            <tbody className="divide-y divide-[#222]">
+              {(payments || []).length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="p-4 text-center text-gray-500">
-                    No payments found
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    No payments recorded yet
                   </td>
                 </tr>
               ) : (
-                filteredPayments.slice(0, 20).map((p) => (
-                  <tr key={p.id} className="border-b border-[#222] hover:bg-[#0A0A0A]/50 transition">
-                    <td className="p-4 text-gray-300">
-                      {format(new Date(p.created_at), 'MMM dd, yyyy HH:mm')}
+                (payments || []).map((payment) => (
+                  <tr key={payment.id} className="hover:bg-[#0A0A0A]/50 transition">
+                    <td className="px-6 py-4 text-gray-300 font-mono text-xs">
+                      {new Date(payment.created_at).toLocaleDateString()} {new Date(payment.created_at).toLocaleTimeString()}
                     </td>
-                    <td className="p-4 text-gray-400 font-mono text-[10px]">
-                      {p.user_id.slice(0, 8)}...
+                    <td className="px-6 py-4 text-[#D4AF37] font-bold">
+                      {parseFloat(payment.amount).toFixed(6)} ETH
                     </td>
-                    <td className="p-4 text-green-400 font-bold">
-                      {parseFloat(p.amount).toFixed(4)} ETH
+                    <td className="px-6 py-4 text-gray-300">
+                      {getNetworkLabel(payment.network)}
                     </td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded text-[10px] font-mono uppercase">
-                        {p.tier}
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-mono border ${getStatusColor(payment.status)}`}>
+                        {payment.status.replace('PaymentStatus.', '')}
                       </span>
                     </td>
-                    <td className="p-4 text-gray-400 font-mono text-[10px]">
-                      {p.network}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs bg-[#0A0A0A] px-2 py-1 rounded text-gray-400 max-w-xs truncate">
+                          {payment.tx_hash.slice(0, 10)}...{payment.tx_hash.slice(-8)}
+                        </code>
+                        <button
+                          onClick={() => copyToClipboard(payment.tx_hash, payment.id)}
+                          className="p-1 hover:bg-white/10 rounded transition"
+                          title="Copy tx hash"
+                        >
+                          <Copy size={14} className={copiedTx === payment.id ? 'text-green-400' : 'text-gray-400'} />
+                        </button>
+                      </div>
                     </td>
-                    <td className="p-4 text-gray-400 font-mono text-[10px]">
+                    <td className="px-6 py-4">
                       <a
-                        href={`https://arbiscan.io/tx/${p.tx_hash}`}
+                        href={getArbiscanLink(payment.tx_hash, payment.network)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-blue-400 transition"
+                        className="text-[#ff5500] hover:text-[#ff6600] flex items-center gap-1 transition"
                       >
-                        {p.tx_hash.slice(0, 10)}...
+                        View <ExternalLink size={14} />
                       </a>
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-[10px] font-mono">
-                        {p.status || 'COMPLETED'}
-                      </span>
                     </td>
                   </tr>
                 ))
@@ -229,43 +160,84 @@ export default function BillingDashboard() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#111] border border-[#222] rounded-xl p-6">
-          <h3 className="text-sm font-mono uppercase text-gray-500 mb-4">Network Distribution</h3>
-          <div className="space-y-3">
-            {revenue?.by_network && Object.entries(revenue.by_network).map(([net, data]) => (
-              <div key={net} className="flex justify-between items-center">
-                <span className="text-gray-400 capitalize">{net}</span>
-                <span className="text-white font-bold">{data.total_eth.toFixed(4)} ETH</span>
-              </div>
-            ))}
+      {/* Pagination */}
+      {(payments || []).length > 0 && (
+        <div className="flex justify-between items-center gap-4">
+          <div className="text-xs text-gray-500 font-mono">
+            Showing {offset + 1} to {Math.min(offset + limit, offset + (payments?.length || 0))}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setOffset(Math.max(0, offset - limit))}
+              disabled={offset === 0}
+              className="px-4 py-2 bg-[#222] hover:bg-[#333] disabled:opacity-50 disabled:cursor-not-allowed border border-[#333] rounded text-sm font-mono transition"
+            >
+              ← Previous
+            </button>
+            <button
+              onClick={() => setOffset(offset + limit)}
+              disabled={(payments || []).length < limit}
+              className="px-4 py-2 bg-[#222] hover:bg-[#333] disabled:opacity-50 disabled:cursor-not-allowed border border-[#333] rounded text-sm font-mono transition"
+            >
+              Next →
+            </button>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
 
-        <div className="bg-[#111] border border-[#222] rounded-xl p-6">
-          <h3 className="text-sm font-mono uppercase text-gray-500 mb-4">Top Payers (Last 7 Days)</h3>
-          <div className="space-y-2 text-xs text-gray-400">
-            <p>Top 5 users by payment amount</p>
-            <p className="text-gray-600">Aggregation coming soon</p>
+function SummaryCard({ label, value, subtext }) {
+  return (
+    <div className="p-6 bg-[#111] border border-[#222] rounded-xl">
+      <div className="text-xs text-gray-500 font-mono uppercase tracking-wider mb-2">{label}</div>
+      <div className="text-3xl font-bold text-white mb-1">{value}</div>
+      <div className="text-xs text-gray-600 font-mono">{subtext}</div>
+    </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold font-mono tracking-tight">PAYMENT_LEDGER</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="p-6 bg-[#111] border border-[#222] rounded-xl animate-pulse">
+            <div className="h-4 bg-white/5 rounded mb-2 w-24" />
+            <div className="h-8 bg-white/5 rounded mb-2" />
+            <div className="h-3 bg-white/5 rounded w-32" />
           </div>
+        ))}
+      </div>
+      <div className="p-8 bg-[#111] border border-[#222] rounded-xl animate-pulse">
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-12 bg-white/5 rounded" />
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function StatCard({ title, value, icon: Icon, color, subtext }) {
+function ErrorState({ error }) {
   return (
-    <div className="p-6 bg-[#111] border border-[#222] rounded-xl flex items-center gap-4">
-      <div className={`p-3 rounded-lg bg-white/5 ${color}`}>
-        <Icon size={24} />
-      </div>
-      <div>
-        <div className="text-xs text-gray-500 font-mono uppercase tracking-wider">{title}</div>
-        <div className="text-2xl font-bold text-white">{value}</div>
-        {subtext && <div className="text-xs text-gray-600 mt-1">{subtext}</div>}
-      </div>
+    <div className="p-6 bg-red-900/20 border border-red-700/50 rounded-xl">
+      <h2 className="text-red-400 font-bold flex items-center gap-2">
+        <CreditCard size={20} /> Error Loading Payments
+      </h2>
+      <p className="text-red-300 text-sm mt-2">{error?.message || 'Failed to fetch payment history'}</p>
     </div>
   );
+}
+
+function getArbiscanLink(txHash, network) {
+  const explorers = {
+    arbitrum: `https://arbiscan.io/tx/${txHash}`,
+    sepolia: `https://sepolia.etherscan.io/tx/${txHash}`,
+    ethereum: `https://etherscan.io/tx/${txHash}`,
+  };
+  return explorers[network] || `https://arbiscan.io/tx/${txHash}`;
 }
