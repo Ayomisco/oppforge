@@ -54,16 +54,7 @@ const chains = [
   { id: 'casper', label: 'Casper' },
 ]
 
-export default function FilterBar({ 
-  activeCategory, 
-  onCategoryChange, 
-  activeChain, 
-  onChainChange,
-  deadline,
-  onDeadlineChange,
-  reward,
-  onRewardChange,
-}) {
+export default function FilterBar({ activeCategory, onCategoryChange, activeChain, onChainChange }) {
   const [showChainDropdown, setShowChainDropdown] = useState(false)
 
   return (
@@ -87,66 +78,37 @@ export default function FilterBar({
         ))}
       </div>
 
-      {/* Filter Controls: Deadline, Reward, Chain */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {/* Deadline Filter */}
-        <select
-          value={deadline || 'all'}
-          onChange={(e) => onDeadlineChange(e.target.value)}
-          className="text-xs px-3 py-2 rounded-md border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+      {/* Chain Filter Dropdown */}
+      <div className="relative">
+        <button
+          onClick={() => setShowChainDropdown(!showChainDropdown)}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-medium transition-all duration-150 border bg-[var(--bg-secondary)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-muted)]"
         >
-          <option value="all">Deadline: Any</option>
-          <option value="soon">7 Days</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="none">No Deadline</option>
-        </select>
+          🔗 {chains.find(c => c.id === activeChain)?.label || 'All Chains'}
+          <ChevronDown size={14} className={`transition-transform ${showChainDropdown ? 'rotate-180' : ''}`} />
+        </button>
 
-        {/* Reward Filter */}
-        <select
-          value={reward || 'all'}
-          onChange={(e) => onRewardChange(e.target.value)}
-          className="text-xs px-3 py-2 rounded-md border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
-        >
-          <option value="all">Reward: Any</option>
-          <option value="low">Low ($0 - $5K)</option>
-          <option value="medium">Medium ($5K - $50K)</option>
-          <option value="high">High ($50K - $500K)</option>
-          <option value="veryhigh">Very High ($500K+)</option>
-        </select>
-
-        {/* Chain Filter Dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowChainDropdown(!showChainDropdown)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-medium transition-all duration-150 border bg-[var(--bg-secondary)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-muted)]"
-          >
-            🔗 {chains.find(c => c.id === activeChain)?.label || 'All Chains'}
-            <ChevronDown size={14} className={`transition-transform ${showChainDropdown ? 'rotate-180' : ''}`} />
-          </button>
-
-          {showChainDropdown && (
-            <div className="absolute top-full mt-2 z-50 bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-lg shadow-lg p-2 max-h-64 overflow-y-auto w-48">
-              {chains.map((chain) => (
-                <button
-                  key={chain.id}
-                  onClick={() => {
-                    onChainChange(chain.id)
-                    setShowChainDropdown(false)
-                  }}
-                  className={`
-                    w-full text-left px-3 py-2 rounded text-xs transition-colors
-                    ${activeChain === chain.id
-                      ? 'bg-[var(--accent-primary)] text-white'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
-                  `}
-                >
-                  {chain.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {showChainDropdown && (
+          <div className="absolute top-full mt-2 z-50 bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-lg shadow-lg p-2 max-h-64 overflow-y-auto w-48">
+            {chains.map((chain) => (
+              <button
+                key={chain.id}
+                onClick={() => {
+                  onChainChange(chain.id)
+                  setShowChainDropdown(false)
+                }}
+                className={`
+                  w-full text-left px-3 py-2 rounded text-xs transition-colors
+                  ${activeChain === chain.id
+                    ? 'bg-[var(--accent-primary)] text-white'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
+                `}
+              >
+                {chain.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
