@@ -26,6 +26,7 @@ const SkeletonCard = () => (
 
 export default function FeedPage() {
   const [category, setCategory] = useState('all')
+  const [chain, setChain] = useState('all')
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -50,13 +51,14 @@ export default function FeedPage() {
     setPage(1)
     setAllOpportunities([])
     setHasMore(true)
-  }, [category, debouncedSearch, deadline, reward])
+  }, [category, chain, debouncedSearch, deadline, reward])
 
   const getQuery = () => {
     if (debouncedSearch) return `/opportunities/search?q=${encodeURIComponent(debouncedSearch)}&page=${page}&limit=20`
     let endpoint = '/opportunities'
     const params = [`page=${page}`, 'limit=20']
     if (category !== 'all') params.push(`category=${category}`)
+    if (chain !== 'all') params.push(`chain=${chain}`)
     return params.length > 0 ? `${endpoint}?${params.join('&')}` : endpoint
   }
 
@@ -120,6 +122,13 @@ export default function FeedPage() {
 
   // Apply client-side filters
   const filteredOpportunities = allOpportunities.filter(opp => {
+    // Chain filter
+    if (chain !== 'all' && opp.chain) {
+      const oppChain = opp.chain.toLowerCase().replace(/\s+/g, '').replace('bsc', 'binance').replace('smartchain', 'bsc')
+      const filterChain = chain.toLowerCase()
+      if (!oppChain.includes(filterChain) && oppChain !== filterChain) return false
+    }
+
     // Deadline filter
     if (deadline !== 'all' && opp.deadline) {
       const deadlineDate = new Date(opp.deadline)
@@ -252,7 +261,7 @@ export default function FeedPage() {
         </div>
       </div>
 
-      <FilterBar activeCategory={category} onCategoryChange={setCategory} />
+      <FilterBar activeCategory={category} onCategoryChange={setCategory} activeChain={chain} onChainChange={setChain} />
 
       {/* Status */}
       <div className="flex justify-between items-center pb-3 border-b border-[var(--border-default)]">
