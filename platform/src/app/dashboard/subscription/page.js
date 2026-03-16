@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { useWriteContract, useAccount, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi';
+import { useWriteContract, useAccount, useWaitForTransactionReceipt, useSwitchChain, useConnect } from 'wagmi';
 import { parseEther } from 'viem';
 import { Shield, Zap, Sparkles, Check, Crown, Clock, ArrowRight, Lock, Gem } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -64,6 +64,7 @@ export default function SubscriptionPage() {
   const { isConnected, address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { switchChainAsync } = useSwitchChain();
+  const { connectors, connect } = useConnect();
   const [loadingTier, setLoadingTier] = useState(null);
 
   // Trial info
@@ -85,7 +86,18 @@ export default function SubscriptionPage() {
     if (tier.id === 'scout') return;
     
     if (!isConnected) {
-      toast.error("Connect your wallet to subscribe with crypto.", { icon: '🔗' });
+      // Open wallet connect modal
+      if (connectors.length > 0) {
+        // Try to get MetaMask first
+        const metaMask = connectors.find(c => c.name === 'MetaMask');
+        const connector = metaMask || connectors[0];
+        try {
+          connect({ connector });
+          toast.success('Wallet selector opened. Please connect your wallet.', { icon: '🔗' });
+        } catch (error) {
+          toast.error('Failed to open wallet selector', { icon: '❌' });
+        }
+      }
       return;
     }
 
@@ -139,6 +151,13 @@ export default function SubscriptionPage() {
     if (currentTier === tier.id && isActive) return { text: 'Current Plan', disabled: true, style: 'bg-white/5 text-gray-500 border border-white/10 cursor-default' };
     if (tier.id === 'scout') return { text: 'Free Trial', disabled: true, style: 'bg-white/5 text-gray-500 border border-white/10 cursor-default' };
     
+    if (!isConnected) {
+      return { 
+        text: `Connect Wallet · ${tier.price}`,
+        disabled: false, 
+      };
+    }
+    
     return { 
       text: `Subscribe · ${tier.price}`,
       disabled: false, 
@@ -146,11 +165,11 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-4 space-y-12">
+    <div className="min-h-screen py-8 md:py-12 lg:py-20 px-4 sm:px-6 lg:px-8 space-y-12 md:space-y-20">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-extrabold text-white tracking-tighter">CLEARANCE ACCESS</h1>
-        <p className="text-gray-400 text-sm max-w-xl mx-auto">
+      <div className="text-center space-y-3 md:space-y-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-white tracking-tighter">CLEARANCE ACCESS</h1>
+        <p className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto px-2">
           Elevate your intelligence platform. Secure your edge in the forge.
         </p>
 
@@ -188,7 +207,7 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {TIERS.map((tier, idx) => {
           const btn = getButtonState(tier);
           const TierIcon = tier.icon;
@@ -199,7 +218,7 @@ export default function SubscriptionPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -4 }}
-              className={`relative p-8 rounded-2xl border ${tier.border} bg-gradient-to-b ${tier.bg} flex flex-col gap-6 overflow-hidden group`}
+              className={`relative p-8 lg:p-10 rounded-2xl border ${tier.border} bg-gradient-to-b ${tier.bg} flex flex-col gap-6 overflow-hidden group ${tier.popular ? 'md:scale-105 md:col-span-1' : ''}`}
             >
               {tier.popular && (
                 <div className="absolute top-4 right-4 bg-[#ff5500] text-white text-[9px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-[0_0_15px_rgba(255,85,0,0.4)]">
@@ -208,28 +227,28 @@ export default function SubscriptionPage() {
               )}
 
               {/* Tier Header */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
+              <div className="space-y-2 md:space-y-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <div className="p-2 rounded-lg" style={{ backgroundColor: `${tier.accent}15` }}>
                     <TierIcon size={20} style={{ color: tier.accent }} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white uppercase tracking-tight">{tier.name}</h3>
-                    <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: `${tier.accent}AA` }}>{tier.tagline}</span>
+                    <h3 className="text-base md:text-lg font-bold text-white uppercase tracking-tight">{tier.name}</h3>
+                    <span className="text-[8px] md:text-[10px] font-mono uppercase tracking-wider" style={{ color: `${tier.accent}AA` }}>{tier.tagline}</span>
                   </div>
                 </div>
 
-                <div className="flex items-baseline gap-1.5 pt-2">
-                  <span className="text-4xl font-black text-white tracking-tight">{tier.price}</span>
-                  <span className="text-sm text-gray-500">{tier.priceDetail}</span>
+                <div className="flex items-baseline gap-1 md:gap-1.5 pt-2">
+                  <span className="text-3xl md:text-4xl font-black text-white tracking-tight">{tier.price}</span>
+                  <span className="text-xs md:text-sm text-gray-500">{tier.priceDetail}</span>
                 </div>
-                <p className="text-[12px] text-gray-400 leading-relaxed font-mono">{tier.description}</p>
+                <p className="text-[11px] md:text-[12px] text-gray-400 leading-relaxed font-mono">{tier.description}</p>
               </div>
 
               {/* Features */}
-              <div className="flex-1 space-y-3 pt-2 border-t border-white/5">
+              <div className="flex-1 space-y-2 md:space-y-3 pt-2 md:pt-4 border-t border-white/5">
                 {tier.features.map((feature, i) => (
-                  <div key={i} className="flex items-start gap-3 text-[12px] text-gray-400">
+                  <div key={i} className="flex items-start gap-2 md:gap-3 text-[11px] md:text-[12px] text-gray-400">
                     <Check size={14} className="mt-0.5 shrink-0" style={{ color: tier.accent }} />
                     <span className="font-mono">{feature}</span>
                   </div>
@@ -240,7 +259,7 @@ export default function SubscriptionPage() {
               <button
                 onClick={() => handleUpgrade(tier)}
                 disabled={btn.disabled || loadingTier === tier.id}
-                className={`w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-60 ${
+                className={`w-full py-3 md:py-4 px-4 rounded-xl text-xs md:text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-60 ${
                   btn.disabled 
                     ? btn.style
                     : tier.popular
@@ -253,7 +272,7 @@ export default function SubscriptionPage() {
 
               {/* Crypto payment note */}
               {!btn.disabled && tier.id !== 'scout' && (
-                <p className="text-[10px] text-gray-600 text-center font-mono">
+                <p className="text-[9px] md:text-[10px] text-gray-600 text-center font-mono">
                   NETWORK: {PAYMENT_NETWORK_LABEL} · {tier.ethPrice} ETH via Smart Contract
                 </p>
               )}
@@ -268,18 +287,18 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Trust bar */}
-      <div className="pt-12 border-t border-white/5 grid grid-cols-1 md:grid-cols-3 gap-8 text-center bg-[#050403]/50 p-8 rounded-2xl">
+      <div className="pt-8 md:pt-12 border-t border-white/5 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center bg-[#050403]/50 p-6 md:p-8 rounded-2xl">
           <div>
-            <div className="text-sm font-bold text-white mb-1 uppercase tracking-tighter">On-Chain Privacy</div>
-            <div className="text-[10px] text-gray-600 font-mono">Anonymous wallet-based payments. No KYC.</div>
+            <div className="text-xs md:text-sm font-bold text-white mb-1 md:mb-2 uppercase tracking-tighter">On-Chain Privacy</div>
+            <div className="text-[10px] md:text-[11px] text-gray-600 font-mono">Anonymous wallet-based payments. No KYC.</div>
           </div>
           <div>
-            <div className="text-sm font-bold text-white mb-1 uppercase tracking-tighter">Instant Clearance</div>
-            <div className="text-[10px] text-gray-600 font-mono">Confirmed after 1 block confirmation.</div>
+            <div className="text-xs md:text-sm font-bold text-white mb-1 md:mb-2 uppercase tracking-tighter">Instant Clearance</div>
+            <div className="text-[10px] md:text-[11px] text-gray-600 font-mono">Confirmed after 1 block confirmation.</div>
           </div>
           <div>
-            <div className="text-sm font-bold text-white mb-1 uppercase tracking-tighter">The Builder Edge</div>
-            <div className="text-[10px] text-gray-600 font-mono">AI signals optimized for maximizing yield.</div>
+            <div className="text-xs md:text-sm font-bold text-white mb-1 md:mb-2 uppercase tracking-tighter">The Builder Edge</div>
+            <div className="text-[10px] md:text-[11px] text-gray-600 font-mono">AI signals optimized for maximizing yield.</div>
           </div>
       </div>
     </div>

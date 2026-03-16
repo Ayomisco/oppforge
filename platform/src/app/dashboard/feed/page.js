@@ -160,10 +160,16 @@ export default function FeedPage() {
   // Apply client-side filters
   const filteredOpportunities = allOpportunities.filter(opp => {
     // Chain filter
-    if (chain !== 'all' && opp.chain) {
-      const oppChain = opp.chain.toLowerCase().replace(/\s+/g, '').replace('bsc', 'binance').replace('smartchain', 'bsc')
-      const filterChain = chain.toLowerCase()
-      if (!oppChain.includes(filterChain) && oppChain !== filterChain) return false
+    if (chain !== 'all' && chain !== 'others') {
+      if (opp.chain) {
+        const oppChain = opp.chain.toLowerCase().replace(/\s+/g, '').replace('bsc', 'binance').replace('smartchain', 'bsc')
+        const filterChain = chain.toLowerCase()
+        if (!oppChain.includes(filterChain) && oppChain !== filterChain) return false
+      } else {
+        return false
+      }
+    } else if (chain === 'others' && opp.chain) {
+      return false
     }
 
     // Deadline filter

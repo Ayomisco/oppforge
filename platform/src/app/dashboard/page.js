@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Rocket, Clock, Award, TrendingUp, SlidersHorizontal, X, Calendar, DollarSign } from 'lucide-react'
+import { Rocket, Clock, Award, TrendingUp, SlidersHorizontal, X, Calendar, DollarSign, Network } from 'lucide-react'
 import useSWR from 'swr'
 import api from '@/lib/api'
 import OpportunityCard from '@/components/dashboard/OpportunityCard'
@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [deadline, setDeadline] = useState('all')
   const [reward, setReward] = useState('all')
+  const [chain, setChain] = useState('all')
   const { data: stats, error: statsError } = useSWR('/stats/dashboard', fetcher)
   const { data: opportunities, error: oppsError, mutate } = useSWR('/opportunities/priority', fetcher)
 
@@ -68,7 +69,20 @@ export default function DashboardPage() {
       if (reward === 'high' && (estimatedValue < 50000 || estimatedValue > 500000)) return false
       if (reward === 'veryhigh' && estimatedValue < 500000) return false
     }
+// Chain filter
+    if (chain !== 'all' && chain !== 'others') {
+      if (opp.chain) {
+        const oppChain = opp.chain.toLowerCase().replace(/\s+/g, '').replace('bsc', 'binance').replace('smartchain', 'bsc')
+        const filterChain = chain.toLowerCase() + (chain !== 'all' ? 1 : 0)
+        if (!oppChain.includes(filterChain) && oppChain !== filterChain) return false
+      } else {
+        return false
+      }
+    } else if (chain === 'others' && opp.chain) {
+      return false
+    }
 
+    
     return true
   })
 
@@ -162,10 +176,58 @@ export default function DashboardPage() {
                       <label className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
                         <DollarSign size={12} /> Reward Amount
                       </label>
+                      <sChain Filter */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
+                        <Network size={12} /> Blockchain
+                      </label>
                       <select
-                        value={reward}
-                        onChange={(e) => setReward(e.target.value)}
+                        value={chain}
+                        onChange={(e) => setChain(e.target.value)}
                         className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                      >
+                        <option value="all">All Chains</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="arbitrum">Arbitrum</option>
+                        <option value="optimism">Optimism</option>
+                        <option value="base">Base</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="solana">Solana</option>
+                        <option value="near">NEAR</option>
+                        <option value="avalanche">Avalanche</option>
+                        <option value="fantom">Fantom</option>
+                        <option value="bsc">BSC</option>
+                        <option value="starknet">Starknet</option>
+                        <option value="zksync">zkSync</option>
+                        <option value="linea">Linea</option>
+                        <option value="scroll">Scroll</option>
+                        <option value="mantle">Mantle</option>
+                        <option value="manta">Manta</option>
+                        <option value="sei">Sei</option>
+                        <option value="aptos">Aptos</option>
+                        <option value="move">Move</option>
+                        <option value="sui">Sui</option>
+                        <option value="cosmos">Cosmos</option>
+                        <option value="polkadot">Polkadot</option>
+                        <option value="tezos">Tezos</option>
+                        <option value="cardano">Cardano</option>
+                        <option value="algorand">Algorand</option>
+                        <option value="ton">TON</option>
+                        <option value="bitcoin">Bitcoin L2</option>
+                        <option value="flow">Flow</option>
+                        <option value="hedera">Hedera</option>
+                        <option value="harmony">Harmony</option>
+                        <option value="celo">Celo</option>
+                        <option value="iotx">IoTeX</option>
+                        <option value="casper">Casper</option>
+                        <option value="others">Others (Non-Chain)</option>
+                      </select>
+                    </div>
+
+                    {/* Reset Filters */}
+                    {activeFiltersCount > 0 && (
+                      <button
+                        onClick={() => { setDeadline('all'); setReward('all'); setChainer border-[var(--border-default)] rounded px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                       >
                         <option value="all">All Rewards</option>
                         <option value="low">Low ($0 - $5K)</option>
