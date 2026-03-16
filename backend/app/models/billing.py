@@ -24,7 +24,7 @@ class SubscriptionPayment(Base):
     currency = Column(String, default="ETH")
     
     # Plan Info
-    tier = Column(String, nullable=False) # hunter, founder
+    tier = Column(String, nullable=False) # hunter
     status = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
     
     # Metadata

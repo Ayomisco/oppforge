@@ -52,7 +52,7 @@ class User(Base):
     badges = Column(JSON, default=[]) # List of earned badge IDs
     
     # Subscription & Billing
-    tier = Column(String, default="scout") # scout, hunter, founder
+    tier = Column(String, default="scout") # scout, hunter
     is_pro = Column(Boolean, default=False)
     stripe_customer_id = Column(String, nullable=True)
     subscription_status = Column(String, default="trialing") # trialing, active, expired, cancelled

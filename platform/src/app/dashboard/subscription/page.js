@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import Link from 'next/link';
-import { CONTRACTS, PROTOCOL_ABI, FOUNDER_NFT_ABI, TIER_ENUM, PAYMENT_CHAIN, PAYMENT_NETWORK, PAYMENT_NETWORK_LABEL } from '@/lib/contracts';
+import { CONTRACTS, PROTOCOL_ABI, TIER_ENUM, PAYMENT_CHAIN, PAYMENT_NETWORK, PAYMENT_NETWORK_LABEL } from '@/lib/contracts';
 
 // Pricing tiers — matches OppForgeProtocol.sol
 const TIERS = [
@@ -37,9 +37,9 @@ const TIERS = [
     id: 'hunter',
     name: 'Hunter',
     tagline: 'Most Popular',
-    price: '0.05 ETH',
-    priceDetail: '/month',
-    ethPrice: '0.05',
+    price: '0.005 ETH',
+    priceDetail: '/month (~$10)',
+    ethPrice: '0.005',
     contractTier: TIER_ENUM.HUNTER,
     icon: Zap,
     description: 'Unlimited AI power for serious builders & hunters.',
@@ -56,31 +56,6 @@ const TIERS = [
     bg: 'from-[#ff5500]/8 to-transparent',
     border: 'border-[#ff5500]/30',
     popular: true,
-  },
-  {
-    id: 'founder',
-    name: 'Founder',
-    tagline: 'Lifetime Access',
-    price: '0.2 ETH',
-    priceDetail: 'one-time',
-    ethPrice: '0.2',
-    contractTier: TIER_ENUM.FOUNDER,
-    icon: Crown,
-    description: 'Lifetime access + Founder NFT. Never pay again.',
-    features: [
-      'Everything in Hunter',
-      'Lifetime Protocol Access',
-      'OppForge Founder NFT (ERC-721)',
-      'Early Feature Previews',
-      'Governance Voting Rights',
-      'Private Founder Channel',
-      'Custom AI Agent Tuning',
-      'Revenue Share (Future)',
-    ],
-    accent: '#ffaa00',
-    bg: 'from-[#ffaa00]/8 to-transparent',
-    border: 'border-[#ffaa00]/30',
-    lifetime: true,
   },
 ];
 
@@ -103,7 +78,7 @@ export default function SubscriptionPage() {
     return { daysLeft, daysUsed, isTrialing, isExpired, isAdmin };
   }, [user]);
 
-  const currentTier = user?.tier || 'scout';
+  const currentTier = user?.tier === 'founder' ? 'hunter' : (user?.tier || 'scout');
   const isActive = user?.subscription_status === 'active' || user?.is_pro || trialInfo.isAdmin;
 
   const handleUpgrade = async (tier) => {
@@ -137,23 +112,6 @@ export default function SubscriptionPage() {
 
       toast.loading('Verifying on-chain...', { id: tid });
 
-      // If Founder tier, also mint the NFT
-      if (tier.id === 'founder') {
-        try {
-          toast.loading('Minting Founder NFT...', { id: tid });
-          await writeContractAsync({
-            address: CONTRACTS.FOUNDER_NFT.address,
-            abi: FOUNDER_NFT_ABI,
-            functionName: 'mint',
-            value: parseEther('0.01'),
-            chainId: PAYMENT_CHAIN.id,
-          });
-        } catch (nftErr) {
-          console.warn('NFT mint failed (non-critical):', nftErr);
-          // Don't block the tier upgrade if NFT mint fails
-        }
-      }
-
       // Verify with backend
       const { data: updateResult } = await api.post('/billing/verify-payment', {
         tx_hash: hash,
@@ -182,7 +140,7 @@ export default function SubscriptionPage() {
     if (tier.id === 'scout') return { text: 'Free Trial', disabled: true, style: 'bg-white/5 text-gray-500 border border-white/10 cursor-default' };
     
     return { 
-      text: tier.lifetime ? `Mint · ${tier.price}` : `Subscribe · ${tier.price}`, 
+      text: `Subscribe · ${tier.price}`,
       disabled: false, 
     };
   };
@@ -248,11 +206,6 @@ export default function SubscriptionPage() {
                   Elite_Pick
                 </div>
               )}
-              {tier.lifetime && (
-                <div className="absolute top-4 right-4 bg-[#ffaa00] text-black text-[9px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-[0_0_15px_rgba(255,170,0,0.4)]">
-                  Lifetime
-                </div>
-              )}
 
               {/* Tier Header */}
               <div className="space-y-3">
@@ -290,8 +243,6 @@ export default function SubscriptionPage() {
                 className={`w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-60 ${
                   btn.disabled 
                     ? btn.style
-                    : tier.lifetime
-                    ? 'bg-[#ffaa00] text-black hover:bg-[#ffc000] shadow-[0_0_25px_rgba(255,170,0,0.3)]'
                     : tier.popular
                     ? 'bg-[#ff5500] text-white hover:bg-[#ff7700] shadow-[0_0_25px_rgba(255,85,0,0.3)]'
                     : 'bg-white/[0.03] text-white border border-white/10 hover:bg-white/10'

@@ -14,6 +14,7 @@ import AIAnalysisPanel from '@/components/dashboard/AIAnalysisPanel'
 import { getOppImage } from '@/lib/chainLogos'
 import { useWriteContract, useAccount } from 'wagmi'
 import { parseEther, keccak256, encodePacked } from 'viem'
+import { CONTRACTS, MISSION_ABI, PAYMENT_CHAIN } from '@/lib/contracts'
 
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useState } from 'react'
@@ -95,17 +96,12 @@ export default function OpportunityDetail({ params }) {
     try {
         const missionIdBytes = keccak256(encodePacked(['string'], [id]));
         await writeContractAsync({
-            address: '0x0000000000000000000000000000000000000000',
-            abi: [{
-                "inputs": [{"internalType": "bytes32", "name": "_missionId", "type": "bytes32"}],
-                "name": "fundMission",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            }],
+            address: CONTRACTS.MISSION.address,
+            abi: MISSION_ABI,
             functionName: 'fundMission',
             args: [missionIdBytes],
-            value: parseEther(amount)
+            value: parseEther(amount),
+            chainId: PAYMENT_CHAIN.id,
         });
         toast.success('Funded on-chain!', { id: tid });
     } catch (e) {

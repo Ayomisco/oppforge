@@ -11,8 +11,7 @@ describe("OppForge Protocol", function () {
   });
 
   it("Should set the correct tier prices", async function () {
-    expect(await protocol.tierPrices(1)).to.equal(ethers.parseEther("0.05")); // HUNTER
-    expect(await protocol.tierPrices(2)).to.equal(ethers.parseEther("0.2"));  // FOUNDER
+    expect(await protocol.tierPrices(1)).to.equal(ethers.parseEther("0.005")); // HUNTER
   });
 
   it("Should allow upgrading tier", async function () {

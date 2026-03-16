@@ -27,7 +27,7 @@ def seed_db():
             email="admin@oppforge.xyz",
             full_name="OppForge Admin",
             role=UserRole.ADMIN,
-            tier="founder", is_pro=True, xp=99999
+            tier="hunter", is_pro=True, xp=99999
         ))
         print("  ✓ Admin user created")
 

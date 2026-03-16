@@ -38,10 +38,10 @@ export default function TermsOfServicePage() {
         <section className="space-y-4">
           <h2 className="text-lg font-bold text-white">4. Subscriptions & Payments</h2>
           <ul className="list-disc list-inside text-sm space-y-1 ml-2">
-            <li>OppForge offers free and paid tiers (Scout, Hunter, Founder).</li>
+            <li>OppForge offers free and paid tiers (Scout, Hunter).</li>
             <li>Payments are processed on-chain via smart contracts on supported networks.</li>
             <li>Blockchain transactions are irreversible. Ensure you are sending the correct amount to the correct address.</li>
-            <li>Founder tier provides lifetime access. Hunter tier is subscription-based.</li>
+            <li>Hunter tier is subscription-based and billed in crypto.</li>
             <li>We are not responsible for failed transactions due to network congestion, insufficient gas, or user error.</li>
           </ul>
         </section>

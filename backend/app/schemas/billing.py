@@ -5,7 +5,7 @@ import uuid
 
 class PaymentVerifyRequest(BaseModel):
     tx_hash: str
-    tier: str # hunter, founder
+    tier: str # hunter
     network: str = "sepolia"
     amount: float
 

@@ -3,12 +3,10 @@ import { arbitrum, sepolia } from 'wagmi/chains'
 const DEFAULT_DEPLOYMENTS = {
   sepolia: {
     PROTOCOL: '0x502973c5413167834d49078f214ee777a8C0A8Cf',
-    FOUNDER_NFT: '0xa0928440186C28062c964aeE496b38275e94aA8c',
     MISSION: '0x654b689f316c5E2D1c6860d2446A73538B146722',
   },
   arbitrum: {
     PROTOCOL: process.env.NEXT_PUBLIC_PROTOCOL_CONTRACT_ADDRESS || '',
-    FOUNDER_NFT: process.env.NEXT_PUBLIC_FOUNDER_NFT_CONTRACT_ADDRESS || '',
     MISSION: process.env.NEXT_PUBLIC_MISSION_CONTRACT_ADDRESS || '',
   },
 }
@@ -27,10 +25,6 @@ const deployment = DEFAULT_DEPLOYMENTS[PAYMENT_NETWORK] || DEFAULT_DEPLOYMENTS.s
 export const CONTRACTS = {
   PROTOCOL: {
     address: deployment.PROTOCOL,
-    chainId: PAYMENT_CHAIN.id,
-  },
-  FOUNDER_NFT: {
-    address: deployment.FOUNDER_NFT,
     chainId: PAYMENT_CHAIN.id,
   },
   MISSION: {
@@ -64,30 +58,6 @@ export const PROTOCOL_ABI = [
   },
 ]
 
-export const FOUNDER_NFT_ABI = [
-  {
-    inputs: [],
-    name: 'mint',
-    outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'MINT_PRICE',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [{ internalType: 'address', name: 'owner', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-]
-
 export const MISSION_ABI = [
   {
     inputs: [{ internalType: 'bytes32', name: '_missionId', type: 'bytes32' }],
@@ -96,11 +66,27 @@ export const MISSION_ABI = [
     stateMutability: 'payable',
     type: 'function',
   },
+  {
+    inputs: [{ internalType: 'bytes32', name: '_missionId', type: 'bytes32' }],
+    name: 'startMission',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '_hunter', type: 'address' }],
+    name: 'getHunterStats',
+    outputs: [
+      { internalType: 'uint256', name: 'reputation', type: 'uint256' },
+      { internalType: 'uint256', name: 'earnings', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
 ]
 
-// Tier enum mapping (matches Solidity: enum Tier { NONE, HUNTER, FOUNDER })
+// Tier enum mapping (matches Solidity: enum Tier { SCOUT, HUNTER })
 export const TIER_ENUM = {
-  NONE: 0,
+  SCOUT: 0,
   HUNTER: 1,
-  FOUNDER: 2,
 }

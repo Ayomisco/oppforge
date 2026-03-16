@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Link from 'next/link';
 import { 
-  CreditCard, Shield, Zap, Crown, ArrowRight, Clock, 
+  CreditCard, Shield, Zap, ArrowRight, Clock, 
   CheckCircle, AlertCircle, Download, Settings, User, Bell, Receipt, ExternalLink
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,8 +12,7 @@ import api from '@/lib/api';
 
 const PLAN_DETAILS = {
   scout: { name: 'Scout', price: '$0', period: '7-Day Trial', color: '#10b981', icon: Shield },
-  hunter: { name: 'Hunter', price: '$2.9', period: '/month', color: '#ff5500', icon: Zap },
-  founder: { name: 'Founder', price: '$6', period: '/month', color: '#D4AF37', icon: Crown },
+  hunter: { name: 'Hunter', price: '$10', period: '/month', color: '#ff5500', icon: Zap },
 };
 
 export default function BillingPage() {
@@ -53,7 +52,8 @@ export default function BillingPage() {
     return { daysLeft, daysUsed, isTrialing, isExpired, isActive, isAdmin };
   }, [user]);
 
-  const currentPlan = PLAN_DETAILS[user?.tier || 'scout'];
+  const normalizedTier = user?.tier === 'founder' ? 'hunter' : (user?.tier || 'scout');
+  const currentPlan = PLAN_DETAILS[normalizedTier] || PLAN_DETAILS.scout;
   const PlanIcon = currentPlan?.icon || Shield;
 
   if (loading) return <div className="max-w-4xl mx-auto py-20 text-center font-mono text-gray-500 uppercase animate-pulse">Initializing Billing Module...</div>;

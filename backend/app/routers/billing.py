@@ -17,10 +17,9 @@ from web3 import Web3
 DEFAULT_NETWORK = os.getenv("PAYMENT_NETWORK", "sepolia")
 MASTER_WALLET = os.getenv("OPPFORGE_MASTER_WALLET", "")
 PROTOCOL_CONTRACT = os.getenv("PROTOCOL_CONTRACT_ADDRESS", "0x502973c5413167834d49078f214ee777a8C0A8Cf")
-FOUNDER_NFT_CONTRACT = os.getenv("FOUNDER_NFT_CONTRACT_ADDRESS", "0xa0928440186C28062c964aeE496b38275e94aA8c")
 
 # Valid payment recipients (master wallet + contracts)
-VALID_RECIPIENTS = {addr.lower() for addr in [MASTER_WALLET, PROTOCOL_CONTRACT, FOUNDER_NFT_CONTRACT] if addr}
+VALID_RECIPIENTS = {addr.lower() for addr in [MASTER_WALLET, PROTOCOL_CONTRACT] if addr}
 
 # RPC URLs per network
 RPC_URLS = {
@@ -39,6 +38,9 @@ async def verify_payment(
     """
     Verify an on-chain payment and upgrade the user's tier.
     """
+    if request.tier != "hunter":
+        raise HTTPException(status_code=400, detail="Only hunter tier is supported")
+
     # 1. Check if tx_hash already exists (prevent double-spending the same tx)
     existing = db.query(models.billing.SubscriptionPayment).filter(
         models.billing.SubscriptionPayment.tx_hash == request.tx_hash
@@ -95,10 +97,7 @@ async def verify_payment(
     current_user.tier = request.tier
     current_user.is_pro = True
     current_user.subscription_status = "active"
-    if request.tier == "founder":
-        current_user.subscription_expires_at = datetime.now() + timedelta(days=365 * 99)  # Lifetime
-    else:
-        current_user.subscription_expires_at = datetime.now() + timedelta(days=30)
+    current_user.subscription_expires_at = datetime.now() + timedelta(days=30)
     
     db.commit()
     db.refresh(payment)
@@ -129,3 +128,69 @@ def get_invoices(db: Session = Depends(database.get_db), current_user: models.Us
 @router.get("/history", response_model=List[schemas.billing.PaymentHistoryResponse])
 def get_payment_history(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.billing.SubscriptionPayment).filter(models.billing.SubscriptionPayment.user_id == current_user.id).all()
+
+# ===============================
+# ADMIN BILLING ENDPOINTS
+# ===============================
+
+@router.get("/admin/payments", response_model=List[schemas.billing.PaymentHistoryResponse])
+def admin_get_all_payments(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Admin: View all payments across all users"""
+    if current_user.role not in ['admin', 'ADMIN']:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    return db.query(models.billing.SubscriptionPayment).order_by(models.billing.SubscriptionPayment.created_at.desc()).all()
+
+@router.get("/admin/invoices", response_model=List[schemas.billing.InvoiceResponse])
+def admin_get_all_invoices(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Admin: View all invoices across all users"""
+    if current_user.role not in ['admin', 'ADMIN']:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    return db.query(models.billing.Invoice).order_by(models.billing.Invoice.created_at.desc()).all()
+
+@router.get("/admin/revenue")
+def admin_get_revenue_summary(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Admin: Revenue analytics (total, by tier, by date)"""
+    if current_user.role not in ['admin', 'ADMIN']:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    payments = db.query(models.billing.SubscriptionPayment).filter(
+        models.billing.SubscriptionPayment.status == models.billing.PaymentStatus.COMPLETED
+    ).all()
+    
+    total_eth = sum(float(p.amount) for p in payments)
+    by_tier = {}
+    by_network = {}
+    
+    for p in payments:
+        # Group by tier
+        tier = p.tier or 'unknown'
+        if tier not in by_tier:
+            by_tier[tier] = {'count': 0, 'total_eth': 0}
+        by_tier[tier]['count'] += 1
+        by_tier[tier]['total_eth'] += float(p.amount)
+        
+        # Group by network
+        network = p.network or 'unknown'
+        if network not in by_network:
+            by_network[network] = {'count': 0, 'total_eth': 0}
+        by_network[network]['count'] += 1
+        by_network[network]['total_eth'] += float(p.amount)
+    
+    return {
+        'total_payments': len(payments),
+        'total_eth': total_eth,
+        'by_tier': by_tier,
+        'by_network': by_network,
+        'active_hunters': len(set(p.user_id for p in payments))
+    }

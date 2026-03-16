@@ -33,7 +33,7 @@ function usePlanStatus(user) {
       return { label: 'SUB_ADMIN', color: 'text-[var(--status-info)]', bgColor: 'bg-[var(--status-info)]/10', borderColor: 'border-[var(--status-info)]/20', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false, isStaff: true, isAdmin: false }
     }
 
-    const tier = user.tier || 'scout'
+    const tier = user.tier === 'founder' ? 'hunter' : (user.tier || 'scout')
     const status = user.subscription_status || 'trialing'
     const trialStart = user.trial_started_at ? new Date(user.trial_started_at) : (user.created_at ? new Date(user.created_at) : new Date())
     const now = new Date()
@@ -43,9 +43,6 @@ function usePlanStatus(user) {
     const isExpired = status === 'trialing' && trialDaysLeft <= 0
     const isActive = status === 'active' || user.is_pro
 
-    if (tier === 'founder' && isActive) {
-      return { label: 'FOUNDER', color: 'text-[var(--accent-gold)]', bgColor: 'bg-[var(--accent-gold)]/10', borderColor: 'border-[var(--accent-gold)]/20', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false }
-    }
     if (tier === 'hunter' && isActive) {
       return { label: 'HUNTER', color: 'text-[var(--accent-primary)]', bgColor: 'bg-[var(--accent-primary-muted)]', borderColor: 'border-[var(--accent-primary)]/20', isTrial: false, trialDaysLeft: 0, isActive: true, isExpired: false }
     }

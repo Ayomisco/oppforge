@@ -8,7 +8,7 @@ export default function PricingSection() {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Invest in Your Alpha</h2>
           <p className="text-[var(--text-secondary)] text-lg">
-            One grant win pays for a lifetime of OppForge. Choose your weapon.
+            One grant win can cover months of OppForge. Choose your weapon.
           </p>
         </div>
 
@@ -40,10 +40,10 @@ export default function PricingSection() {
             <div className="mb-6">
               <h3 className="text-xl font-bold text-[var(--accent-primary)] uppercase tracking-widest">Hunter</h3>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-bold text-[var(--text-primary)]">$2.9</span>
+                <span className="text-4xl font-bold text-[var(--text-primary)]">$10</span>
                 <span className="text-sm text-[var(--text-tertiary)] font-normal font-mono">/ month</span>
               </div>
-              <p className="text-[10px] text-[var(--text-tertiary)] mt-1 font-mono uppercase">Pay via Crypto (~0.0012 ETH)</p>
+              <p className="text-[10px] text-[var(--text-tertiary)] mt-1 font-mono uppercase">Pay via Crypto (~0.005 ETH on Arbitrum)</p>
             </div>
             <ul className="space-y-4 mb-8 flex-1">
               {['Everything in Scout', 'Unlimited AI Proposal Generation', 'Unlimited Forge AI Chat', 'Sub-5s Real-Time Alerts', 'Priority Support'].map(item => (
