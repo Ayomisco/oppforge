@@ -176,7 +176,20 @@ export default function DashboardPage() {
                       <label className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
                         <DollarSign size={12} /> Reward Amount
                       </label>
-                      <sChain Filter */}
+                      <select
+                        value={reward}
+                        onChange={(e) => setReward(e.target.value)}
+                        className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                      >
+                        <option value="all">All Rewards</option>
+                        <option value="low">Low ($0 - $5K)</option>
+                        <option value="medium">Medium ($5K - $50K)</option>
+                        <option value="high">High ($50K - $500K)</option>
+                        <option value="veryhigh">Very High ($500K+)</option>
+                      </select>
+                    </div>
+
+                    {/* Chain Filter */}
                     <div className="space-y-2">
                       <label className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
                         <Network size={12} /> Blockchain
