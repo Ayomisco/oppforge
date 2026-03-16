@@ -261,7 +261,16 @@ export default function FeedPage() {
         </div>
       </div>
 
-      <FilterBar activeCategory={category} onCategoryChange={setCategory} activeChain={chain} onChainChange={setChain} />
+      <FilterBar 
+        activeCategory={category} 
+        onCategoryChange={setCategory} 
+        activeChain={chain} 
+        onChainChange={setChain}
+        deadline={deadline}
+        onDeadlineChange={setDeadline}
+        reward={reward}
+        onRewardChange={setReward}
+      />
 
       {/* Status */}
       <div className="flex justify-between items-center pb-3 border-b border-[var(--border-default)]">
