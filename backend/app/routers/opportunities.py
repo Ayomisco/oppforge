@@ -78,7 +78,11 @@ def read_opportunities(
         query = query.filter(Opportunity.category.ilike(category))
     
     if chain and chain.lower() not in ("all", ""):
-        query = query.filter(Opportunity.chain.ilike(chain))
+        if chain.lower() == "others":
+            # Filter for opportunities without a chain (non-blockchain programs)
+            query = query.filter(or_(Opportunity.chain == None, Opportunity.chain.in_(["", "Other", "Multi-chain"])))
+        else:
+            query = query.filter(Opportunity.chain.ilike(chain))
 
     # Support both page-based and skip-based pagination
     offset = max(0, (page - 1) * limit) if page > 1 else skip

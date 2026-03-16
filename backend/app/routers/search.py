@@ -85,7 +85,11 @@ def search_ops(q: str, limit: int = 10, category: Optional[str] = None, chain: O
         if category:
             sql_query = sql_query.filter(Opportunity.category == category)
         if chain:
-            sql_query = sql_query.filter(Opportunity.chain == chain)
+            if chain.lower() == "others":
+                from sqlalchemy import or_
+                sql_query = sql_query.filter(or_(Opportunity.chain == None, Opportunity.chain.in_(["", "Other", "Multi-chain"])))
+            else:
+                sql_query = sql_query.filter(Opportunity.chain == chain)
             
         sql_opps = sql_query.limit(limit).all()
         
