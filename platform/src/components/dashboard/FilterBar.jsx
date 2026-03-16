@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Hash, Rocket, Zap, Target, Sparkles, Users, Activity, Building2, Lightbulb, TrendingUp, Medal, Code2, ChevronDown } from 'lucide-react'
+import React from 'react'
+import { Hash, Rocket, Zap, Target, Sparkles, Users, Activity, Building2, Lightbulb, TrendingUp, Medal, Code2 } from 'lucide-react'
 
 const categories = [
   { id: 'all', label: 'All', icon: Hash },
@@ -17,45 +17,7 @@ const categories = [
   { id: 'audit', label: 'Audits', icon: Code2 },
 ]
 
-const chains = [
-  { id: 'all', label: 'All Chains' },
-  { id: 'ethereum', label: 'Ethereum' },
-  { id: 'arbitrum', label: 'Arbitrum' },
-  { id: 'optimism', label: 'Optimism' },
-  { id: 'base', label: 'Base' },
-  { id: 'polygon', label: 'Polygon' },
-  { id: 'solana', label: 'Solana' },
-  { id: 'near', label: 'NEAR' },
-  { id: 'avalanche', label: 'Avalanche' },
-  { id: 'fantom', label: 'Fantom' },
-  { id: 'bsc', label: 'BSC' },
-  { id: 'starknet', label: 'Starknet' },
-  { id: 'zksync', label: 'zkSync' },
-  { id: 'linea', label: 'Linea' },
-  { id: 'scroll', label: 'Scroll' },
-  { id: 'mantle', label: 'Mantle' },
-  { id: 'manta', label: 'Manta' },
-  { id: 'sei', label: 'Sei' },
-  { id: 'aptos', label: 'Aptos' },
-  { id: 'move', label: 'Move' },
-  { id: 'sui', label: 'Sui' },
-  { id: 'cosmos', label: 'Cosmos' },
-  { id: 'polkadot', label: 'Polkadot' },
-  { id: 'tezos', label: 'Tezos' },
-  { id: 'cardano', label: 'Cardano' },
-  { id: 'algorand', label: 'Algorand' },
-  { id: 'ton', label: 'TON' },
-  { id: 'bitcoin', label: 'Bitcoin L2' },
-  { id: 'flow', label: 'Flow' },
-  { id: 'hedera', label: 'Hedera' },
-  { id: 'harmony', label: 'Harmony' },
-  { id: 'celo', label: 'Celo' },
-  { id: 'iotx', label: 'IoTeX' },
-  { id: 'casper', label: 'Casper' },
-]
-
-export default function FilterBar({ activeCategory, onCategoryChange, activeChain, onChainChange }) {
-  const [showChainDropdown, setShowChainDropdown] = useState(false)
+export default function FilterBar({ activeCategory, onCategoryChange }) {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
@@ -76,39 +38,6 @@ export default function FilterBar({ activeCategory, onCategoryChange, activeChai
             {cat.label}
           </button>
         ))}
-      </div>
-
-      {/* Chain Filter Dropdown */}
-      <div className="relative">
-        <button
-          onClick={() => setShowChainDropdown(!showChainDropdown)}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-medium transition-all duration-150 border bg-[var(--bg-secondary)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-muted)]"
-        >
-          🔗 {chains.find(c => c.id === activeChain)?.label || 'All Chains'}
-          <ChevronDown size={14} className={`transition-transform ${showChainDropdown ? 'rotate-180' : ''}`} />
-        </button>
-
-        {showChainDropdown && (
-          <div className="absolute top-full mt-2 z-50 bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-lg shadow-lg p-2 max-h-64 overflow-y-auto w-48">
-            {chains.map((chain) => (
-              <button
-                key={chain.id}
-                onClick={() => {
-                  onChainChange(chain.id)
-                  setShowChainDropdown(false)
-                }}
-                className={`
-                  w-full text-left px-3 py-2 rounded text-xs transition-colors
-                  ${activeChain === chain.id
-                    ? 'bg-[var(--accent-primary)] text-white'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
-                `}
-              >
-                {chain.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   )
