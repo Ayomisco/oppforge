@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { useDisconnect } from 'wagmi';
 import Cookies from 'js-cookie';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -17,6 +18,7 @@ export function AuthProvider({ children }) {
   const [isGuest, setIsGuest] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [guestTimerExpired, setGuestTimerExpired] = useState(false);
+  const { disconnect } = useDisconnect();
 
   // Check for session on mount
   useEffect(() => {
@@ -61,7 +63,7 @@ export function AuthProvider({ children }) {
       const now = Date.now();
       const stored = localStorage.getItem(GUEST_START_KEY);
       if (!stored) {
-        localStorage.setItem(GUEST_START_KEY, now.toString());
+        try { localStorage.setItem(GUEST_START_KEY, now.toString()); } catch {}
       }
       const startTime = parseInt(stored || now, 10);
       const remaining = GUEST_TIMER_MS - (now - startTime);
@@ -164,6 +166,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     Cookies.remove('token', { path: '/' });
     setUser(null);
+    try { disconnect(); } catch {}
     toast.success("Logged out successfully");
     window.location.href = '/login';
   };

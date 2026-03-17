@@ -8,7 +8,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 const config = getDefaultConfig({
   appName: 'OppForge',
-  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || 'YOUR_PROJECT_ID',
+  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
   chains: [mainnet, polygon, optimism, arbitrum, base, zora, sepolia],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });

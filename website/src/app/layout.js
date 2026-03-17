@@ -1,13 +1,13 @@
-import { JetBrains_Mono, Space_Grotesk } from 'next/font/google'
+import { Syne, DM_Sans } from 'next/font/google'
 import './globals.css'
 
-const jetbrainsMono = JetBrains_Mono({ 
+const syne = Syne({ 
   subsets: ['latin'], 
-  variable: '--font-mono',
+  variable: '--font-heading',
   display: 'swap',
 })
 
-const spaceGrotesk = Space_Grotesk({ 
+const dmSans = DM_Sans({ 
   subsets: ['latin'], 
   variable: '--font-sans',
   display: 'swap',
@@ -85,7 +85,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body className={`${syne.variable} ${dmSans.variable} antialiased`}>
         {children}
       </body>
     </html>
