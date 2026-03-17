@@ -1,10 +1,13 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Cookies from 'js-cookie';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+
+const GUEST_TIMER_MS = 4 * 60 * 1000; // 4 minutes
+const GUEST_START_KEY = 'oppforge_guest_start';
 
 const AuthContext = createContext();
 
@@ -13,6 +16,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [guestTimerExpired, setGuestTimerExpired] = useState(false);
 
   // Check for session on mount
   useEffect(() => {
@@ -39,6 +43,40 @@ export function AuthProvider({ children }) {
     };
     checkSession();
   }, []);
+
+  // 4-minute guest access timer
+  useEffect(() => {
+    if (loading) return;
+
+    if (user) {
+      // Authenticated — reset timer state
+      setGuestTimerExpired(false);
+      try { localStorage.removeItem(GUEST_START_KEY); } catch {}
+      return;
+    }
+
+    if (!isGuest) return;
+
+    try {
+      const now = Date.now();
+      const stored = localStorage.getItem(GUEST_START_KEY);
+      if (!stored) {
+        localStorage.setItem(GUEST_START_KEY, now.toString());
+      }
+      const startTime = parseInt(stored || now, 10);
+      const remaining = GUEST_TIMER_MS - (now - startTime);
+
+      if (remaining <= 0) {
+        setGuestTimerExpired(true);
+        return;
+      }
+
+      const timer = setTimeout(() => setGuestTimerExpired(true), remaining);
+      return () => clearTimeout(timer);
+    } catch {
+      // localStorage unavailable — skip timer
+    }
+  }, [isGuest, user, loading]);
 
   const loginGoogle = async (credentialResponse) => {
 
@@ -133,7 +171,8 @@ export function AuthProvider({ children }) {
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
       <AuthContext.Provider value={{ 
-        user, loading, isGuest, loginGoogle, loginWallet, loginX, logout, setUser,
+        user, loading, isGuest, guestTimerExpired,
+        loginGoogle, loginWallet, loginX, logout, setUser,
         loginModalOpen,
         openLoginModal: () => setLoginModalOpen(true),
         closeLoginModal: () => setLoginModalOpen(false),

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, computed_field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from .opportunity import OpportunityResponse
 
@@ -57,7 +57,7 @@ class TrackedAppResponse(TrackedAppBase):
     @property
     def is_expired(self) -> bool:
         if self.opportunity and self.opportunity.deadline:
-            return self.opportunity.deadline < datetime.utcnow()
+            return self.opportunity.deadline < datetime.now(timezone.utc)
         return False
 
     class Config:

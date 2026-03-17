@@ -3,14 +3,14 @@
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { LogIn, Wallet, Shield, Zap } from 'lucide-react';
+import { LogIn, Wallet, Shield, Zap, Clock } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 
-export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
+export function LoginModal({ isOpen, onClose, triggerText = "Continue", persistent = false }) {
   const { loginGoogle, loginWallet, user } = useAuth();
   const { address, isConnected } = useAccount();
   const loginAttempted = useRef(false);
@@ -47,8 +47,13 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md border-[var(--border-default)] bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <Dialog open={isOpen} onOpenChange={persistent ? () => {} : onClose}>
+      <DialogContent
+        className="sm:max-w-md border-[var(--border-default)] bg-[var(--bg-primary)] text-[var(--text-primary)]"
+        onInteractOutside={persistent ? (e) => e.preventDefault() : undefined}
+        onEscapeKeyDown={persistent ? (e) => e.preventDefault() : undefined}
+        hideCloseButton={persistent}
+      >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-md bg-[var(--accent-primary-muted)] border border-[var(--accent-primary)]/20">
@@ -59,7 +64,9 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue" }) {
             </DialogTitle>
           </div>
           <DialogDescription className="text-[var(--text-secondary)]">
-            Sign in to unlock AI-powered opportunity tracking, personalized scoring, and application drafting tools.
+            {persistent
+              ? 'Your guest preview has ended. Sign in to continue exploring Web3 opportunities with full access.'
+              : 'Sign in to unlock AI-powered opportunity tracking, personalized scoring, and application drafting tools.'}
           </DialogDescription>
         </DialogHeader>
 
