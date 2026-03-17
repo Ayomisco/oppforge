@@ -31,7 +31,7 @@ export default function BillingPage() {
         setHistory(historyRes.data);
         setInvoices(invoicesRes.data);
       } catch (err) {
-        console.error("Failed to fetch billing data", err);
+        if (process.env.NODE_ENV !== 'production') console.error("Failed to fetch billing data", err);
       } finally {
         setLoading(false);
       }

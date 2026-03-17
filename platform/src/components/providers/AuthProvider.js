@@ -18,21 +18,21 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const checkSession = async () => {
       const token = Cookies.get('token');
-      console.log("AUTH_PROVIDER: Mounting. Token found:", !!token);
+
 
       if (token) {
         try {
           const { data } = await api.get('/auth/me');
-          console.log("AUTH_PROVIDER: Session check success. User:", data.email, "Role:", data.role);
+
           setUser(data);
           setIsGuest(false);
         } catch (error) {
-          console.error("AUTH_PROVIDER: Session check failed:", error.response?.status, error.message);
+
           Cookies.remove('token', { path: '/' });
           setIsGuest(true);
         }
       } else {
-        console.log("AUTH_PROVIDER: No token, starting as guest.");
+
         setIsGuest(true);
       }
       setLoading(false);
@@ -41,11 +41,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const loginGoogle = async (credentialResponse) => {
-    console.log("Executing loginGoogle with credential...");
+
     try {
       const { credential } = credentialResponse;
       const { data } = await api.post('/auth/google', { token: credential });
-      console.log("Backend auth successful, received token:", !!data.access_token);
+
       
       const cookieOptions = { 
         expires: 7, 
@@ -58,22 +58,22 @@ export function AuthProvider({ children }) {
       const updatedUser = { ...data.user, is_new_user: data.is_new_user };
       setUser(updatedUser);
       setIsGuest(false); // ← CRITICAL: unlock FeatureGate immediately
-      console.log("User state updated in context:", updatedUser.email, "is_new_user:", data.is_new_user);
+
       
       toast.success(`Welcome${data.is_new_user ? '' : ' back'}, ${data.user.first_name || 'Hunter'}!`);
       return { success: true, isNewUser: data.is_new_user, user: updatedUser };
     } catch (error) {
-      console.error("Login process failed at some step:", error);
+
       toast.error("Login failed. Check console for details.");
       return { success: false };
     }
   };
 
   const loginWallet = async (address, signature, message) => {
-    console.log("Executing loginWallet with address:", address);
+
     try {
       const { data } = await api.post('/auth/wallet', { address, signature, message });
-      console.log("Wallet auth successful, received token:", !!data.access_token);
+
       
       const cookieOptions = { 
         expires: 7, 
@@ -90,17 +90,17 @@ export function AuthProvider({ children }) {
       toast.success(`Welcome${data.is_new_user ? '' : ' back'}, Hunter!`);
       return { success: true, isNewUser: data.is_new_user, user: updatedUser };
     } catch (error) {
-      console.error("Wallet login failed:", error);
+
       toast.error("Wallet authentication failed. Please verify the signature.");
       return { success: false };
     }
   };
 
   const loginX = async (code, codeVerifier, redirectUri) => {
-    console.log("Executing loginX with OAuth2 PKCE...");
+
     try {
       const { data } = await api.post('/auth/x', { code, code_verifier: codeVerifier, redirect_uri: redirectUri });
-      console.log("X auth successful, received token:", !!data.access_token);
+
       
       const cookieOptions = { 
         expires: 7, 
@@ -117,7 +117,7 @@ export function AuthProvider({ children }) {
       toast.success(`Welcome${data.is_new_user ? '' : ' back'}, ${data.user.first_name || 'Hunter'}!`);
       return { success: true, isNewUser: data.is_new_user, user: updatedUser };
     } catch (error) {
-      console.error("X login failed:", error);
+
       toast.error("X authentication failed. Please try again.");
       return { success: false };
     }

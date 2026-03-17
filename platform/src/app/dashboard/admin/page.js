@@ -559,16 +559,7 @@ export default function AdminDashboard() {
   const { data: topOpps } = useSWR(isStaff ? '/admin/dashboard/top-opportunities' : null, fetcher)
 
   // Debug: log admin stats errors
-  React.useEffect(() => {
-    if (statsError) {
-      const status = statsError?.response?.status
-      const msg = statsError?.response?.data?.detail || statsError?.message
-      console.error('[Admin] Stats fetch error:', { status, msg, isStaff })
-      if (status === 401) console.warn('[Admin] 401 Unauthorized - check if user token is valid and role is ADMIN/SUB_ADMIN')
-      if (status === 403) console.warn('[Admin] 403 Forbidden - user role insufficient')
-    }
-    if (stats) console.log('[Admin] Stats loaded successfully:', stats)
-  }, [stats, statsError, isStaff])
+
   
   const userSearchParam = userSearch ? `&search=${encodeURIComponent(userSearch)}` : ''
   const { data: users, mutate: mutateUsers } = useSWR(

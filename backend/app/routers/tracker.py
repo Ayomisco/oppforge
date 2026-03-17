@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 import uuid
 import os
 import httpx
@@ -25,7 +25,9 @@ def get_tracked_apps(db: Session = Depends(database.get_db), current_user = Depe
     """
     Get all tracked applications for current user.
     """
-    return db.query(models.TrackedApplication).filter(
+    return db.query(models.TrackedApplication).options(
+        joinedload(models.TrackedApplication.opportunity)
+    ).filter(
         models.TrackedApplication.user_id == current_user.id
     ).all()
 

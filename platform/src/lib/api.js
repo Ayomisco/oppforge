@@ -30,7 +30,9 @@ api.interceptors.response.use(
   (error) => {
     if (!error.response) {
       // Network-level error (backend unreachable, CORS, DNS)
-      console.error('[API] Network error — backend unreachable:', API_URL, error.message);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[API] Network error — backend unreachable:', error.message);
+      }
     }
     if (error.response?.status === 401) {
       Cookies.remove('token', { path: '/' });

@@ -138,7 +138,7 @@ export default function SubscriptionPage() {
       
       toast.success(`${tier.name} tier activated via smart contract!`, { id: tid });
     } catch (error) {
-      console.error('Upgrade failed:', error);
+      if (process.env.NODE_ENV !== 'production') console.error('Upgrade failed:', error);
       const msg = error?.shortMessage || error?.message || 'Transaction cancelled or failed.';
       toast.error(msg, { id: tid });
     } finally {

@@ -21,7 +21,7 @@ class TrackedAppUpdate(BaseModel):
 class TrackedAppResponse(TrackedAppBase):
     id: uuid.UUID
     user_id: uuid.UUID
-    opportunity: OpportunityResponse
+    opportunity: Optional[OpportunityResponse] = None
     ai_strategy_notes: Optional[str] = None
     updated_at: Optional[datetime] = None
     created_at: Optional[datetime] = None

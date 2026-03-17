@@ -84,7 +84,7 @@ export default function SettingsPage() {
       setUser(data);
       toast.success("Identity profile forged!");
     } catch (error) {
-      console.error("Update failed:", error);
+      if (process.env.NODE_ENV !== 'production') console.error("Update failed:", error);
       toast.error("Failed to sync matrix.");
     } finally {
       setLoading(false);
@@ -147,7 +147,7 @@ export default function SettingsPage() {
       // Fallback to localStorage if backend fails
       localStorage.setItem('oppforge_alert_prefs', JSON.stringify(alertPrefs));
       toast.success('Alert preferences saved locally');
-      console.error('Failed to sync alert prefs to backend:', error);
+      if (process.env.NODE_ENV !== 'production') console.error('Failed to sync alert prefs to backend:', error);
     }
   };
 
