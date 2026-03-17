@@ -76,7 +76,7 @@ export default function LandingPage() {
       <section className="relative py-24 md:py-32 overflow-hidden border-b border-[var(--border-default)]">
         {/* Background Video */}
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.15]">
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-digital-network-of-luminous-lines-25300-large.mp4" type="video/mp4" />
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4" />
         </video>
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-canvas)]/80 via-[var(--bg-canvas)]/90 to-[var(--bg-canvas)] pointer-events-none" />

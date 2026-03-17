@@ -33,7 +33,6 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
-    '/',
     '/login',
     '/dashboard/:path*',
     '/tracker/:path*',
