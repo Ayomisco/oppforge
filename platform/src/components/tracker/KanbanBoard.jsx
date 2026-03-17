@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, CheckCircle, MoreHorizontal, Zap, ArrowRight, XCircle, ChevronRight, FileText, ExternalLink, Trash2, Wand2, ChevronDown } from 'lucide-react'
+import { Clock, CheckCircle, MoreHorizontal, Zap, ArrowRight, XCircle, ChevronRight, FileText, ExternalLink, Trash2, Wand2, ChevronDown, AlertTriangle } from 'lucide-react'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
@@ -100,10 +100,17 @@ export default function KanbanBoard({ initialApplications, onRefresh, onOpenDraf
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="glass-card p-4 group hover:border-[#ff5500]/30 transition-all cursor-default"
+                    className={`glass-card p-4 group hover:border-[#ff5500]/30 transition-all cursor-default ${app.is_expired ? 'opacity-60 border-red-500/10' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-[11px] font-medium text-gray-500">{app.type}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-medium text-gray-500">{app.type}</span>
+                        {app.is_expired && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-0.5">
+                            <AlertTriangle size={9} /> Expired
+                          </span>
+                        )}
+                      </div>
                       {/* 3-dot menu */}
                       <div className="relative" onMouseDown={e => e.stopPropagation()}>
                         <button

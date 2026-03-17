@@ -12,6 +12,7 @@ import {
   FileText, X, Hash, Rocket, Wallet, Sparkles, Upload, FileUp, CheckCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { CHAIN_LABELS } from '@/lib/chains';
 
 const steps = [
   {
@@ -59,13 +60,11 @@ const SKILLS = [
 ];
 
 const ECOSYSTEMS = [
-  'Solana', 'Ethereum', 'Arbitrum', 'Optimism', 'Base', 'Polygon', 'Monad',
-  'Berachain', 'Avalanche', 'Sui', 'Aptos', 'Near', 'Cosmos', 'Polkadot',
-  'Celestia', 'Starknet', 'zkSync', 'Linea', 'Scroll', 'Blast', 'Sei',
-  'Injective', 'Algorand', 'Cardano', 'Hedera', 'Celo', 'EigenLayer',
-  'Hyperliquid', 'Jupiter', 'Wormhole', 'LayerZero', 'Lido', 'Aave',
-  'Uniswap', 'Compound', 'GMX', 'dYdX', 'Drift', 'Orca', 'Raydium',
-  'Lens Protocol', 'Farcaster', 'Zora', 'Blur', 'OpenSea', 'Magic Eden',
+  ...CHAIN_LABELS,
+  'EigenLayer', 'Hyperliquid', 'Jupiter', 'Wormhole', 'LayerZero',
+  'Lido', 'Aave', 'Uniswap', 'Compound', 'GMX', 'dYdX', 'Drift',
+  'Orca', 'Raydium', 'Lens Protocol', 'Farcaster', 'Blur',
+  'OpenSea', 'Magic Eden',
 ].sort();
 
 export default function OnboardingPage() {

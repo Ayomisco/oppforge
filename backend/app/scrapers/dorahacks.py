@@ -230,7 +230,16 @@ class DoraHacksScraper(BaseScraper):
     
     def _extract_chain(self, tags):
         """Extract blockchain from tags"""
-        chains = ["Ethereum", "Solana", "Polygon", "Avalanche", "BNB", "Arbitrum"]
+        chains = [
+            "Aleo", "Algorand", "Aptos", "Arbitrum", "Avalanche", "Base",
+            "Berachain", "Bitcoin", "Blast", "BNB", "Cardano", "Celo",
+            "Celestia", "Cosmos", "Cronos", "Ethereum", "Fantom",
+            "Filecoin", "Flow", "Gnosis", "Hedera", "Injective",
+            "Linea", "Manta", "Mantle", "Monad", "Moonbeam", "NEAR",
+            "Optimism", "Polkadot", "Polygon", "Scroll", "Sei",
+            "Solana", "Starknet", "Sui", "Tezos", "TON", "Tron",
+            "ZkSync", "Zora",
+        ]
         for tag in tags:
             for chain in chains:
                 if chain.lower() in tag.lower():

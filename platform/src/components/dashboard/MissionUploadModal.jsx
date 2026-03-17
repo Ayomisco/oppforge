@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Shield, Globe, Cpu, Target, HelpCircle } from 'lucide-react'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
+import { ADMIN_CHAINS } from '@/lib/chains'
 
 export default function MissionUploadModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -156,20 +157,9 @@ export default function MissionUploadModal() {
                    className="w-full bg-[#1a1512] border border-white/10 rounded px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-[#ff5500]"
                 >
                   <option>Multi-chain</option>
-                  <option>Solana</option>
-                  <option>Arbitrum</option>
-                  <option>Optimism</option>
-                  <option>Base</option>
-                  <option>Ethereum</option>
-                  <option>Sui</option>
-                  <option>Monad</option>
-                  <option>Berachain</option>
-                  <option>Aptos</option>
-                  <option>Avalanche</option>
-                  <option>Bitcoin</option>
-                  <option>Polygon</option>
-                  <option>Injective</option>
-                  <option>Sei</option>
+                  {ADMIN_CHAINS.filter(c => c !== 'Multi-chain').map(c => (
+                    <option key={c}>{c}</option>
+                  ))}
                 </select>
              </div>
           </div>

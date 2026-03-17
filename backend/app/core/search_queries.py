@@ -2,9 +2,15 @@
 # Categorized for rotation
 
 ECOSYSTEMS = [
-    "Solana", "Ethereum", "Arbitrum", "Optimism", "Polygon", 
-    "Base", "Sui", "Aptos", "Berachain", "Monad", "Starknet", 
-    "ZkSync", "Avalanche", "Cosmos", "Celestia"
+    "Aleo", "Algorand", "Aptos", "Arbitrum", "Aurora", "Avalanche",
+    "Base", "Berachain", "Bitcoin", "Blast", "BSC", "Canto",
+    "Cardano", "Casper", "Celo", "Celestia", "Cosmos", "Cronos",
+    "Ethereum", "Fantom", "Filecoin", "Flow", "Fuel", "Gnosis",
+    "Harmony", "Hedera", "ImmutableX", "Injective", "IoTeX", "Kava",
+    "Linea", "Manta", "Mantle", "Metis", "Mina", "Monad",
+    "Moonbeam", "MultiversX", "NEAR", "Oasis", "Optimism",
+    "Polkadot", "Polygon", "Ronin", "Scroll", "Sei", "Solana",
+    "Starknet", "Sui", "Tezos", "TON", "Tron", "ZkSync", "Zora",
 ]
 
 KEYWORDS = [

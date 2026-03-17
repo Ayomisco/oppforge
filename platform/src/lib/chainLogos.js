@@ -52,6 +52,19 @@ const CHAIN_LOGOS = {
   'algorand':   'https://cryptologos.cc/logos/algorand-algo-logo.svg',
   'tezos':      'https://cryptologos.cc/logos/tezos-xtz-logo.svg',
   'flow':       'https://cryptologos.cc/logos/flow-flow-logo.svg',
+  'filecoin':   'https://cryptologos.cc/logos/filecoin-fil-logo.svg',
+  'cronos':     'https://cryptologos.cc/logos/cronos-cro-logo.svg',
+  'kava':       'https://cryptologos.cc/logos/kava-kava-logo.svg',
+  'mina':       'https://cryptologos.cc/logos/mina-mina-logo.svg',
+  'injective':  'https://cryptologos.cc/logos/injective-inj-logo.svg',
+  'sei':        'https://cryptologos.cc/logos/sei-sei-logo.svg',
+  'celestia':   'https://cryptologos.cc/logos/celestia-tia-logo.svg',
+  'tron':       'https://cryptologos.cc/logos/tron-trx-logo.svg',
+  'iotx':       'https://cryptologos.cc/logos/iotex-iotx-logo.svg',
+  'blast':      'https://cryptologos.cc/logos/blast-blast-logo.svg',
+  'ronin':      'https://cryptologos.cc/logos/ronin-ron-logo.svg',
+  'oasis':      'https://cryptologos.cc/logos/oasis-network-rose-logo.svg',
+  'casper':     'https://cryptologos.cc/logos/casper-cspr-logo.svg',
 }
 
 /**

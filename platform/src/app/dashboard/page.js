@@ -8,6 +8,7 @@ import OpportunityCard from '@/components/dashboard/OpportunityCard'
 import FilterBar from '@/components/dashboard/FilterBar'
 import TestnetTracker from '@/components/dashboard/TestnetTracker'
 import { OpportunitySkeleton, StatSkeleton } from '@/components/ui/Skeleton'
+import ChainFilterSelect from '@/components/ui/ChainFilterSelect'
 
 const fetcher = url => api.get(url).then(res => res.data)
 
@@ -194,47 +195,7 @@ export default function DashboardPage() {
                       <label className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
                         <Network size={12} /> Blockchain
                       </label>
-                      <select
-                        value={chain}
-                        onChange={(e) => setChain(e.target.value)}
-                        className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                      >
-                        <option value="all">All Chains</option>
-                        <option value="ethereum">Ethereum</option>
-                        <option value="arbitrum">Arbitrum</option>
-                        <option value="optimism">Optimism</option>
-                        <option value="base">Base</option>
-                        <option value="polygon">Polygon</option>
-                        <option value="solana">Solana</option>
-                        <option value="near">NEAR</option>
-                        <option value="avalanche">Avalanche</option>
-                        <option value="fantom">Fantom</option>
-                        <option value="bsc">BSC</option>
-                        <option value="starknet">Starknet</option>
-                        <option value="zksync">zkSync</option>
-                        <option value="linea">Linea</option>
-                        <option value="scroll">Scroll</option>
-                        <option value="mantle">Mantle</option>
-                        <option value="manta">Manta</option>
-                        <option value="sei">Sei</option>
-                        <option value="aptos">Aptos</option>
-                        <option value="move">Move</option>
-                        <option value="sui">Sui</option>
-                        <option value="cosmos">Cosmos</option>
-                        <option value="polkadot">Polkadot</option>
-                        <option value="tezos">Tezos</option>
-                        <option value="cardano">Cardano</option>
-                        <option value="algorand">Algorand</option>
-                        <option value="ton">TON</option>
-                        <option value="bitcoin">Bitcoin L2</option>
-                        <option value="flow">Flow</option>
-                        <option value="hedera">Hedera</option>
-                        <option value="harmony">Harmony</option>
-                        <option value="celo">Celo</option>
-                        <option value="iotx">IoTeX</option>
-                        <option value="casper">Casper</option>
-                        <option value="others">Others (Non-Chain)</option>
-                      </select>
+                      <ChainFilterSelect value={chain} onChange={setChain} size="sm" />
                     </div>
 
                     {/* Reset Filters */}

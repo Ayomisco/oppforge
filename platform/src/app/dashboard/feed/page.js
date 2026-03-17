@@ -6,45 +6,9 @@ import api from '@/lib/api'
 import OpportunityCard from '@/components/dashboard/OpportunityCard'
 import FilterBar from '@/components/dashboard/FilterBar'
 import { SlidersHorizontal, AlertTriangle, RefreshCw, Search, Wifi, Loader2, X, Calendar, DollarSign, Network } from 'lucide-react'
+import ChainFilterSelect from '@/components/ui/ChainFilterSelect'
 
 const fetcher = url => api.get(url).then(res => res.data)
-
-const chains = [
-  { id: 'all', label: 'All Chains' },
-  { id: 'ethereum', label: 'Ethereum' },
-  { id: 'arbitrum', label: 'Arbitrum' },
-  { id: 'optimism', label: 'Optimism' },
-  { id: 'base', label: 'Base' },
-  { id: 'polygon', label: 'Polygon' },
-  { id: 'solana', label: 'Solana' },
-  { id: 'near', label: 'NEAR' },
-  { id: 'avalanche', label: 'Avalanche' },
-  { id: 'fantom', label: 'Fantom' },
-  { id: 'bsc', label: 'BSC' },
-  { id: 'starknet', label: 'Starknet' },
-  { id: 'zksync', label: 'zkSync' },
-  { id: 'linea', label: 'Linea' },
-  { id: 'scroll', label: 'Scroll' },
-  { id: 'mantle', label: 'Mantle' },
-  { id: 'manta', label: 'Manta' },
-  { id: 'sei', label: 'Sei' },
-  { id: 'aptos', label: 'Aptos' },
-  { id: 'move', label: 'Move' },
-  { id: 'sui', label: 'Sui' },
-  { id: 'cosmos', label: 'Cosmos' },
-  { id: 'polkadot', label: 'Polkadot' },
-  { id: 'tezos', label: 'Tezos' },
-  { id: 'cardano', label: 'Cardano' },
-  { id: 'algorand', label: 'Algorand' },
-  { id: 'ton', label: 'TON' },
-  { id: 'bitcoin', label: 'Bitcoin L2' },
-  { id: 'flow', label: 'Flow' },
-  { id: 'hedera', label: 'Hedera' },
-  { id: 'harmony', label: 'Harmony' },
-  { id: 'celo', label: 'Celo' },
-  { id: 'iotx', label: 'IoTeX' },
-  { id: 'casper', label: 'Casper' },
-]
 
 const SkeletonCard = () => (
   <div className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-lg p-4 animate-pulse space-y-3">
@@ -294,46 +258,7 @@ export default function FeedPage() {
                   <label className="text-xs font-medium text-[var(--text-secondary)] flex items-center gap-2">
                     <Network size={14} /> Blockchain
                   </label>
-                  <select
-                    value={chain}
-                    onChange={(e) => setChain(e.target.value)}
-                    className="w-full bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                  >
-                    <option value="all">All Chains</option>
-                    <option value="ethereum">Ethereum</option>
-                    <option value="arbitrum">Arbitrum</option>
-                    <option value="optimism">Optimism</option>
-                    <option value="base">Base</option>
-                    <option value="polygon">Polygon</option>
-                    <option value="solana">Solana</option>
-                    <option value="near">NEAR</option>
-                    <option value="avalanche">Avalanche</option>
-                    <option value="fantom">Fantom</option>
-                    <option value="bsc">BSC</option>
-                    <option value="starknet">Starknet</option>
-                    <option value="zksync">zkSync</option>
-                    <option value="linea">Linea</option>
-                    <option value="scroll">Scroll</option>
-                    <option value="mantle">Mantle</option>
-                    <option value="manta">Manta</option>
-                    <option value="sei">Sei</option>
-                    <option value="aptos">Aptos</option>
-                    <option value="move">Move</option>
-                    <option value="sui">Sui</option>
-                    <option value="cosmos">Cosmos</option>
-                    <option value="polkadot">Polkadot</option>
-                    <option value="tezos">Tezos</option>
-                    <option value="cardano">Cardano</option>
-                    <option value="algorand">Algorand</option>
-                    <option value="ton">TON</option>
-                    <option value="bitcoin">Bitcoin L2</option>
-                    <option value="flow">Flow</option>
-                    <option value="hedera">Hedera</option>
-                    <option value="harmony">Harmony</option>
-                    <option value="celo">Celo</option>
-                    <option value="iotx">IoTeX</option>
-                    <option value="casper">Casper</option>
-                  </select>
+                  <ChainFilterSelect value={chain} onChange={setChain} />
                 </div>
 
                 {/* Reset Filters */}

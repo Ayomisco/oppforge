@@ -104,6 +104,12 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.notification_tasks.check_trial_expirations",
         "schedule": crontab(minute=0, hour=8),
     },
+    
+    # Deadline Reminders - Daily at 8:30 AM (24h/48h before expiry)
+    "send-deadline-reminders": {
+        "task": "app.tasks.notification_tasks.send_deadline_reminders",
+        "schedule": crontab(minute=30, hour=8),
+    },
 }
 
 # Task routing

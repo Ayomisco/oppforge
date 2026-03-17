@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import useSWR from 'swr'
 import api from '@/lib/api'
-import { LayoutGrid, List, Zap } from 'lucide-react'
+import { LayoutGrid, List, Zap, AlertTriangle } from 'lucide-react'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import KanbanBoard from '@/components/tracker/KanbanBoard'
 import AIDrafterModal from '@/components/tracker/AIDrafterModal'
@@ -106,15 +106,28 @@ export default function TrackerPage() {
                   <th className="p-4 text-xs font-semibold text-gray-400">Opportunity</th>
                   <th className="p-4 text-xs font-semibold text-gray-400">Type</th>
                   <th className="p-4 text-xs font-semibold text-gray-400">Status</th>
+                  <th className="p-4 text-xs font-semibold text-gray-400">Deadline</th>
                   <th className="p-4 text-xs font-semibold text-gray-400">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {apps.map((app) => (
-                  <tr key={app.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
-                    <td className="p-4 text-sm font-semibold text-white">{app.title}</td>
+                  <tr key={app.id} className={`border-b border-white/5 hover:bg-white/[0.02] transition-colors group ${app.is_expired ? 'opacity-60' : ''}`}>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-white">{app.title}</span>
+                        {app.is_expired && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1 shrink-0">
+                            <AlertTriangle size={10} /> Expired
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-4 text-sm text-gray-500">{app.category || app.type}</td>
                     <td className="p-4"><StatusBadge status={app.status} /></td>
+                    <td className="p-4 text-xs font-mono text-gray-500">
+                      {app.deadline ? new Date(app.deadline).toLocaleDateString() : '—'}
+                    </td>
                     <td className="p-4">
                       <button 
                         onClick={() => openDrafter(app)}

@@ -12,6 +12,7 @@ import api from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { formatDistanceToNow } from 'date-fns'
+import { ADMIN_CHAINS } from '@/lib/chains'
 
 const fetcher = url => api.get(url).then(res => res.data)
 
@@ -329,7 +330,7 @@ function EditOppModal({ opp, onClose }) {
           </Field>
           <Field label="Sub Category" name="sub_category" placeholder="DeFi, NFT, Infra..." />
           <Field label="Chain" name="chain" type="select">
-            {['Multi-chain', 'Ethereum', 'Solana', 'Arbitrum', 'Polygon', 'Base', 'Optimism', 'BSC', 'Avalanche', 'Other'].map(c => 
+            {ADMIN_CHAINS.map(c => 
               <option key={c} value={c}>{c}</option>
             )}
           </Field>
@@ -483,7 +484,7 @@ function CreateOppModal({ onClose }) {
             </Field>
             <Field label="Sub-Category" name="sub_category" placeholder="DeFi, NFT, Infra..." />
             <Field label="Blockchain" name="chain" type="select">
-              {['Multi-chain', 'Ethereum', 'Solana', 'Arbitrum', 'Polygon', 'Base', 'Optimism', 'BSC', 'Avalanche', 'Sui', 'Aptos', 'Other'].map(c => 
+              {ADMIN_CHAINS.map(c => 
                 <option key={c} value={c}>{c}</option>
               )}
             </Field>
@@ -705,15 +706,23 @@ export default function AdminDashboard() {
           )}
 
           {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <StatCard label="Total Users" value={stats?.total_users ?? 0} icon={Users} color="#3b82f6" change={stats?.new_users_week} />
+            <StatCard label="New Today" value={stats?.new_users_today ?? 0} icon={UserPlus} color="#3b82f6" />
+            <StatCard label="Pro Users" value={stats?.pro_users ?? 0} icon={TrendingUp} color="#10b981" />
+            <StatCard label="Staff" value={(stats?.admin_users ?? 0) + (stats?.sub_admin_users ?? 0)} icon={Shield} color="#ffaa00" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <StatCard label="Total Opportunities" value={stats?.total_opportunities ?? 0} icon={Globe} color="#ff5500" />
+            <StatCard label="Verified" value={stats?.verified_opportunities ?? 0} icon={Verified} color="#ffaa00" />
+            <StatCard label="Active Missions" value={stats?.active_opportunities ?? 0} icon={Activity} color="#10b981" />
+            <StatCard label="Expired" value={stats?.expired_opportunities ?? 0} icon={AlertTriangle} color="#ef4444" />
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <StatCard label="Total Users" value={stats?.total_users || 0} icon={Users} color="#3b82f6" change={stats?.new_users_week} />
-            <StatCard label="Pro Users" value={stats?.pro_users || 0} icon={TrendingUp} color="#10b981" />
-            <StatCard label="Total Opportunities" value={stats?.total_opportunities || 0} icon={Globe} color="#ff5500" />
-            <StatCard label="Verified" value={stats?.verified_opportunities || 0} icon={Verified} color="#ffaa00" />
-            <StatCard label="Active Missions" value={stats?.active_opportunities || 0} icon={Activity} color="#10b981" />
-            <StatCard label="Expired" value={stats?.expired_opportunities || 0} icon={AlertTriangle} color="#ef4444" />
-            <StatCard label="Tracked Apps" value={stats?.total_tracked || 0} icon={Eye} color="#8b5cf6" />
-            <StatCard label="Staff" value={(stats?.admin_users || 0) + (stats?.sub_admin_users || 0)} icon={Shield} color="#ffaa00" />
+            <StatCard label="Tracked Apps" value={stats?.total_tracked ?? 0} icon={Eye} color="#8b5cf6" />
+            <StatCard label="Total Payments" value={stats?.total_payments ?? 0} icon={Activity} color="#10b981" />
+            <StatCard label="Revenue (ETH)" value={stats?.total_revenue_eth != null ? stats.total_revenue_eth.toFixed(4) : '0'} icon={TrendingUp} color="#ffaa00" />
+            <StatCard label="Payments This Month" value={stats?.payments_this_month ?? 0} icon={BarChart3} color="#ff5500" change={stats?.payments_this_month} />
           </div>
 
           {/* User Growth Chart (simple bar) */}

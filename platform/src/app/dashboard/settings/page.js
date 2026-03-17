@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import api from '@/lib/api';
+import { CHAIN_LABELS } from '@/lib/chains';
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
 import { User, Wallet, Github, Twitter, Bell, Shield, Save, Link as LinkIcon, Zap, Receipt, Mail, Eye, EyeOff, Key, Smartphone, AlertTriangle, Clock, Filter, Volume2, VolumeX, FileText, Upload, X, CheckCircle } from 'lucide-react';
@@ -709,7 +710,7 @@ export default function SettingsPage() {
             <div className="space-y-3">
               <label className="text-[10px] font-mono text-gray-600 uppercase">Preferred Chains</label>
               <div className="flex flex-wrap gap-2">
-                {['Solana', 'Ethereum', 'Arbitrum', 'Optimism', 'Base', 'Polygon', 'Monad', 'Berachain', 'Avalanche', 'Sui', 'Aptos', 'Near', 'Cosmos', 'Polkadot', 'Celestia', 'Starknet', 'zkSync', 'Linea', 'Scroll', 'Blast', 'Sei', 'Injective'].map(c => (
+                {CHAIN_LABELS.map(c => (
                   <button key={c} type="button" onClick={() => setChains(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
                     className={`px-3 py-1.5 rounded border text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
                       chains.includes(c) ? 'border-[#ffaa00]/40 bg-[#ffaa00]/10 text-[#ffaa00]' : 'border-white/10 bg-white/[0.02] text-gray-500 hover:text-gray-300'

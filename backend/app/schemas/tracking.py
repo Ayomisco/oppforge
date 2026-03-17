@@ -48,5 +48,17 @@ class TrackedAppResponse(TrackedAppBase):
     def reward(self) -> Optional[str]:
         return self.opportunity.reward_pool if self.opportunity else None
 
+    @computed_field
+    @property
+    def deadline(self) -> Optional[datetime]:
+        return self.opportunity.deadline if self.opportunity else None
+
+    @computed_field
+    @property
+    def is_expired(self) -> bool:
+        if self.opportunity and self.opportunity.deadline:
+            return self.opportunity.deadline < datetime.utcnow()
+        return False
+
     class Config:
         from_attributes = True

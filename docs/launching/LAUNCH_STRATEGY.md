@@ -1,7 +1,7 @@
 # OppForge Launch Strategy — Day 1 MVP
 
-**Date:** March 15, 2026  
-**Goal:** Maximum visibility across ALL Web3 audiences, not just builders — bounty hunters, testnet farmers, community managers, ambassadors, DAO contributors, and ecosystem teams  
+**Date:** March 15, 2026
+**Goal:** Maximum visibility across ALL Web3 audiences, not just builders — bounty hunters, testnet farmers, community managers, ambassadors, DAO contributors, and ecosystem teams
 **Platforms:** X (Twitter), LinkedIn, Product Hunt (optional day 2)
 
 ---
@@ -14,11 +14,11 @@
 4. [OppForge Official Thread](#4-oppforge-official-x-thread)
 5. [Personal Thread #1 — Founder Story](#5-personal-thread-1--founder-story)
 6. [Personal Thread #2 — Every Web3 Persona Thread](#6-personal-thread-2--every-web3-persona-thread)
-7. [Personal Thread #3 — Ecosystem & Multi-Chain Play](#7-personal-thread-3--ecosystem--multi-chain-play)
+7. [Personal Thread #3 — Ecosystem &amp; Multi-Chain Play](#7-personal-thread-3--ecosystem--multi-chain-play)
 8. [Personal Thread #4 — Technical/Builder Thread](#8-personal-thread-4--technicalbuilder-thread)
 9. [LinkedIn Post](#9-linkedin-post)
 10. [One-Liner Variations](#10-one-liner-variations-for-replies--quote-tweets)
-11. [Hashtags & SEO](#11-hashtags--seo)
+11. [Hashtags &amp; SEO](#11-hashtags--seo)
 12. [X Ads Strategy](#12-x-ads-strategy)
 13. [Master Prompt](#13-master-prompt-for-generating-more-content)
 14. [Launch Day Checklist](#14-launch-day-checklist)
@@ -41,14 +41,14 @@
 
 OppForge is built for **every participant in the Web3 ecosystem**:
 
-| Persona | What They Hunt | How OppForge Helps |
-|---------|---------------|---------------------|
-| 🐛 **Bounty Hunters** | Bug bounties, dev tasks, security audits | AI matches bounties to your stack. Get pinged instantly. |
-| 💻 **Hackathon Devs** | ETHGlobal, Superteam, DoraHacks | Discover under-the-radar hackathons. AI drafts winning submissions. |
-| 🧪 **Testnet Degens** | Airdrops, node running, testnets | Risk AI verifies protocols before you sign. Track farming across chains. |
-| 🏢 **Ecosystem DAOs** | Grants, governance proposals | Track grant volumes across chains. AI structures proposals. |
-| 📢 **Community Managers** | Growth roles, ops, community grants | Find protocols funding community growth. AI drafts applications. |
-| ⭐ **Web3 Ambassadors** | DevRel programs, brand ambassador roles | Discover programs early. AI drafts tailored applications. |
+| Persona                        | What They Hunt                           | How OppForge Helps                                                       |
+| ------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------ |
+| 🐛**Bounty Hunters**     | Bug bounties, dev tasks, security audits | AI matches bounties to your stack. Get pinged instantly.                 |
+| 💻**Hackathon Devs**     | ETHGlobal, Superteam, DoraHacks          | Discover under-the-radar hackathons. AI drafts winning submissions.      |
+| 🧪**Testnet Degens**     | Airdrops, node running, testnets         | Risk AI verifies protocols before you sign. Track farming across chains. |
+| 🏢**Ecosystem DAOs**     | Grants, governance proposals             | Track grant volumes across chains. AI structures proposals.              |
+| 📢**Community Managers** | Growth roles, ops, community grants      | Find protocols funding community growth. AI drafts applications.         |
+| ⭐**Web3 Ambassadors**   | DevRel programs, brand ambassador roles  | Discover programs early. AI drafts tailored applications.                |
 
 **This is NOT a developer-only tool.** If you participate in Web3 in ANY capacity, OppForge is for you.
 
@@ -58,81 +58,81 @@ OppForge is built for **every participant in the Web3 ecosystem**:
 
 ### Tier 1 — High-Profile Web3 Voices & VCs (tag in OppForge official thread)
 
-| Handle | Who | Why |
-|---|---|---|
-| @cdixon | Chris Dixon, a16z crypto GP | Coined "Read Write Own" — OppForge is about ownership of opportunity |
-| @balaboris | Balaji Srinivasan | Network state advocate, loves infra plays |
-| @ljin18 | Li Jin, Variant Fund | Passion economy + creator economy in crypto |
-| @naval | Naval Ravikant | Opportunity + leverage philosophy |
-| @VitalikButerin | Vitalik | Ethereum ecosystem — grants are huge there |
-| @haabornsim | Haseeb Qureshi, Dragonfly | Crypto VC, builder-first |
-| @RyanSAdams | Ryan Sean Adams, Bankless | Massive Web3 media reach |
-| @sassal0x | Anthony Sassano, The Daily Gwei | Ethereum ecosystem voice |
+| Handle          | Who                             | Why                                                                   |
+| --------------- | ------------------------------- | --------------------------------------------------------------------- |
+| @cdixon         | Chris Dixon, a16z crypto GP     | Coined "Read Write Own" — OppForge is about ownership of opportunity |
+| @balaboris      | Balaji Srinivasan               | Network state advocate, loves infra plays                             |
+| @ljin18         | Li Jin, Variant Fund            | Passion economy + creator economy in crypto                           |
+| @naval          | Naval Ravikant                  | Opportunity + leverage philosophy                                     |
+| @VitalikButerin | Vitalik                         | Ethereum ecosystem — grants are huge there                           |
+| @haabornsim     | Haseeb Qureshi, Dragonfly       | Crypto VC, builder-first                                              |
+| @RyanSAdams     | Ryan Sean Adams, Bankless       | Massive Web3 media reach                                              |
+| @sassal0x       | Anthony Sassano, The Daily Gwei | Ethereum ecosystem voice                                              |
 
 ### Tier 2 — Ecosystems & Grant Programs (tag in multi-chain thread)
 
-| Handle | Who | Why |
-|---|---|---|
-| @arbitrum | Arbitrum | Smart contracts deployed here. STIP/LTIPP grants |
-| @solana | Solana | Major grant programs, Superteam bounties |
-| @optimism | Optimism | RetroPGF, OP grants |
-| @base | Base (Coinbase L2) | Builder grants, ecosystem fund |
-| @0xPolygon | Polygon | Polygon Ventures, grants |
-| @NEARProtocol | NEAR Protocol | DevHub grants |
-| @Starknet | Starknet | Seed grants program |
-| @gitcoin | Gitcoin | Grants protocol pioneer |
-| @superteam | SuperTeam | Solana ecosystem bounties |
-| @DoraHacks | DoraHacks | Grants & hackathons |
-| @ethaborgl | ETHGlobal | Hackathon platform |
-| @immunefi | Immunefi | Bug bounty platform |
-| @code4rena | Code4rena | Security audit contests |
-| @Questbook | Questbook | Web3 grants management |
+| Handle        | Who                | Why                                              |
+| ------------- | ------------------ | ------------------------------------------------ |
+| @arbitrum     | Arbitrum           | Smart contracts deployed here. STIP/LTIPP grants |
+| @solana       | Solana             | Major grant programs, Superteam bounties         |
+| @optimism     | Optimism           | RetroPGF, OP grants                              |
+| @base         | Base (Coinbase L2) | Builder grants, ecosystem fund                   |
+| @0xPolygon    | Polygon            | Polygon Ventures, grants                         |
+| @NEARProtocol | NEAR Protocol      | DevHub grants                                    |
+| @Starknet     | Starknet           | Seed grants program                              |
+| @gitcoin      | Gitcoin            | Grants protocol pioneer                          |
+| @superteam    | SuperTeam          | Solana ecosystem bounties                        |
+| @DoraHacks    | DoraHacks          | Grants & hackathons                              |
+| @ethaborgl    | ETHGlobal          | Hackathon platform                               |
+| @immunefi     | Immunefi           | Bug bounty platform                              |
+| @code4rena    | Code4rena          | Security audit contests                          |
+| @Questbook    | Questbook          | Web3 grants management                           |
 
 ### Tier 3 — Bounty, Airdrop & Testnet Communities (tag in persona thread)
 
-| Handle | Who | Why |
-|---|---|---|
-| @layer3xyz | Layer3 | Quest platform, Web3 onboarding |
-| @daborework | Dework | Bounty marketplace |
-| @zeaborly_xyz | Zealy | Community quests & campaigns |
-| @galxe | Galxe | On-chain credentials, campaigns |
-| @RabbitHolegg | RabbitHole | Crypto quests |
-| @DeBank_Official | DeBank | DeFi portfolio — airdrop hunters use this |
-| @AirdropFinder | Airdrop communities | Testnet degens follow these |
+| Handle           | Who                 | Why                                        |
+| ---------------- | ------------------- | ------------------------------------------ |
+| @layer3xyz       | Layer3              | Quest platform, Web3 onboarding            |
+| @daborework      | Dework              | Bounty marketplace                         |
+| @zeaborly_xyz    | Zealy               | Community quests & campaigns               |
+| @galxe           | Galxe               | On-chain credentials, campaigns            |
+| @RabbitHolegg    | RabbitHole          | Crypto quests                              |
+| @DeBank_Official | DeBank              | DeFi portfolio — airdrop hunters use this |
+| @AirdropFinder   | Airdrop communities | Testnet degens follow these                |
 
 ### Tier 4 — Web3 Educators, Creators & Influencers (tag in personal threads)
 
-| Handle | Who | Why |
-|---|---|---|
-| @PatrickAlphaC | Patrick Collins | #1 Web3 educator, Cyfrin |
-| @DavidHoffman___ | David Hoffman, Bankless | Web3 media co-founder |
-| @austingriffith | Austin Griffith | BuidlGuidl, Scaffold-ETH |
-| @developer_dao | Developer DAO | Builder community, 5k+ devs |
-| @_buildspace | Buildspace | Builder community |
-| @CoinDesk | CoinDesk | Crypto news |
-| @thedefiant_ | The Defiant | Web3 media outlet |
-| @MessariCrypto | Messari | Crypto research & data |
+| Handle           | Who                     | Why                         |
+| ---------------- | ----------------------- | --------------------------- |
+| @PatrickAlphaC   | Patrick Collins         | #1 Web3 educator, Cyfrin    |
+| @DavidHoffman___ | David Hoffman, Bankless | Web3 media co-founder       |
+| @austingriffith  | Austin Griffith         | BuidlGuidl, Scaffold-ETH    |
+| @developer_dao   | Developer DAO           | Builder community, 5k+ devs |
+| @_buildspace     | Buildspace              | Builder community           |
+| @CoinDesk        | CoinDesk                | Crypto news                 |
+| @thedefiant_     | The Defiant             | Web3 media outlet           |
+| @MessariCrypto   | Messari                 | Crypto research & data      |
 
 ### Tier 5 — African & Emerging Market Web3 (your network, high engagement)
 
-| Handle | Who | Why |
-|---|---|---|
-| @Web3Bridge | Web3Bridge | Leading African Web3 dev program |
-| @BlockchainUNN | Blockchain UNN | Nigerian web3 community |
-| @web3lagos | Web3 Lagos | Lagos builder community |
-| @BundleAfrica | Bundle Africa | Pan-African crypto platform |
-| @superteamNG | SuperTeam Nigeria | Solana Nigeria chapter |
-| @AyaHQ_official | Aya HQ | African AI + crypto |
+| Handle          | Who               | Why                              |
+| --------------- | ----------------- | -------------------------------- |
+| @Web3Bridge     | Web3Bridge        | Leading African Web3 dev program |
+| @BlockchainUNN  | Blockchain UNN    | Nigerian web3 community          |
+| @web3lagos      | Web3 Lagos        | Lagos builder community          |
+| @BundleAfrica   | Bundle Africa     | Pan-African crypto platform      |
+| @superteamNG    | SuperTeam Nigeria | Solana Nigeria chapter           |
+| @AyaHQ_official | Aya HQ            | African AI + crypto              |
 
 ### Tier 6 — Community Manager & Ambassador Networks (tag in community/ambassador tweets)
 
-| Handle | Who | Why |
-|---|---|---|
-| @communityledgr | Community-Led Growth | CM strategies |
-| @DAOhaus | DAOhaus | DAO tooling community |
-| @opaborensea | OpenSea | Creator/ambassador programs |
-| @chainlink | Chainlink | Ambassador + DevRel programs |
-| @TheGraph | The Graph | Curator/indexer programs |
+| Handle          | Who                  | Why                          |
+| --------------- | -------------------- | ---------------------------- |
+| @communityledgr | Community-Led Growth | CM strategies                |
+| @DAOhaus        | DAOhaus              | DAO tooling community        |
+| @opaborensea    | OpenSea              | Creator/ambassador programs  |
+| @chainlink      | Chainlink            | Ambassador + DevRel programs |
+| @TheGraph       | The Graph            | Curator/indexer programs     |
 
 > **Strategy:** Don't tag everyone in one tweet. Spread tags across different tweets in the thread for maximum reach. Match tags to persona — bounty platforms on the bounty tweet, ecosystem accounts on the multi-chain tweet, etc.
 
@@ -146,7 +146,7 @@ OppForge is built for **every participant in the Web3 ecosystem**:
 
 **Tweet 1 — The Hook**
 
-Web3 has over $500M in grants, bounties, hackathons, testnets, airdrops, and ambassador programs live right now.
+Web3 has over $50M in grants, bounties, hackathons, testnets, airdrops, and ambassador programs live right now.
 
 90% of the community will never see them.
 
@@ -794,6 +794,7 @@ If you participate in Web3 in any capacity — builder, bounty hunter, community
 Use these when replying to relevant conversations or QRTing ecosystem announcements:
 
 **For bounty/security posts:**
+
 1. "Another bounty most hunters will miss. Track it + hundreds more on @OppForge."
 2. "Bug bounty just dropped. Our AI already scored it and matched it to qualified hunters → @OppForge"
 
@@ -823,11 +824,13 @@ Use these when replying to relevant conversations or QRTing ecosystem announceme
 ## 11. Hashtags & SEO
 
 **Primary hashtags (always use 2-3):**
+
 - #OppForge
 - #Web3
 - #BuildInPublic
 
 **Persona-specific hashtags (rotate based on tweet topic):**
+
 - #BugBounty #Web3Security (bounty tweets)
 - #Hackathon #ETHGlobal (hackathon tweets)
 - #Airdrop #Testnet #DeFi (testnet/airdrop tweets)
@@ -836,12 +839,15 @@ Use these when replying to relevant conversations or QRTing ecosystem announceme
 - #Ambassador #DevRel (ambassador tweets)
 
 **Ecosystem hashtags (use when tagging specific chains):**
+
 - #Arbitrum #Ethereum #Solana #Optimism #Base #Polygon
 
 **General secondary:**
+
 - #Crypto #AI #Blockchain #Startup #FounderLife
 
 **For LinkedIn:**
+
 - #Web3 #Blockchain #Grants #AI #Startup #OppForge #Crypto #BuildInPublic #Bounties #Hackathons
 
 ---
@@ -852,9 +858,8 @@ Use these when replying to relevant conversations or QRTing ecosystem announceme
 
 ### Campaign 1: Awareness — Persona Carousel (Day 2+)
 
-**Objective:** Impressions + engagement  
-**Budget:** $50-100  
-**Target:**
+**Objective:** Impressions + engagement**Budget:** $50-100**Target:**
+
 - Followers of @gitcoin, @immunefi, @code4rena, @layer3xyz, @galxe, @superteam
 - Interests: cryptocurrency, blockchain, web3, bounties, airdrops, grants, hackathons, community management
 - Regions: Global, weighted toward US, Nigeria, India, UK, Vietnam, Germany
@@ -873,20 +878,22 @@ Use these when replying to relevant conversations or QRTing ecosystem announceme
 
 ### Campaign 2: Conversion — Retarget Engagers (Week 2)
 
-**Objective:** Website clicks + signups  
-**Budget:** $50-100  
+**Objective:** Website clicks + signups
+**Budget:** $50-100
 **Target:** Retarget engagers from Campaign 1 + profile visitors
 
 **Creative:**
+
 > "You engaged with OppForge. Now try it. AI scores every opportunity, verifies trust, and writes your applications. Free to start →"
 
 ### Campaign 3: Ecosystem Engagement (Ongoing, low spend)
 
-**Objective:** Promoted replies on ecosystem grant/bounty announcements  
-**Budget:** $30-50/month  
+**Objective:** Promoted replies on ecosystem grant/bounty announcements
+**Budget:** $30-50/month
 **Target:** Replies to tweets from @arbitrum, @gitcoin, @immunefi, @solana, @optimism
 
 **Creative:**
+
 > "Track this opportunity + hundreds more on @OppForge — the AI-powered opportunity platform for everyone in Web3."
 
 ---
@@ -940,6 +947,7 @@ Write a [THREAD / POST / AD COPY] that:
 ## 14. Launch Day Checklist
 
 ### Pre-Launch (Before posting)
+
 - [ ] Ensure platform is live and accessible at production URL
 - [ ] Test signup flow end-to-end
 - [ ] Verify scrapers have recent data (at least 20+ opportunities)
@@ -951,6 +959,7 @@ Write a [THREAD / POST / AD COPY] that:
 - [ ] Prepare all thread tweets in drafts or scheduling tool
 
 ### Launch Sequence (Timing)
+
 - [ ] **9:00 AM UTC** — Post OppForge official thread (Section 4) — pin it
 - [ ] **9:05 AM** — RT from personal account with quote: "Months of building. Today we go live. @OppForge is for EVERYONE in Web3."
 - [ ] **10:00 AM** — Post Personal Thread #1: Founder Story (Section 5)
@@ -962,6 +971,7 @@ Write a [THREAD / POST / AD COPY] that:
 - [ ] **Throughout day** — Use persona-specific one-liners when relevant (Section 10)
 
 ### Post-Launch (Day 1-3)
+
 - [ ] Engage with EVERY reply and quote tweet
 - [ ] DM 20 people across ALL personas — not just devs
 - [ ] DM 5 ecosystem teams about listing their opportunities
@@ -972,6 +982,7 @@ Write a [THREAD / POST / AD COPY] that:
 - [ ] Submit to Product Hunt (optional Day 2-3)
 
 ### Metrics to Track
+
 - Thread impressions (per thread)
 - Profile visits (@OppForge + personal)
 - Website clicks
@@ -985,17 +996,17 @@ Write a [THREAD / POST / AD COPY] that:
 
 ## Key Messaging — Quick Reference
 
-| Audience | Hook | CTA |
-|---|---|---|
-| Bounty Hunters | "Get matched to payouts by your stack" | "Try OppForge free" |
-| Hackathon Devs | "AI drafts your winning submission" | "Try OppForge free" |
-| Testnet Degens | "Risk AI verifies before you sign" | "Try OppForge free" |
-| DAO Contributors | "Track grants across 50+ chains" | "Try OppForge free" |
-| Community Managers | "Surface funded growth roles" | "Try OppForge free" |
-| Ambassadors | "Discover programs before they fill" | "Try OppForge free" |
-| Ecosystems | "Reach 10x more qualified applicants globally" | "List on OppForge — DM us" |
-| VCs | "The opportunity infrastructure of Web3" | "DMs open" |
-| General | "The best platform for everyone in Web3" | "RT to help someone" |
+| Audience           | Hook                                           | CTA                         |
+| ------------------ | ---------------------------------------------- | --------------------------- |
+| Bounty Hunters     | "Get matched to payouts by your stack"         | "Try OppForge free"         |
+| Hackathon Devs     | "AI drafts your winning submission"            | "Try OppForge free"         |
+| Testnet Degens     | "Risk AI verifies before you sign"             | "Try OppForge free"         |
+| DAO Contributors   | "Track grants across 50+ chains"               | "Try OppForge free"         |
+| Community Managers | "Surface funded growth roles"                  | "Try OppForge free"         |
+| Ambassadors        | "Discover programs before they fill"           | "Try OppForge free"         |
+| Ecosystems         | "Reach 10x more qualified applicants globally" | "List on OppForge — DM us" |
+| VCs                | "The opportunity infrastructure of Web3"       | "DMs open"                  |
+| General            | "The best platform for everyone in Web3"       | "RT to help someone"        |
 
 ---
 

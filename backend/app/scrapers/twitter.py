@@ -161,7 +161,15 @@ class TwitterScraper(BaseScraper):
                 action_bonus = 20
 
             # Determine chain from text
-            chains = ["Solana", "Ethereum", "Base", "Arbitrum", "Monad", "Polygon"]
+            chains = [
+                "Aleo", "Algorand", "Aptos", "Arbitrum", "Avalanche", "Base",
+                "Berachain", "Bitcoin", "Blast", "BNB", "Cardano", "Celo",
+                "Celestia", "Cosmos", "Ethereum", "Fantom", "Filecoin",
+                "Flow", "Hedera", "Injective", "Linea", "Manta", "Mantle",
+                "Monad", "Moonbeam", "NEAR", "Optimism", "Polkadot",
+                "Polygon", "Scroll", "Sei", "Solana", "Starknet", "Sui",
+                "Tezos", "TON", "Tron", "ZkSync", "Zora",
+            ]
             chain = "Multi-chain"
             for c in chains:
                 if c.lower() in lower_text:
