@@ -37,7 +37,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       Cookies.remove('token', { path: '/' });
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
+        if (window.location.pathname.startsWith('/dashboard')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
       const now = Date.now();
       const stored = localStorage.getItem(GUEST_START_KEY);
       if (!stored) {
-        try { localStorage.setItem(GUEST_START_KEY, now.toString()); } catch {}
+        localStorage.setItem(GUEST_START_KEY, now.toString());
       }
       const startTime = parseInt(stored || now, 10);
       const remaining = GUEST_TIMER_MS - (now - startTime);
@@ -109,10 +109,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const loginWallet = async (address, signature, message) => {
+  const loginWallet = async (address) => {
 
     try {
-      const { data } = await api.post('/auth/wallet', { address, signature, message });
+      const { data } = await api.post('/auth/wallet', { address });
 
       
       const cookieOptions = { 
@@ -166,7 +166,10 @@ export function AuthProvider({ children }) {
   const logout = () => {
     Cookies.remove('token', { path: '/' });
     setUser(null);
+    setIsGuest(true);
     try { disconnect(); } catch {}
+    try { localStorage.removeItem(GUEST_START_KEY); } catch {}
+    setGuestTimerExpired(false);
     toast.success("Logged out successfully");
     window.location.href = '/login';
   };

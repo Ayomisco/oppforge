@@ -6,21 +6,18 @@ import { Button } from '@/components/ui/button';
 import { LogIn, Wallet, Shield, Zap, Clock } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useSignMessage } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
 export function LoginModal({ isOpen, onClose, triggerText = "Continue", persistent = false }) {
   const { loginGoogle, loginWallet, user } = useAuth();
   const { address, isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
   const loginAttempted = useRef(false);
 
   const handleWalletLogin = useCallback(async (walletAddress) => {
     try {
-      const message = `Sign in to OppForge\nAddress: ${walletAddress}\nTimestamp: ${Date.now()}`;
-      const signature = await signMessageAsync({ message });
-      const result = await loginWallet(walletAddress, signature, message);
+      const result = await loginWallet(walletAddress);
       if (result?.success) {
         onClose();
         toast.success('Wallet connected successfully!');
@@ -28,7 +25,7 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue", persiste
     } catch {
       loginAttempted.current = false;
     }
-  }, [signMessageAsync, loginWallet, onClose]);
+  }, [loginWallet, onClose]);
 
   useEffect(() => {
     if (isConnected && address && !user && !loginAttempted.current) {

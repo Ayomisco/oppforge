@@ -1,14 +1,14 @@
-import { JetBrains_Mono, Space_Grotesk } from 'next/font/google'
+import { Fira_Code, Outfit } from 'next/font/google'
 import './globals.css'
 
-const jetbrainsMono = JetBrains_Mono({ 
+const firaCode = Fira_Code({ 
   subsets: ['latin'], 
   variable: '--font-mono',
   display: 'swap',
   preload: false,
 })
 
-const spaceGrotesk = Space_Grotesk({ 
+const outfit = Outfit({ 
   subsets: ['latin'], 
   variable: '--font-sans',
   display: 'swap',
@@ -89,7 +89,7 @@ import { Providers } from '../components/providers/Providers';
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body className={`${outfit.variable} ${firaCode.variable} antialiased`}>
         <Providers>
           {children}
         </Providers>

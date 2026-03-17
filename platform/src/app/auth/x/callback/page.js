@@ -40,7 +40,7 @@ function XCallbackInner() {
     const handleLogin = async () => {
       const result = await loginX(code, codeVerifier, redirectUri);
       if (result?.success) {
-        router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+        router.push('/dashboard');
       } else {
         router.push('/login');
       }

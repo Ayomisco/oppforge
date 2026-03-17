@@ -14,8 +14,7 @@ export function middleware(request) {
   // Only highly personal routes are protected
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/tracker') || 
                           request.nextUrl.pathname.startsWith('/settings') ||
-                          request.nextUrl.pathname.startsWith('/profile') ||
-                          request.nextUrl.pathname.startsWith('/dashboard/admin');
+                          request.nextUrl.pathname.startsWith('/profile');
 
   if (!token && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -34,6 +33,7 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
+    '/',
     '/login',
     '/dashboard/:path*',
     '/tracker/:path*',
