@@ -1,24 +1,26 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useGoogleLogin } from '@react-oauth/google'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 
-export default function LoginPage() {
+function LoginPageInner() {
   const { loginGoogle, loginWallet, user } = useAuth()
   const { address, isConnected } = useAccount()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo') || '/dashboard'
 
   const handleGoogleSuccess = async (response) => {
     if (response.access_token) {
       const result = await loginGoogle({ credential: response.access_token })
-      if (result?.success) router.push('/dashboard')
+      if (result?.success) router.push(result.isNewUser ? '/onboarding' : returnTo)
     }
   }
 
@@ -30,10 +32,10 @@ export default function LoginPage() {
   useEffect(() => {
     if (isConnected && address && !user) {
       loginWallet(address).then(result => {
-        if (result?.success) router.push('/dashboard')
+        if (result?.success) router.push(result.isNewUser ? '/onboarding' : returnTo)
       })
     }
-  }, [isConnected, address, user, loginWallet, router])
+  }, [isConnected, address, user, loginWallet, router, returnTo])
 
   const handleXLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_X_CLIENT_ID
@@ -47,6 +49,7 @@ export default function LoginPage() {
       .replace(/[+/=]/g, '').slice(0, 32)
     sessionStorage.setItem('x_code_verifier', codeVerifier)
     sessionStorage.setItem('x_oauth_state', state)
+    if (returnTo !== '/dashboard') sessionStorage.setItem('x_return_to', returnTo)
     const encoder = new TextEncoder()
     crypto.subtle.digest('SHA-256', encoder.encode(codeVerifier)).then(hash => {
       const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
@@ -168,5 +171,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#060609]" />}>
+      <LoginPageInner />
+    </Suspense>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
@@ -9,16 +9,9 @@ import { useAuth } from '@/components/providers/AuthProvider'
 
 function DashboardContent({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const { loginModalOpen, closeLoginModal, openLoginModal, guestTimerExpired } = useAuth()
+  const { loginModalOpen, closeLoginModal } = useAuth()
   const pathname = usePathname()
   const isChatPage = pathname === '/dashboard/chat'
-
-  // Auto-open login modal when guest timer expires
-  useEffect(() => {
-    if (guestTimerExpired) {
-      openLoginModal()
-    }
-  }, [guestTimerExpired, openLoginModal])
 
   return (
     <div className="flex h-screen bg-[var(--bg-canvas)] overflow-hidden">
@@ -54,12 +47,10 @@ function DashboardContent({ children }) {
         )}
       </div>
 
-      {/* Global Login Modal — non-dismissable when guest timer expired */}
+      {/* Global Login Modal */}
       <LoginModal
         isOpen={loginModalOpen}
-        onClose={guestTimerExpired ? () => {} : closeLoginModal}
-        triggerText="Access The Forge"
-        persistent={guestTimerExpired}
+        onClose={closeLoginModal}
       />
     </div>
   )

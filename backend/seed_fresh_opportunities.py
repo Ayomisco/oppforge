@@ -27,9 +27,10 @@ def main():
             "category": "hackathon",
             "source": "ETHGlobal",
             "reward_pool": 500000,
-            "deadline": today + timedelta(days=21),
+            "deadline": datetime(2026, 4, 12),
             "chain": "Ethereum",
-            "tags": ["DeFi", "NFT", "DAO", "Infrastructure"]
+            "tags": ["DeFi", "NFT", "DAO", "Infrastructure"],
+            "mission_requirements": ["Build a working prototype during the hackathon weekend", "Deploy smart contracts to a supported testnet or mainnet", "Submit a demo video (max 3 min) and GitHub repo link", "Team size: 1-5 members"],
         },
         {
             "title": "ETHGlobal Scaling Ethereum 2026",
@@ -38,9 +39,10 @@ def main():
             "category": "hackathon",
             "source": "ETHGlobal",
             "reward_pool": 300000,
-            "deadline": today + timedelta(days=35),
+            "deadline": datetime(2026, 5, 3),
             "chain": "Ethereum",
-            "tags": ["Layer2", "zkEVM", "Scaling", "Rollups"]
+            "tags": ["Layer2", "zkEVM", "Scaling", "Rollups"],
+            "mission_requirements": ["Project must focus on L2 scaling, rollups, or data availability", "Use at least one sponsor technology (Arbitrum, Optimism, zkSync, or Starknet)", "Submit working demo with source code", "Present a 3-minute pitch to judges"],
         },
         
         # Solana Hackathons
@@ -308,6 +310,7 @@ def main():
             deadline=opp_data['deadline'],
             chain=opp_data['chain'],
             tags=opp_data['tags'],
+            mission_requirements=opp_data.get('mission_requirements', []),
             is_open=True
         )
         db.add(opp)

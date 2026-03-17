@@ -86,7 +86,7 @@ function NotificationPanel({ onClose }) {
 
 export default function Header({ onMenuClick }) {
   const router = useRouter()
-  const { isGuest, openLoginModal } = useAuth()
+  const { isGuest } = useAuth()
   const [query, setQuery] = useState('')
   const [showNotifs, setShowNotifs] = useState(false)
   const [showMobileSearch, setShowMobileSearch] = useState(false)
@@ -165,7 +165,7 @@ export default function Header({ onMenuClick }) {
 
           {isGuest ? (
             <button
-              onClick={openLoginModal}
+              onClick={() => router.push('/login')}
               className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-sm font-semibold rounded-md transition-all shadow-[0_0_12px_rgba(255,85,0,0.2)]"
             >
               <Wallet className="w-4 h-4" />

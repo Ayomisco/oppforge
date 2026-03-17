@@ -1,9 +1,12 @@
 import React from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { usePathname } from 'next/navigation';
 import { Lock, Zap, ShieldAlert, Wallet } from 'lucide-react';
+import Link from 'next/link';
 
 export default function FeatureGate({ children, featureName = "This feature", requirePremium = true }) {
-  const { user, isGuest, loading, openLoginModal } = useAuth();
+  const { user, isGuest, loading } = useAuth();
+  const pathname = usePathname();
   
   if (loading) {
      return (
@@ -15,6 +18,7 @@ export default function FeatureGate({ children, featureName = "This feature", re
 
   // 1. Not logged in — blur the content and prompt sign-in
   if (isGuest || !user) {
+    const loginUrl = `/login?returnTo=${encodeURIComponent(pathname)}`;
     return (
       <div className="relative overflow-hidden rounded-xl border border-[var(--glass-border)] min-h-[70vh] flex flex-col">
         {/* Blurred preview of the actual page */}
@@ -36,12 +40,12 @@ export default function FeatureGate({ children, featureName = "This feature", re
               {featureName} is locked for guests. Sign in with Google or connect your wallet to start your 7-day free trial — no credit card required.
             </p>
 
-            <button
-              onClick={openLoginModal}
+            <Link
+              href={loginUrl}
               className="flex items-center justify-center gap-2 px-6 py-3 w-full bg-[#ff5500] text-white font-bold rounded shadow-[0_0_20px_rgba(255,85,0,0.3)] hover:scale-105 transition-all mb-3"
             >
               <Wallet size={16} /> Sign In / Connect Wallet
-            </button>
+            </Link>
             <p className="text-[10px] uppercase font-mono tracking-widest text-gray-600">Secure Web3 Authentication</p>
           </div>
         </div>

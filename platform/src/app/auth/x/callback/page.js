@@ -38,9 +38,11 @@ function XCallbackInner() {
     }
 
     const handleLogin = async () => {
+      const returnTo = sessionStorage.getItem('x_return_to') || '/dashboard';
+      sessionStorage.removeItem('x_return_to');
       const result = await loginX(code, codeVerifier, redirectUri);
       if (result?.success) {
-        router.push('/dashboard');
+        router.push(result.isNewUser ? '/onboarding' : returnTo);
       } else {
         router.push('/login');
       }

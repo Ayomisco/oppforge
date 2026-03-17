@@ -85,18 +85,15 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
     >
       <Link href={`/dashboard/opportunity/${opp.id}`} className="block p-4">
         <div className="flex items-start gap-3">
-          {/* Left: Logo with score overlay */}
-          <div className="shrink-0 relative">
+          {/* Left: Logo + Score */}
+          <div className="shrink-0 flex flex-col items-center gap-1">
             <div className="w-10 h-10 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-default)] flex items-center justify-center overflow-hidden">
               {logoUrl ? (
                 <img src={logoUrl} alt="" className="w-full h-full object-contain p-1.5" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex') }} />
               ) : null}
               <span className={`text-xs font-bold text-[var(--text-tertiary)] uppercase ${logoUrl ? 'hidden' : ''}`}>{type.slice(0, 2)}</span>
             </div>
-            {/* Score badge */}
-            <div className="absolute -bottom-1 -right-1">
-              <ScoreRing score={score} />
-            </div>
+            <ScoreRing score={score} />
           </div>
 
           {/* Center: Content */}

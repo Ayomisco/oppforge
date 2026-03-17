@@ -1,6 +1,6 @@
 'use client'
 
-import React, { use } from 'react'
+import React, { use, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Clock, Globe, Shield, ExternalLink, ShieldCheck, Trash2, Sparkles, Bookmark, BookmarkCheck, Calendar, DollarSign, Tag, Info } from 'lucide-react'
 import { useAuth } from '@/components/providers/AuthProvider'
@@ -16,8 +16,7 @@ import { useWriteContract, useAccount } from 'wagmi'
 import { parseEther, keccak256, encodePacked } from 'viem'
 import { CONTRACTS, MISSION_ABI, PAYMENT_CHAIN } from '@/lib/contracts'
 
-import { LoginModal } from '@/components/auth/LoginModal'
-import { useState } from 'react'
+
 
 const fetcher = url => api.get(url).then(res => res.data)
 
@@ -25,7 +24,6 @@ export default function OpportunityDetail({ params }) {
   const { id } = use(params)
   const { user, isGuest } = useAuth()
   const router = useRouter()
-  const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   
@@ -41,7 +39,7 @@ export default function OpportunityDetail({ params }) {
   })
 
   const handleSaveToTracker = async () => {
-    if (isGuest) { setIsLoginOpen(true); return }
+    if (isGuest) { router.push(`/login?returnTo=${encodeURIComponent(`/dashboard/opportunity/${id}`)}`); return }
     if (isSaved) { router.push('/dashboard/tracker'); return }
     setIsSaving(true)
     try {
@@ -260,7 +258,7 @@ export default function OpportunityDetail({ params }) {
             {/* Apply Now — primary action */}
             <button 
               onClick={() => {
-                if (isGuest) setIsLoginOpen(true);
+                if (isGuest) router.push(`/login?returnTo=${encodeURIComponent(`/dashboard/opportunity/${id}`)}`);
                 else window.open(opp.url, '_blank');
               }}
               className="btn btn-primary w-full justify-between items-center group py-4 px-5 text-sm font-semibold rounded-xl"
@@ -285,7 +283,7 @@ export default function OpportunityDetail({ params }) {
             {/* Open Workspace */}
             <button 
               onClick={() => {
-                if (isGuest) setIsLoginOpen(true);
+                if (isGuest) router.push(`/login?returnTo=${encodeURIComponent(`/dashboard/opportunity/${id}`)}`);
                 else router.push(`/dashboard/forge/workspace/${id}`);
               }}
               className="w-full flex items-center justify-between py-3.5 px-5 rounded-xl text-sm font-semibold bg-white/5 border border-white/10 text-gray-300 hover:bg-[#ff5500]/10 hover:border-[#ff5500]/30 hover:text-[#ff5500] transition-all group"
@@ -351,12 +349,6 @@ export default function OpportunityDetail({ params }) {
         </div>
 
       </div>
-
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        triggerText="Sign in to continue"
-      />
     </div>
   )
 }

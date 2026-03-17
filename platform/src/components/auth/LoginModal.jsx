@@ -2,30 +2,35 @@
 
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { LogIn, Wallet, Shield, Zap, Clock } from 'lucide-react';
+import { Wallet, Shield, Zap } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-export function LoginModal({ isOpen, onClose, triggerText = "Continue", persistent = false }) {
+export function LoginModal({ isOpen, onClose }) {
   const { loginGoogle, loginWallet, user } = useAuth();
   const { address, isConnected } = useAccount();
   const loginAttempted = useRef(false);
+  const router = useRouter();
+
+  const handleLoginSuccess = useCallback((result) => {
+    onClose();
+    if (result?.isNewUser) {
+      router.push('/onboarding');
+    }
+  }, [onClose, router]);
 
   const handleWalletLogin = useCallback(async (walletAddress) => {
     try {
       const result = await loginWallet(walletAddress);
-      if (result?.success) {
-        onClose();
-        toast.success('Wallet connected successfully!');
-      }
+      if (result?.success) handleLoginSuccess(result);
     } catch {
       loginAttempted.current = false;
     }
-  }, [loginWallet, onClose]);
+  }, [loginWallet, handleLoginSuccess]);
 
   useEffect(() => {
     if (isConnected && address && !user && !loginAttempted.current) {
@@ -40,11 +45,8 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue", persiste
 
   const handleGoogleSuccess = async (response) => {
     if (response.access_token) {
-      const success = await loginGoogle({ credential: response.access_token });
-      if (success) {
-        onClose();
-        toast.success('Welcome to the Forge!');
-      }
+      const result = await loginGoogle({ credential: response.access_token });
+      if (result?.success) handleLoginSuccess(result);
     }
   };
 
@@ -54,12 +56,9 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue", persiste
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={persistent ? () => {} : onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className="sm:max-w-md border-[var(--border-default)] bg-[var(--bg-primary)] text-[var(--text-primary)]"
-        onInteractOutside={persistent ? (e) => e.preventDefault() : undefined}
-        onEscapeKeyDown={persistent ? (e) => e.preventDefault() : undefined}
-        hideCloseButton={persistent}
       >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
@@ -71,9 +70,7 @@ export function LoginModal({ isOpen, onClose, triggerText = "Continue", persiste
             </DialogTitle>
           </div>
           <DialogDescription className="text-[var(--text-secondary)]">
-            {persistent
-              ? 'Your guest preview has ended. Sign in to continue exploring Web3 opportunities with full access.'
-              : 'Sign in to unlock AI-powered opportunity tracking, personalized scoring, and application drafting tools.'}
+            Sign in to unlock AI-powered opportunity tracking, personalized scoring, and application drafting tools.
           </DialogDescription>
         </DialogHeader>
 
