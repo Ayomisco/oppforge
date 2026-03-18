@@ -503,3 +503,152 @@ def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
         "user": schemas.UserResponse.model_validate(user),
         "is_new_user": is_new_user,
     }
+
+
+# --- Link Wallet to Existing Account ---
+class LinkWalletRequest(BaseModel):
+    address: str
+
+@router.post("/link-wallet", response_model=dict)
+def link_wallet_account(
+    req: LinkWalletRequest,
+    db: Session = Depends(database.get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+    """
+    Link a wallet address to an existing user (e.g. Google or X authenticated).
+    If the wallet is already used by another account, returns 409.
+    """
+    address = req.address.strip().lower()
+    if not address:
+        raise HTTPException(status_code=400, detail="Wallet address required")
+
+    # Check if wallet is already linked to a different user
+    existing = db.query(UserModel).filter(
+        UserModel.wallet_address == address,
+        UserModel.id != current_user.id,
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail="This wallet is already linked to a different account."
+        )
+
+    current_user.wallet_address = address
+    db.commit()
+    db.refresh(current_user)
+
+    # Reissue JWT
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={
+            "sub": current_user.email,
+            "role": current_user.role.value if hasattr(current_user.role, "value") else current_user.role,
+            "onboarded": current_user.onboarded,
+        },
+        expires_delta=access_token_expires,
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": schemas.UserResponse.model_validate(current_user),
+        "linked": True,
+    }
+
+
+# --- Link X (Twitter) to Existing Account ---
+class LinkXRequest(BaseModel):
+    code: str
+    code_verifier: str
+    redirect_uri: str
+
+@router.post("/link-x", response_model=dict)
+def link_x_account(
+    req: LinkXRequest,
+    db: Session = Depends(database.get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+    """
+    Link an X (Twitter) account to an existing user.
+    Uses the same OAuth 2.0 PKCE flow to verify identity, then attaches x_id.
+    """
+    import requests as httpx_requests
+
+    if not X_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="X authentication not configured")
+
+    # Exchange code for token
+    token_url = "https://api.twitter.com/2/oauth2/token"
+    token_data = {
+        "code": req.code,
+        "grant_type": "authorization_code",
+        "client_id": X_CLIENT_ID,
+        "redirect_uri": req.redirect_uri,
+        "code_verifier": req.code_verifier,
+    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    if X_CLIENT_SECRET:
+        import base64
+        credentials = base64.b64encode(f"{X_CLIENT_ID}:{X_CLIENT_SECRET}".encode()).decode()
+        headers["Authorization"] = f"Basic {credentials}"
+
+    token_resp = httpx_requests.post(token_url, data=token_data, headers=headers, timeout=15)
+    if token_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to verify X account")
+
+    x_access_token = token_resp.json().get("access_token")
+    if not x_access_token:
+        raise HTTPException(status_code=400, detail="No access token from X")
+
+    # Fetch X user info
+    user_resp = httpx_requests.get(
+        "https://api.twitter.com/2/users/me",
+        params={"user.fields": "id,name,username,profile_image_url"},
+        headers={"Authorization": f"Bearer {x_access_token}"},
+        timeout=10,
+    )
+    if user_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to fetch X profile")
+
+    x_data = user_resp.json().get("data", {})
+    x_id = x_data.get("id")
+    x_username = x_data.get("username")
+
+    if not x_id:
+        raise HTTPException(status_code=400, detail="Could not verify X identity")
+
+    # Check if x_id is already linked to a different user
+    existing = db.query(UserModel).filter(
+        UserModel.x_id == x_id,
+        UserModel.id != current_user.id,
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail="This X account is already linked to a different user."
+        )
+
+    current_user.x_id = x_id
+    current_user.twitter_handle = x_username
+    db.commit()
+    db.refresh(current_user)
+
+    # Reissue JWT
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={
+            "sub": current_user.email,
+            "role": current_user.role.value if hasattr(current_user.role, "value") else current_user.role,
+            "onboarded": current_user.onboarded,
+        },
+        expires_delta=access_token_expires,
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": schemas.UserResponse.model_validate(current_user),
+        "linked": True,
+    }

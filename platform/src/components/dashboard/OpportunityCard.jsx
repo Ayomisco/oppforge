@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Trash2, CheckCircle, Calendar, DollarSign, Bookmark, BookmarkCheck } from 'lucide-react'
+import { ArrowUpRight, Trash2, CheckCircle, Calendar, DollarSign, Bookmark, BookmarkCheck, Trophy, Gift, Rocket, Coins, Zap, Star } from 'lucide-react'
 import Link from 'next/link'
 import { formatMissionDeadline } from '@/lib/utils'
 import { getOppImage } from '@/lib/chainLogos'
@@ -10,27 +10,47 @@ import { useAuth } from '../providers/AuthProvider'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
-// AI Score — always shows a number (defaults to "--" if unscored)
-const ScoreRing = ({ score }) => {
+// Category color mapping
+const CATEGORY_STYLES = {
+  hackathon: { color: '#3fb950', bg: 'rgba(63,185,80,0.12)', border: 'rgba(63,185,80,0.3)', icon: Trophy },
+  grant: { color: '#58a6ff', bg: 'rgba(88,166,255,0.12)', border: 'rgba(88,166,255,0.3)', icon: Gift },
+  bounty: { color: '#ff5500', bg: 'rgba(255,85,0,0.12)', border: 'rgba(255,85,0,0.3)', icon: Coins },
+  testnet: { color: '#a371f7', bg: 'rgba(163,113,247,0.12)', border: 'rgba(163,113,247,0.3)', icon: Rocket },
+  airdrop: { color: '#56d4dd', bg: 'rgba(86,212,221,0.12)', border: 'rgba(86,212,221,0.3)', icon: Zap },
+  quest: { color: '#ffaa00', bg: 'rgba(255,170,0,0.12)', border: 'rgba(255,170,0,0.3)', icon: Star },
+}
+
+function getCategoryStyle(type) {
+  const key = (type || '').toLowerCase()
+  return CATEGORY_STYLES[key] || { color: '#ffaa00', bg: 'rgba(255,170,0,0.1)', border: 'rgba(255,170,0,0.25)', icon: Star }
+}
+
+// Score color — always colorful, even for low scores
+function getScoreColor(score) {
+  if (score >= 75) return '#3fb950'   // green
+  if (score >= 50) return '#58a6ff'   // blue
+  if (score >= 30) return '#ffaa00'   // amber
+  if (score >= 15) return '#ff5500'   // orange
+  return '#f85149'                     // red
+}
+
+// AI Score ring — always vibrant
+const ScoreRing = ({ score, categoryColor }) => {
   const radius = 14
   const circumference = 2 * Math.PI * radius
   const displayScore = score && score > 0 ? score : null
-  const color = !displayScore ? 'var(--border-default)'
-    : score >= 80 ? 'var(--accent-primary)'
-    : score >= 60 ? 'var(--accent-secondary)'
-    : score >= 40 ? 'var(--status-info)'
-    : 'var(--text-tertiary)'
+  const color = displayScore ? getScoreColor(score) : 'var(--border-default)'
   const offset = displayScore ? circumference - (score / 100) * circumference : circumference
 
   return (
     <div className="relative w-9 h-9 flex items-center justify-center shrink-0" title={displayScore ? `AI Score: ${score}/100` : 'Not scored yet'}>
       <svg className="w-full h-full -rotate-90">
-        <circle cx="18" cy="18" r={radius} fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--border-default)]" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--border-default)]" opacity="0.4" />
         {displayScore && (
-          <circle cx="18" cy="18" r={radius} fill="none" stroke={color} strokeWidth="2.5" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+          <circle cx="18" cy="18" r={radius} fill="none" stroke={color} strokeWidth="2.5" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 3px ${color}40)` }} />
         )}
       </svg>
-      <span className={`absolute text-[10px] font-bold tabular-nums ${displayScore ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}`}>
+      <span className="absolute text-[10px] font-bold tabular-nums" style={{ color: displayScore ? color : 'var(--text-tertiary)' }}>
         {displayScore || '—'}
       </span>
     </div>
@@ -75,6 +95,8 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
   const isUrgent = deadlineLabel.includes('day') || deadlineLabel.includes('hour')
   const reward = opp.reward_pool || opp.reward || ''
   const logoUrl = getOppImage(opp)
+  const catStyle = getCategoryStyle(type)
+  const CategoryIcon = catStyle.icon
 
   return (
     <motion.div
@@ -86,21 +108,26 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
       <Link href={`/dashboard/opportunity/${opp.id}`} className="block p-4">
         <div className="flex items-start gap-3">
           {/* Left: Logo + Score */}
-          <div className="shrink-0 flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-default)] flex items-center justify-center overflow-hidden">
+          <div className="shrink-0 flex flex-col items-center gap-1.5">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden"
+              style={{ background: catStyle.bg, border: `1px solid ${catStyle.border}` }}
+            >
               {logoUrl ? (
                 <img src={logoUrl} alt="" className="w-full h-full object-contain p-1.5" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex') }} />
               ) : null}
-              <span className={`text-xs font-bold text-[var(--text-tertiary)] uppercase ${logoUrl ? 'hidden' : ''}`}>{type.slice(0, 2)}</span>
+              <span className={`${logoUrl ? 'hidden' : 'flex'} items-center justify-center`}>
+                <CategoryIcon size={18} style={{ color: catStyle.color }} />
+              </span>
             </div>
-            <ScoreRing score={score} />
+            <ScoreRing score={score} categoryColor={catStyle.color} />
           </div>
 
           {/* Center: Content */}
           <div className="flex-1 min-w-0 ml-2">
             {/* Title row with category */}
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-secondary)] shrink-0">{type}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wide shrink-0" style={{ color: catStyle.color }}>{type}</span>
               {opp.chain && <span className="text-[10px] text-[var(--text-tertiary)]">{opp.chain}</span>}
             </div>
             <h3 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors line-clamp-1 leading-snug">

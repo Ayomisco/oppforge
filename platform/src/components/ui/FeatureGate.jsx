@@ -54,12 +54,21 @@ export default function FeatureGate({ children, featureName = "This feature", re
   }
 
   // 2. Check if subscription is explicitly expired/cancelled
-  //    Scout users (onboarded, free tier within trial window) should ALWAYS pass through.
-  //    Only block users whose subscription has explicitly been marked expired/cancelled.
+  //    Also check client-side if trial has expired (trial_started_at + 7 days < now)
   const role = (user.role || '').toLowerCase();
   const isAdmin = role === 'admin';
   const subscriptionStatus = (user.subscription_status || '').toLowerCase();
-  const isExpired = ['expired', 'cancelled', 'canceled', 'past_due'].includes(subscriptionStatus);
+  const isExplicitlyExpired = ['expired', 'cancelled', 'canceled', 'past_due'].includes(subscriptionStatus);
+
+  // Client-side trial expiry check: if still "trialing" but 7+ days have passed
+  let isTrialExpired = false;
+  if (subscriptionStatus === 'trialing' && user.trial_started_at) {
+    const trialStart = new Date(user.trial_started_at);
+    const trialEnd = new Date(trialStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    isTrialExpired = new Date() > trialEnd;
+  }
+
+  const isExpired = isExplicitlyExpired || isTrialExpired;
 
   if (requirePremium && !isAdmin && isExpired) {
     return (
