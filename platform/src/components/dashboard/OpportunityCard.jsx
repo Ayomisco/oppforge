@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight, Trash2, CheckCircle, Calendar, DollarSign, Bookmark, BookmarkCheck, Trophy, Gift, Rocket, Coins, Zap, Star } from 'lucide-react'
 import Link from 'next/link'
 import { formatMissionDeadline } from '@/lib/utils'
-import { getOppImage } from '@/lib/chainLogos'
+import { getOppImage, getChainLogo } from '@/lib/chainLogos'
 import { useAuth } from '../providers/AuthProvider'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
@@ -18,6 +18,8 @@ const CATEGORY_STYLES = {
   testnet: { color: '#a371f7', bg: 'rgba(163,113,247,0.12)', border: 'rgba(163,113,247,0.3)', icon: Rocket },
   airdrop: { color: '#56d4dd', bg: 'rgba(86,212,221,0.12)', border: 'rgba(86,212,221,0.3)', icon: Zap },
   quest: { color: '#ffaa00', bg: 'rgba(255,170,0,0.12)', border: 'rgba(255,170,0,0.3)', icon: Star },
+  ambassador: { color: '#e879f9', bg: 'rgba(232,121,249,0.12)', border: 'rgba(232,121,249,0.3)', icon: Star },
+  accelerator: { color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)', icon: Rocket },
 }
 
 function getCategoryStyle(type) {
@@ -25,32 +27,28 @@ function getCategoryStyle(type) {
   return CATEGORY_STYLES[key] || { color: '#ffaa00', bg: 'rgba(255,170,0,0.1)', border: 'rgba(255,170,0,0.25)', icon: Star }
 }
 
-// Score color — always colorful, even for low scores
+// Score color — always colorful
 function getScoreColor(score) {
-  if (score >= 75) return '#3fb950'   // green
-  if (score >= 50) return '#58a6ff'   // blue
-  if (score >= 30) return '#ffaa00'   // amber
-  if (score >= 15) return '#ff5500'   // orange
-  return '#f85149'                     // red
+  if (score >= 75) return '#3fb950'
+  if (score >= 50) return '#58a6ff'
+  if (score >= 30) return '#ffaa00'
+  if (score >= 15) return '#ff5500'
+  return '#f85149'
 }
 
-// AI Score ring — always vibrant
-const ScoreRing = ({ score, categoryColor }) => {
-  const radius = 14
-  const circumference = 2 * Math.PI * radius
+// Compact AI Score badge — separate from logo
+const ScoreBadge = ({ score }) => {
   const displayScore = score && score > 0 ? score : null
-  const color = displayScore ? getScoreColor(score) : 'var(--border-default)'
-  const offset = displayScore ? circumference - (score / 100) * circumference : circumference
+  const color = displayScore ? getScoreColor(score) : 'var(--text-tertiary)'
 
   return (
-    <div className="relative w-9 h-9 flex items-center justify-center shrink-0" title={displayScore ? `AI Score: ${score}/100` : 'Not scored yet'}>
-      <svg className="w-full h-full -rotate-90">
-        <circle cx="18" cy="18" r={radius} fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--border-default)]" opacity="0.4" />
-        {displayScore && (
-          <circle cx="18" cy="18" r={radius} fill="none" stroke={color} strokeWidth="2.5" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 3px ${color}40)` }} />
-        )}
-      </svg>
-      <span className="absolute text-[10px] font-bold tabular-nums" style={{ color: displayScore ? color : 'var(--text-tertiary)' }}>
+    <div
+      className="flex items-center gap-1 px-1.5 py-0.5 rounded-md shrink-0"
+      style={{ background: displayScore ? `${color}15` : 'var(--bg-tertiary)', border: `1px solid ${displayScore ? `${color}30` : 'var(--border-default)'}` }}
+      title={displayScore ? `AI Score: ${score}/100` : 'Not scored yet'}
+    >
+      <Zap size={10} style={{ color }} />
+      <span className="text-[10px] font-bold tabular-nums" style={{ color }}>
         {displayScore || '—'}
       </span>
     </div>
@@ -95,6 +93,7 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
   const isUrgent = deadlineLabel.includes('day') || deadlineLabel.includes('hour')
   const reward = opp.reward_pool || opp.reward || ''
   const logoUrl = getOppImage(opp)
+  const chainLogoUrl = getChainLogo(opp?.chain)
   const catStyle = getCategoryStyle(type)
   const CategoryIcon = catStyle.icon
 
@@ -107,28 +106,37 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
     >
       <Link href={`/dashboard/opportunity/${opp.id}`} className="block p-4">
         <div className="flex items-start gap-3">
-          {/* Left: Logo + Score */}
-          <div className="shrink-0 flex flex-col items-center gap-1.5">
+          {/* Left: Logo with chain badge */}
+          <div className="shrink-0 relative">
             <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden"
+              className="w-11 h-11 rounded-lg flex items-center justify-center overflow-hidden"
               style={{ background: catStyle.bg, border: `1px solid ${catStyle.border}` }}
             >
               {logoUrl ? (
                 <img src={logoUrl} alt="" className="w-full h-full object-contain p-1.5" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex') }} />
               ) : null}
               <span className={`${logoUrl ? 'hidden' : 'flex'} items-center justify-center`}>
-                <CategoryIcon size={18} style={{ color: catStyle.color }} />
+                <CategoryIcon size={20} style={{ color: catStyle.color }} />
               </span>
             </div>
-            <ScoreRing score={score} categoryColor={catStyle.color} />
+            {/* Chain logo badge — bottom-right corner */}
+            {chainLogoUrl && chainLogoUrl !== logoUrl && (
+              <img
+                src={chainLogoUrl}
+                alt={opp.chain || ''}
+                className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[var(--bg-primary)] border border-[var(--border-default)] object-contain p-[1px]"
+                onError={(e) => { e.target.style.display = 'none' }}
+              />
+            )}
           </div>
 
           {/* Center: Content */}
-          <div className="flex-1 min-w-0 ml-2">
-            {/* Title row with category */}
+          <div className="flex-1 min-w-0">
+            {/* Title row with category + score */}
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-semibold uppercase tracking-wide shrink-0" style={{ color: catStyle.color }}>{type}</span>
               {opp.chain && <span className="text-[10px] text-[var(--text-tertiary)]">{opp.chain}</span>}
+              <div className="ml-auto"><ScoreBadge score={score} /></div>
             </div>
             <h3 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors line-clamp-1 leading-snug">
               {opp.title}
@@ -154,7 +162,7 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
           </div>
 
           {/* Right: Actions */}
-          <div className="shrink-0 flex items-center gap-1.5 ml-2">
+          <div className="shrink-0 flex items-center gap-1.5 ml-1">
             {user?.role === 'admin' && (
               <>
                 {!opp.is_verified && (
