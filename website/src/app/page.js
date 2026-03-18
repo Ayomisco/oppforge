@@ -277,8 +277,8 @@ export default function LandingPage() {
           <div className="flex gap-6">
             <Link href="/privacy-policy" className="hover:text-[var(--text-primary)] transition-colors">Privacy</Link>
             <Link href="/terms-of-service" className="hover:text-[var(--text-primary)] transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Twitter</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">GitHub</Link>
+            <Link href="https://x.com/opp_forge" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">X</Link>
+            <Link href="https://t.me/opp_forge" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">Telegram</Link>
             <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Discord</Link>
           </div>
         </div>
