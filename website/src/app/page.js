@@ -69,7 +69,7 @@ const Statistic = ({ value, label }) => (
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col pt-16 bg-[var(--bg-canvas)] relative">
+    <div className="min-h-screen flex flex-col pt-16 relative">
       <Navbar />
 
       {/* ═══ Hero ═══ */}

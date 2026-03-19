@@ -55,14 +55,13 @@
   border-color: var(--border-default);
 }
 
-html, body {
+html {
+  height: 100%;
+}
+
+body {
   height: 100%;
   background-color: var(--bg-canvas);
-  background-image: url('/bg-img.png');
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   color: var(--text-primary);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   font-size: 16px;
@@ -70,6 +69,24 @@ html, body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/bg-img.png');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--bg-canvas);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .container {
