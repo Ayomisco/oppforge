@@ -18,8 +18,12 @@ const Navbar = () => {
           </span>
         </Link>
         <div className="hidden md:flex items-center gap-3">
-          <Link href="https://x.com/opp_forge" target="_blank" rel="noopener noreferrer" className="text-sm text-white/40 hover:text-white/80 transition-colors px-3 py-1.5">X</Link>
-          <Link href="https://t.me/opp_forge" target="_blank" rel="noopener noreferrer" className="text-sm text-white/40 hover:text-white/80 transition-colors px-3 py-1.5">Telegram</Link>
+          <Link href="https://x.com/opp_forge" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition-colors px-3 py-1.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </Link>
+          <Link href="https://t.me/opp_forge" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition-colors px-3 py-1.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          </Link>
           <Link href="https://app.oppforge.xyz" className="ml-2 inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-[#ff5500] to-[#ff3333] text-white shadow-[0_0_20px_rgba(255,85,0,0.3)] hover:shadow-[0_0_32px_rgba(255,85,0,0.5)] hover:scale-[1.03] transition-all duration-300">
             Launch App <ArrowRight size={15} />
           </Link>
@@ -50,8 +54,10 @@ export default function LandingPage() {
 
       {/* ═══ Hero — Full Screen ═══ */}
       <section className="flex-1 flex items-center justify-center relative min-h-screen overflow-hidden">
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
         {/* Radial overlay to frame the bg image center */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(6,6,15,0.7)_70%,rgba(6,6,15,0.95)_100%)] pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_15%,rgba(6,6,15,0.6)_60%,rgba(6,6,15,0.92)_100%)] pointer-events-none z-[1]" />
 
         <div className="relative z-10 text-center max-w-3xl mx-auto px-6 pt-16">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
@@ -65,14 +71,14 @@ export default function LandingPage() {
             </motion.div>
 
             <h1 className="text-5xl sm:text-6xl md:text-8xl font-bold leading-[0.95] mb-8 tracking-[-0.04em]">
-              <span className="block text-white/95">Find Alpha.</span>
-              <span className="block bg-gradient-to-r from-[#ff5500] via-[#ffaa00] to-[#ff5500] bg-clip-text text-transparent bg-[length:200%_auto] animate-[gradient-shift_4s_ease_infinite]">
-                Win Big.
+              <span className="block text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">Every Opportunity.</span>
+              <span className="block bg-gradient-to-r from-[#ff5500] via-[#ffaa00] to-[#ff5500] bg-clip-text text-transparent bg-[length:200%_auto] animate-[gradient-shift_4s_ease_infinite] drop-shadow-[0_2px_10px_rgba(255,85,0,0.3)]">
+                One Platform.
               </span>
             </h1>
 
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} className="text-lg sm:text-xl text-white/50 mb-12 max-w-lg mx-auto leading-relaxed font-light">
-              AI agents scan <span className="text-white/80 font-medium">hundreds of platforms</span> to surface grants, hackathons, bounties, and airdrops — scored and verified for you.
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} className="text-lg sm:text-xl text-white/60 mb-12 max-w-xl mx-auto leading-relaxed font-light drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+              AI agents scan <span className="text-white/90 font-medium">hundreds of platforms</span> to surface grants, hackathons, bounties, airdrops, ambassador programs, testnets, content deals, and more — scored and verified for you.
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
