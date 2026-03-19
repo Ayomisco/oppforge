@@ -58,6 +58,11 @@
 html, body {
   height: 100%;
   background-color: var(--bg-canvas);
+  background-image: url('/bg-img.png');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text-primary);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   font-size: 16px;
