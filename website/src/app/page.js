@@ -1,16 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Terminal, Zap, Search, Menu, X, Rocket, Check, Bug, Code2, FlaskConical, Building2, Megaphone, Star, ShieldCheck, Crown } from 'lucide-react'
-import PricingSection from '@/components/PricingSection'
+import { ArrowRight, Menu, X, Rocket, ChevronDown } from 'lucide-react'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-default)] bg-[var(--bg-primary)]/95 backdrop-blur-md">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-default)] bg-[var(--bg-primary)]/80 backdrop-blur-md">
       <div className="container h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
           <img src="/oppforge_logo.png" alt="OppForge" className="w-8 h-8 rounded shrink-0 group-hover:scale-105 transition-transform" />
@@ -18,12 +17,6 @@ const Navbar = () => {
             OppForge
           </span>
         </Link>
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="#features" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</Link>
-          <Link href="#use-cases" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Use Cases</Link>
-          <Link href="#how-it-works" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it Works</Link>
-          <Link href="#pricing" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
-        </div>
         <div className="hidden md:flex items-center gap-3">
           <Link href="https://app.oppforge.xyz" className="btn btn-primary shadow-[0_0_16px_rgba(255,85,0,0.25)]">
             Launch App <ArrowRight size={16} />
@@ -33,253 +26,264 @@ const Navbar = () => {
           {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-b border-[var(--border-default)] bg-[var(--bg-primary)] overflow-hidden">
-            <div className="container py-4 flex flex-col gap-4">
-              <Link href="#features" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Features</Link>
-              <Link href="#use-cases" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Use Cases</Link>
-              <Link href="#how-it-works" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">How it Works</Link>
-              <Link href="#pricing" onClick={() => setIsOpen(false)} className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Pricing</Link>
-              <Link href="https://app.oppforge.xyz" className="btn btn-primary w-full justify-center">Launch App</Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </nav>
   )
 }
 
-const FeatureCard = ({ icon: Icon, title, description, delay }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.5 }} viewport={{ once: true }} className="glass-card p-6 flex flex-col gap-4 group hover:border-[var(--accent-primary)]/30 transition-colors">
-    <div className="w-11 h-11 rounded-lg bg-[var(--accent-primary-muted)] flex items-center justify-center text-[var(--accent-primary)] group-hover:scale-110 transition-transform">
-      <Icon size={22} />
-    </div>
-    <h3 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h3>
-    <p className="text-[var(--text-secondary)] leading-relaxed text-sm">{description}</p>
-  </motion.div>
-)
+const ScrollIndicator = () => {
+  const [isVisible, setIsVisible] = useState(true)
 
-const Statistic = ({ value, label }) => (
-  <div className="text-center">
-    <div className="text-3xl md:text-4xl font-bold text-[var(--accent-primary)] font-mono mb-1">{value}</div>
-    <div className="text-xs uppercase tracking-wider text-[var(--text-tertiary)]">{label}</div>
-  </div>
-)
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsVisible(window.scrollY < 100)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return isVisible ? (
+    <motion.div
+      animate={{ y: [0, 8, 0] }}
+      transition={{ duration: 2, repeat: Infinity }}
+      className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[var(--accent-primary)]"
+    >
+      <ChevronDown size={24} />
+    </motion.div>
+  ) : null
+}
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col pt-16 relative">
+    <div className="flex flex-col relative">
       <Navbar />
 
-      {/* ═══ Hero ═══ */}
-      <section className="relative py-24 md:py-32 overflow-hidden border-b border-[var(--border-default)]">
-        {/* Background Video */}
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.15]">
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4" />
-        </video>
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-canvas)]/80 via-[var(--bg-canvas)]/90 to-[var(--bg-canvas)] pointer-events-none" />
-        {/* Ambient glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[var(--accent-primary)]/[0.06] blur-[140px] rounded-full pointer-events-none" />
+      {/* ═══ HERO ═══ */}
+      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+        {/* Animated Grid Background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--accent-primary)]/[0.08] blur-[120px] rounded-full -translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--accent-violet)]/[0.08] blur-[120px] rounded-full translate-x-1/3 translate-y-1/3" />
+        </div>
 
-        <div className="container relative z-10 text-center max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <div className="container relative z-10 text-center max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] text-[var(--accent-primary)] text-xs font-medium mb-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 text-[var(--accent-primary)] text-xs font-medium mb-12"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-primary)] opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-secondary)]" />
               </span>
               v1.0 Public Beta is Live
-            </div>
+            </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] mb-6 tracking-tight">
-              Every Web3 Opportunity.<br />
-              <span className="bg-gradient-to-r from-[var(--accent-primary)] via-[var(--accent-secondary)] to-[var(--accent-gold)] bg-clip-text text-transparent">
-                One Platform.
+            {/* Main Headline */}
+            <h1 className="text-5xl sm:text-6xl md:text-8xl font-black leading-[0.95] mb-8 tracking-tighter">
+              Every Web3<br />
+              <span className="relative inline-block">
+                <span className="relative z-10 bg-gradient-to-r from-[var(--accent-primary)] via-[var(--accent-secondary)] to-[var(--accent-gold)] bg-clip-text text-transparent">Opportunity</span>
+                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-[var(--accent-primary)] via-[var(--accent-secondary)] to-[var(--accent-gold)] blur-sm -z-10" />
               </span>
+              <br />in One Command.
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
-              <span className="text-[var(--text-primary)] font-medium">Grants. Hackathons. Bounties. Testnets. Ambassador Programs. Content Creator Deals. Volunteer Roles. Early Alphas. Jobs.</span>
-              <br className="hidden sm:block" />
-              AI agents monitor <span className="text-[var(--accent-primary)] font-semibold">hundreds of platforms 24/7</span>, scoring and verifying every opportunity so you never miss out.
-            </p>
+            {/* Subheading */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="text-lg md:text-2xl text-[var(--text-secondary)] mb-12 max-w-2xl mx-auto leading-relaxed font-light"
+            >
+              AI agents monitor hundreds of platforms. You get grants, hackathons, bounties, and airdrops before anyone else knows they exist.
+            </motion.p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="https://app.oppforge.xyz" className="btn btn-primary text-base px-8 py-3 w-full sm:w-auto shadow-[0_0_24px_rgba(255,85,0,0.25)] hover:shadow-[0_0_40px_rgba(255,85,0,0.4)]">
-                Launch Mission Control <Rocket size={18} />
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
+              <Link
+                href="https://app.oppforge.xyz"
+                className="btn btn-primary text-lg px-10 py-4 w-full sm:w-auto shadow-[0_0_32px_rgba(255,85,0,0.3)] hover:shadow-[0_0_48px_rgba(255,85,0,0.5)] transition-all duration-300 hover:scale-105"
+              >
+                Launch Mission Control <Rocket size={20} />
               </Link>
-              <Link href="#how-it-works" className="btn btn-secondary text-base px-8 py-3 w-full sm:w-auto">
-                View Architecture
-              </Link>
-            </div>
+            </motion.div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-20 p-6 bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl">
-              <Statistic value="50+" label="Supported Chains" />
-              <Statistic value="0.4s" label="Scan Latency" />
-              <Statistic value="$50M+" label="Tracked Value" />
-              <Statistic value="98%" label="AI Accuracy" />
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ═══ Features ═══ */}
-      <section id="features" className="py-24 border-b border-[var(--border-default)] bg-[var(--bg-primary)]">
-        <div className="container">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Intelligence & Verifiable Alpha</h2>
-            <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
-              OppForge uses AI agents to monitor trusted platforms, <span className="text-[var(--text-primary)]">scoring opportunities out of 100</span> and generating winning proposals.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard icon={Search} title="Autonomous Monitoring" description="AI agents scan official blogs, X (Twitter), and ecosystem forums. High-signal alpha surfaced the second it drops." delay={0.1} />
-            <FeatureCard icon={Zap} title="Personalized Scoring" description="Opportunities ranked for your technical stack — Rust, Solidity, Python — and preferred ecosystems." delay={0.2} />
-            <FeatureCard icon={Terminal} title="Forge AI Assistant" description="Context-aware chat. Draft grant proposals, get farming plans, or receive architecture advice instantly." delay={0.3} />
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ Pricing ═══ */}
-      <PricingSection />
-
-      {/* ═══ Use Cases ═══ */}
-      <section id="use-cases" className="py-24 border-t border-[var(--border-default)] bg-[var(--bg-canvas)]">
-        <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Who Forges With Us?</h2>
-            <p className="text-[var(--text-secondary)] text-lg">
-              An unfair advantage for every part of Web3.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { icon: Bug, title: 'Bounty Hunters', sub: 'Bug Bounties · Dev Tasks', desc: 'Get pinged the second a bounty matches your stack.', color: 'var(--status-success)' },
-              { icon: Code2, title: 'Hackathon Devs', sub: 'ETHGlobal · Superteam', desc: 'Discover under-the-radar hackathons. AI drafts winning submissions.', color: 'var(--accent-primary)' },
-              { icon: FlaskConical, title: 'Testnet Degens', sub: 'Airdrops · Node Running', desc: 'Risk AI verifies protocols before you sign a transaction.', color: 'var(--status-info)' },
-              { icon: Building2, title: 'Ecosystem DAOs', sub: 'Grants · Governance', desc: 'Track grant volumes across chains and structure proposals.', color: 'var(--accent-gold)' },
-              { icon: Megaphone, title: 'Community Managers', sub: 'Growth · Ops', desc: 'Find protocols granting funds for community growth roles.', color: '#a855f7' },
-              { icon: Star, title: 'Web3 Ambassadors', sub: 'DevRel · Brand Programs', desc: 'Discover ambassador programs early. AI drafts applications.', color: '#ec4899' },
-            ].map((item, i) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-                viewport={{ once: true }}
-                className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl p-6 hover:border-opacity-50 transition-all group"
-                style={{ borderTopColor: item.color, borderTopWidth: '2px' }}
-              >
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 border transition-transform group-hover:scale-110"
-                  style={{ backgroundColor: `${item.color}15`, borderColor: `${item.color}30`, color: item.color }}>
-                  <item.icon size={20} />
-                </div>
-                <h3 className="text-base font-semibold text-[var(--text-primary)] mb-0.5">{item.title}</h3>
-                <p className="text-[10px] uppercase font-mono tracking-widest mb-3" style={{ color: item.color }}>{item.sub}</p>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ How It Works ═══ */}
-      <section id="how-it-works" className="py-24 border-t border-[var(--border-default)] bg-[var(--bg-primary)]">
-        <div className="container">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="lg:w-1/2">
-              <h2 className="text-3xl md:text-4xl font-bold mb-8 tracking-tight">Built for Hunters,<br />by Hunters.</h2>
-              <div className="space-y-6">
-                {[
-                  { step: '1', title: 'Connect Your Profile', desc: 'Tell OppForge your skills (Rust, Solidity, Design) and preferred chains.' },
-                  { step: '2', title: 'Receive Curated Alpha', desc: 'Get a personalized feed of high-probability opportunities, filtered by AI.' },
-                  { step: '3', title: 'Execute & Win', desc: 'Use the AI assistant to draft proposals and track your applications.' },
-                ].map(item => (
-                  <div key={item.step} className="flex gap-4">
-                    <div className="w-10 h-10 rounded-md bg-[var(--accent-primary-muted)] flex items-center justify-center shrink-0 text-[var(--accent-primary)] font-bold text-sm border border-[var(--accent-primary)]/20">
-                      {item.step}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">{item.title}</h3>
-                      <p className="text-sm text-[var(--text-secondary)]">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="mt-20 flex justify-center gap-12 md:gap-20 text-center"
+            >
+              <div>
+                <div className="text-3xl md:text-4xl font-black text-[var(--accent-primary)] font-mono">50+</div>
+                <div className="text-xs uppercase tracking-widest text-[var(--text-tertiary)] mt-2">Chains</div>
               </div>
-            </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-black text-[var(--accent-secondary)] font-mono">24/7</div>
+                <div className="text-xs uppercase tracking-widest text-[var(--text-tertiary)] mt-2">Monitoring</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-black text-[var(--accent-gold)] font-mono">98%</div>
+                <div className="text-xs uppercase tracking-widest text-[var(--text-tertiary)] mt-2">Accuracy</div>
+              </div>
+            </motion.div>
+          </motion.div>
 
-            {/* Terminal Preview */}
-            <div className="lg:w-1/2 w-full">
-              <div className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl overflow-hidden shadow-[var(--shadow-xl)]">
-                <div className="bg-[var(--bg-tertiary)] h-9 flex items-center px-4 gap-2 border-b border-[var(--border-default)]">
-                  <div className="w-3 h-3 rounded-full bg-[var(--status-danger)]/50" />
-                  <div className="w-3 h-3 rounded-full bg-[var(--status-warning)]/50" />
-                  <div className="w-3 h-3 rounded-full bg-[var(--status-success)]/50" />
-                  <span className="ml-2 text-xs text-[var(--text-tertiary)] font-mono">forge_agent</span>
-                </div>
-                <div className="p-5 font-mono text-sm space-y-4">
-                  <div className="text-[var(--text-tertiary)]">
-                    $ initializing forge_agent... <span className="text-[var(--status-success)]">done</span>
-                  </div>
-                  <div>
-                    <span className="text-[var(--accent-primary)]">➜</span> <span className="text-[var(--text-primary)]">scan --target solana --type grant</span>
-                  </div>
-                  <div className="text-[var(--text-tertiary)]">
-                    <span className="text-[var(--status-info)]">INFO</span> Scanning 14 sources...<br />
-                    <span className="text-[var(--status-info)]">INFO</span> Found 3 matches for &apos;Rust Developer&apos;:
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'Solana Foundation Data Grant', match: '98%', color: 'var(--accent-primary)' },
-                      { name: 'Superteam Radar Hackathon', match: '85%', color: 'var(--accent-secondary)' },
-                      { name: 'Anza Validator Program', match: 'New!', color: 'var(--status-info)' },
-                    ].map(item => (
-                      <div key={item.name} className="p-3 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-md flex justify-between items-center hover:border-[var(--accent-primary)]/30 cursor-pointer transition-colors">
-                        <span className="text-[var(--text-secondary)]">{item.name}</span>
-                        <span style={{ color: item.color }} className="font-semibold">{item.match}</span>
+          <ScrollIndicator />
+        </div>
+      </section>
+
+      {/* ═══ EXPERIENCE ═══ */}
+      <section className="relative py-32 border-t border-[var(--border-default)] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--accent-primary)]/[0.03] to-transparent pointer-events-none" />
+
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true, margin: "-100px" }}
+            className="max-w-4xl mx-auto"
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-16 text-center tracking-tight">
+              One Command. Infinite Alpha.
+            </h2>
+
+            {/* Terminal */}
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(255,85,0,0.1)]">
+              <div className="bg-[var(--bg-tertiary)] h-12 flex items-center px-6 gap-3 border-b border-[var(--border-default)]">
+                <div className="w-3 h-3 rounded-full bg-[var(--status-danger)]/60" />
+                <div className="w-3 h-3 rounded-full bg-[var(--status-warning)]/60" />
+                <div className="w-3 h-3 rounded-full bg-[var(--status-success)]/60" />
+                <span className="ml-4 text-xs text-[var(--text-tertiary)] font-mono">forge_agent.terminal</span>
+              </div>
+              <div className="p-8 font-mono text-sm space-y-4 min-h-96">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  viewport={{ once: true }}
+                  className="text-[var(--text-tertiary)]"
+                >
+                  $ forge scan --target solana --type grant
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  viewport={{ once: true }}
+                  className="text-[var(--status-info)]"
+                >
+                  ➜ Scanning 47 sources across Solana ecosystem...
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  viewport={{ once: true }}
+                  className="space-y-3"
+                >
+                  {[
+                    { title: 'Solana Foundation Grants', match: '98%', status: 'ACTIVE' },
+                    { title: 'Marinade Native Staking Hackathon', match: '94%', status: 'NEW' },
+                    { title: 'Superteam DAO Bounties', match: '88%', status: 'LIVE' },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.title}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.8 + i * 0.1 }}
+                      viewport={{ once: true }}
+                      className="p-4 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-lg hover:border-[var(--accent-primary)]/30 transition-colors cursor-pointer flex justify-between items-center"
+                    >
+                      <div>
+                        <div className="text-[var(--text-primary)] font-semibold">{item.title}</div>
+                        <div className="text-xs text-[var(--text-tertiary)] mt-1">match_score: {item.match} | status: {item.status}</div>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                      <div className="text-[var(--accent-primary)] font-bold text-lg">{item.match}</div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  viewport={{ once: true }}
+                  className="text-[var(--status-success)] pt-4 border-t border-[var(--border-muted)]"
+                >
+                  ✓ 3 opportunities matched | Ready to forge applications
+                </motion.div>
               </div>
             </div>
-          </div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 1.4 }}
+              viewport={{ once: true }}
+              className="text-center mt-10 text-[var(--text-secondary)] text-sm"
+            >
+              This is real. No marketing fluff. Just pure scanning, scoring, and delivery of opportunities your competitors miss.
+            </motion.p>
+          </motion.div>
         </div>
       </section>
 
-      {/* ═══ CTA ═══ */}
-      <section className="py-24 md:py-32 border-t border-[var(--border-default)] relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--accent-primary)]/[0.04] blur-[100px] rounded-full pointer-events-none" />
-        <div className="container text-center relative z-10">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 tracking-tight">Ready to Forge Your Future?</h2>
-          <p className="text-lg text-[var(--text-secondary)] mb-10 max-w-xl mx-auto">
-            Join the elite builders capturing Web3 opportunities everyone else is missing.
-          </p>
-          <Link href="https://app.oppforge.xyz" className="btn btn-primary text-lg px-10 py-4 shadow-[0_0_32px_rgba(255,85,0,0.25)] hover:shadow-[0_0_48px_rgba(255,85,0,0.4)]">
-            Launch Platform <ArrowRight size={20} />
-          </Link>
-          <div className="mt-6 text-sm text-[var(--text-tertiary)]">
-            No credit card required · Open Source · Built for Web3
-          </div>
+      {/* ═══ FINAL CTA ═══ */}
+      <section className="relative py-32 border-t border-[var(--border-default)] overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent-primary)]/[0.06] blur-[100px] rounded-full pointer-events-none" />
+        </div>
+
+        <div className="container relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-8">Build Your Edge</h2>
+            <p className="text-lg text-[var(--text-secondary)] mb-12 max-w-xl mx-auto">
+              Stop missing opportunities. Start winning grants and airdrops. Your unfair advantage in Web3 starts now.
+            </p>
+            <Link
+              href="https://app.oppforge.xyz"
+              className="btn btn-primary text-lg px-12 py-4 shadow-[0_0_40px_rgba(255,85,0,0.3)] hover:shadow-[0_0_60px_rgba(255,85,0,0.5)] transition-all duration-300 inline-flex hover:scale-105"
+            >
+              Launch Platform <ArrowRight size={20} />
+            </Link>
+            <div className="mt-8 text-sm text-[var(--text-tertiary)]">
+              No credit card · Open Source · Built for Web3
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ═══ Footer ═══ */}
-      <footer className="py-8 border-t border-[var(--border-default)] bg-[var(--bg-primary)]">
-        <div className="container flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[var(--text-tertiary)]">
+      <footer className="py-8 border-t border-[var(--border-default)] bg-[var(--bg-primary)]/50">
+        <div className="container flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[var(--text-tertiary)]">
           <div>© {new Date().getFullYear()} OppForge. Open Source (MIT).</div>
           <div className="flex gap-6">
             <Link href="/privacy-policy" className="hover:text-[var(--text-primary)] transition-colors">Privacy</Link>
             <Link href="/terms-of-service" className="hover:text-[var(--text-primary)] transition-colors">Terms</Link>
             <Link href="https://x.com/opp_forge" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">X</Link>
             <Link href="https://t.me/opp_forge" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">Telegram</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Discord</Link>
           </div>
         </div>
       </footer>
