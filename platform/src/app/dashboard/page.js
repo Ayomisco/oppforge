@@ -254,15 +254,21 @@ export default function DashboardPage() {
               <span className="text-xs font-medium text-[var(--text-secondary)]">Sources</span>
               <Clock size={12} className="text-[var(--text-tertiary)]" />
             </div>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between items-center hover:bg-[var(--bg-tertiary)] p-2 rounded-md cursor-pointer transition-colors">
-                <span className="text-[var(--text-secondary)]">Twitter/X</span>
-                <span className="text-[var(--status-success)] text-xs font-medium">Live</span>
-              </div>
-              <div className="flex justify-between items-center hover:bg-[var(--bg-tertiary)] p-2 rounded-md cursor-pointer transition-colors">
-                <span className="text-[var(--text-secondary)]">Gitcoin</span>
-                <span className="text-[var(--text-tertiary)] text-xs">Syncing...</span>
-              </div>
+            <div className="space-y-0.5 text-sm">
+              {[
+                { name: 'Twitter/X', status: 'Live', live: true },
+                { name: 'ETHGlobal', status: 'Live', live: true },
+                { name: 'Superteam', status: 'Live', live: true },
+                { name: 'DoraHacks', status: 'Live', live: true },
+                { name: 'HackQuest', status: 'Live', live: true },
+                { name: 'Gitcoin', status: 'Syncing...', live: false },
+                { name: 'Devfolio', status: 'Syncing...', live: false },
+              ].map(src => (
+                <div key={src.name} className="flex justify-between items-center hover:bg-[var(--bg-tertiary)] px-2 py-1.5 rounded-md cursor-pointer transition-colors">
+                  <span className="text-[11px] text-[var(--text-secondary)]">{src.name}</span>
+                  <span className={`text-[10px] font-medium ${src.live ? 'text-[var(--status-success)]' : 'text-[var(--text-tertiary)]'}`}>{src.status}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

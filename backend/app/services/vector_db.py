@@ -1,6 +1,9 @@
 import os
 import json
+import logging
 from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 # Dependency Check
 try:
@@ -8,14 +11,14 @@ try:
     CHROMA_AVAILABLE = True
 except ImportError:
     CHROMA_AVAILABLE = False
-    print("[VectorDB] ChromaDB not found. Vector search will be disabled/mocked.")
+    logger.debug("[VectorDB] ChromaDB not available. Vector search disabled.")
 
 try:
     from sentence_transformers import SentenceTransformer
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-    print("[VectorDB] SentenceTransformers not found. Embeddings will not be generated.")
+    logger.debug("[VectorDB] SentenceTransformers not available. Embeddings disabled.")
 
 # Using a standard, efficient model for semantic search
 MODEL_NAME = 'all-MiniLM-L6-v2'
