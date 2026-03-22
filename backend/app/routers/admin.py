@@ -181,10 +181,16 @@ def get_dashboard_stats(
     ).scalar()
     tracked = db.query(func.count(TrackedApplication.id)).scalar()
     pro = db.query(func.count(User.id)).filter(User.is_pro == True).scalar()
-    admins = db.query(func.count(User.id)).filter(
-        User.role == UserRole.ADMIN).scalar()
-    sub_admins = db.query(func.count(User.id)).filter(
-        User.role == UserRole.SUB_ADMIN).scalar()
+    try:
+        admins = db.query(func.count(User.id)).filter(
+            User.role == UserRole.ADMIN).scalar()
+    except Exception:
+        admins = 0
+    try:
+        sub_admins = db.query(func.count(User.id)).filter(
+            User.role == UserRole.SUB_ADMIN).scalar()
+    except Exception:
+        sub_admins = 0
 
     from ..models.billing import SubscriptionPayment
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)

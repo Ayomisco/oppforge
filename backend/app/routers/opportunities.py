@@ -177,8 +177,6 @@ def get_priority_stream(
 
             opp.ai_score = min(base_score + match_bonus, 100)
 
-        all_opps.sort(key=lambda x: (x.ai_score or 0), reverse=True)
-
     return all_opps
 
 
