@@ -59,22 +59,14 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: {
-      // Etherscan V2 covers mainnet, sepolia, arbitrum
-      mainnet: ETHERSCAN_API_KEY,
-      sepolia: ETHERSCAN_API_KEY,
-      arbitrumOne: ETHERSCAN_API_KEY,
-      arbitrumSepolia: ETHERSCAN_API_KEY,
-      // Celoscan requires its own key — get one at https://celoscan.io/myapikey
-      celo: CELOSCAN_API_KEY,
-      alfajores: CELOSCAN_API_KEY,
-    },
+    // Etherscan V2: single key with chain-ID routing covers all chains
+    apiKey: ETHERSCAN_API_KEY,
     customChains: [
       {
         network: "celo",
         chainId: 42220,
         urls: {
-          apiURL: "https://api.celoscan.io/api",
+          apiURL: "https://api.etherscan.io/v2/api?chainid=42220",
           browserURL: "https://celoscan.io",
         },
       },
@@ -82,7 +74,7 @@ module.exports = {
         network: "alfajores",
         chainId: 44787,
         urls: {
-          apiURL: "https://api-alfajores.celoscan.io/api",
+          apiURL: "https://api.etherscan.io/v2/api?chainid=44787",
           browserURL: "https://alfajores.celoscan.io",
         },
       },
