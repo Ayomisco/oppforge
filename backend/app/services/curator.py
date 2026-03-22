@@ -52,15 +52,25 @@ def parse_reward_to_usd(reward_str: str) -> float:
     
     return base_value * multiplier
 
+# Platforms whose listings are pre-verified as real opportunities.
+# Items from these sources bypass the is_opportunity gate and are only enriched.
+TRUSTED_SOURCES = {
+    "superteam", "dorahacks", "ethglobal", "hackquest", "devfolio",
+    "questbook", "gitcoin", "code4rena", "sherlock", "immunefi",
+    "layer3", "curated",
+}
+
+
 class AgentCurator:
     """
-    Automated curator that triage and refines raw scrapes.
+    Automated curator that triages and refines raw scrapes.
+    Items from trusted platforms are enriched without the is_opportunity gate.
     """
-    
+
     @staticmethod
     def triage_and_refine(raw_item: Dict) -> Optional[Dict]:
         """
-        Input: Raw scrape dict from Twitter/Reddit.
+        Input: Raw scrape dict.
         Output: Refined dict or None (if noise).
         """
         if not GROQ_API_KEY:
@@ -70,8 +80,12 @@ class AgentCurator:
         text = raw_item.get("description", "")
         title = raw_item.get("title", "")
         full_text = f"{title}. {text}"
-        
-        if len(full_text) < 15: return None
+
+        if len(full_text) < 15:
+            return None
+
+        source = (raw_item.get("source") or "Unknown").lower()
+        from_trusted_source = source in TRUSTED_SOURCES
 
         # Call AI Engine Classifier Agent
         try:
@@ -81,17 +95,26 @@ class AgentCurator:
                 json={
                     "raw_text": full_text,
                     "source": raw_item.get("source", "Unknown"),
-                    "model": "llama-3.3-70b-versatile" # Specify the model to use
+                    "model": "llama-3.3-70b-versatile",
                 },
-                timeout=45
+                timeout=45,
             )
 
             if response.status_code == 200:
-                refined = response.json().get("data", {}) # Assign result to 'refined' for consistency
-                
-                if not refined.get("is_opportunity"):
+                refined = response.json().get("data", {})
+
+                # Trusted platform items are pre-validated — only reject true noise
+                # (very low confidence with no reward) not just missing CTA keywords
+                is_opp = refined.get("is_opportunity", False)
+                if not is_opp and not from_trusted_source:
                     print(f"  [Curator] Skipped: {title[:30]} (Not an opportunity)")
                     return None
+                if not is_opp and from_trusted_source:
+                    print(f"  [Curator] Trusted source ({source}) — overriding classifier, keeping item")
+                    # Preserve category from raw_item since classifier was uncertain
+                    refined["is_opportunity"] = True
+                    if not refined.get("category"):
+                        refined["category"] = raw_item.get("category", "Bounty")
                 
                 print(f"  [Curator] Success: {refined.get('title')}")
                 
