@@ -1,15 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func as sql_func, desc
+from sqlalchemy import func as sql_func, desc, or_
 import uuid
 import logging
 from typing import List, Optional
 from pydantic import BaseModel
 from .. import database, schemas
 from ..models.chat import ChatMessage
+from ..models.opportunity import Opportunity
 from .auth import get_current_user, check_subscription_clearance
 import os
 import httpx
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -58,40 +60,66 @@ async def _call_gemini(messages: list) -> str | None:
     return None
 
 
-async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict = None) -> str:
+async def _call_groq_direct(
+    message: str,
+    user_profile: dict,
+    opportunity: dict = None,
+    relevant_opportunities: list = None,
+) -> str:
     """Direct Groq API fallback when AI Engine service is unreachable."""
     if not GROQ_API_KEY:
         return "Forge AI is temporarily unavailable. Please try again later."
 
-    # Build system prompt
+    skills = (user_profile.get("skills") or []) if user_profile else []
+    chains = (user_profile.get("preferred_chains") or []) if user_profile else []
+    level = (user_profile.get("level") or 1) if user_profile else 1
+    xp = (user_profile.get("xp") or 0) if user_profile else 0
+
     system_prompt = (
-        "You are Forge AI, a specialist Web3 opportunity advisor for OppForge. "
-        "You help users evaluate blockchain opportunities (grants, hackathons, bounties, testnets, ambassador programs), "
-        "draft proposals, analyze requirements, and build winning strategies. "
-        "Be concise, tactical, and data-driven. Use a professional but approachable tone."
+        "You are Forge AI — OppForge's personalized Web3 opportunity agent. "
+        "OppForge is a platform that aggregates grants, hackathons, bounties, testnets, and ambassador programs across all major blockchains. "
+        "Your role: recommend opportunities, help users write proposals, brainstorm strategies, and provide Web3 career guidance. "
+        "You have access to live opportunity data from the platform — always reference specific opportunities by name, reward, and deadline when relevant. "
+        "Personalize every response to the user's skills, level, and preferred chains. "
+        "Be direct, tactical, and actionable. Keep responses concise unless drafting a proposal."
     )
 
     # Build context
     context_parts = []
     if user_profile:
-        skills = user_profile.get("skills") or []
         context_parts.append(
-            f"User: {user_profile.get('full_name', 'Operator')} | "
-            f"Skills: {', '.join(skills) if skills else 'Not specified'} | "
-            f"XP: {user_profile.get('xp', 0)} | Level: {user_profile.get('level', 1)}"
+            f"USER PROFILE:\n"
+            f"  Name: {user_profile.get('full_name', 'Operator')}\n"
+            f"  Level: {level} | XP: {xp}\n"
+            f"  Skills: {', '.join(skills) if skills else 'Not specified'}\n"
+            f"  Preferred Chains: {', '.join(chains) if chains else 'Not specified'}\n"
+            f"  Bio: {user_profile.get('bio') or 'Not provided'}"
         )
+
     if opportunity:
         context_parts.append(
-            f"Opportunity: {opportunity.get('title', 'Unknown')} | "
-            f"Category: {opportunity.get('category', 'N/A')} | "
-            f"Chain: {opportunity.get('chain', 'N/A')} | "
-            f"Reward: {opportunity.get('reward_pool', 'N/A')} | "
-            f"Requirements: {opportunity.get('mission_requirements', [])}"
+            f"FOCUSED OPPORTUNITY:\n"
+            f"  Title: {opportunity.get('title', 'Unknown')}\n"
+            f"  Category: {opportunity.get('category', 'N/A')} | Chain: {opportunity.get('chain', 'N/A')}\n"
+            f"  Reward: {opportunity.get('reward_pool', 'N/A')}\n"
+            f"  Requirements: {opportunity.get('mission_requirements', [])}"
         )
+
+    if relevant_opportunities:
+        opp_lines = []
+        for o in relevant_opportunities:
+            deadline_str = o.get("deadline", "")
+            if deadline_str:
+                deadline_str = f" | Deadline: {deadline_str}"
+            opp_lines.append(
+                f"  • [{o.get('category', '?')}] {o.get('title')} — {o.get('reward_pool', 'N/A')}"
+                f"{deadline_str} | Chain: {o.get('chain', 'N/A')}"
+            )
+        context_parts.append("PLATFORM OPPORTUNITIES (live data):\n" + "\n".join(opp_lines))
 
     user_content = message
     if context_parts:
-        user_content = "CONTEXT:\n" + "\n".join(context_parts) + "\n\nUSER MESSAGE:\n" + message
+        user_content = "\n\n".join(context_parts) + "\n\nUSER MESSAGE:\n" + message
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -126,6 +154,75 @@ async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict 
         return "Forge AI is temporarily unavailable. Please try again later."
 
 
+def _fetch_relevant_opportunities(db: Session, message: str, current_user) -> list:
+    """
+    Fetch top platform opportunities relevant to this conversation.
+    Matches on user skills/chains; falls back to most-recently-active open opps.
+    Returns a list of dicts for injection into AI context.
+    """
+    try:
+        now = datetime.utcnow()
+        recently_active = sql_func.coalesce(Opportunity.updated_at, Opportunity.created_at)
+
+        # Build base query: only open opportunities (no deadline or future deadline)
+        base_q = db.query(Opportunity).filter(
+            or_(Opportunity.deadline.is_(None), Opportunity.deadline >= now)
+        )
+
+        # Try to match opportunities by user skills or preferred chains
+        skills = current_user.skills or []
+        preferred_chains = getattr(current_user, "preferred_chains", None) or []
+
+        # Keyword matching from message (look for category/chain hints)
+        msg_lower = message.lower()
+        category_hints = []
+        for kw, cat in [
+            ("hackathon", "Hackathon"), ("grant", "Grant"), ("bounty", "Bounty"),
+            ("testnet", "Testnet"), ("ambassador", "Ambassador"), ("airdrop", "Airdrop"),
+        ]:
+            if kw in msg_lower:
+                category_hints.append(cat)
+
+        scored_opps = []
+
+        # Get top candidates, score them, return best 6
+        candidates = base_q.order_by(desc(recently_active)).limit(50).all()
+        for opp in candidates:
+            score = 0
+            # Category hint match
+            if opp.category in category_hints:
+                score += 3
+            # Chain match
+            if opp.chain and any(c.lower() in (opp.chain or "").lower() for c in preferred_chains):
+                score += 2
+            # Skill overlap (tags or description)
+            if skills and opp.tags:
+                skill_hit = any(s.lower() in " ".join(opp.tags).lower() for s in skills)
+                if skill_hit:
+                    score += 2
+            scored_opps.append((score, opp))
+
+        # Sort by score desc, then pick top 6
+        scored_opps.sort(key=lambda x: x[0], reverse=True)
+        top_opps = [opp for _, opp in scored_opps[:6]]
+
+        result = []
+        for opp in top_opps:
+            deadline_str = opp.deadline.strftime("%b %d, %Y") if opp.deadline else None
+            result.append({
+                "title": opp.title,
+                "category": opp.category,
+                "chain": opp.chain,
+                "reward_pool": opp.reward_pool,
+                "deadline": deadline_str,
+                "tags": opp.tags or [],
+            })
+        return result
+    except Exception as e:
+        logger.warning(f"Failed to fetch relevant opportunities for chat: {e}")
+        return []
+
+
 @router.post("", response_model=ChatResponse)
 async def send_message(
     req: ChatRequest,
@@ -150,7 +247,7 @@ async def send_message(
     )
     db.add(user_msg)
 
-    # Build context
+    # Build user profile context (includes onboarding data)
     user_profile = {
         "id": str(current_user.id),
         "full_name": current_user.full_name,
@@ -158,11 +255,12 @@ async def send_message(
         "xp": current_user.xp,
         "level": current_user.level,
         "bio": current_user.bio,
+        "preferred_chains": getattr(current_user, "preferred_chains", None),
     }
 
+    # Fetch focused opportunity if ID provided
     opportunity_context = None
     if req.opportunity_id:
-        from ..models.opportunity import Opportunity
         opp = db.query(Opportunity).filter(Opportunity.id == req.opportunity_id).first()
         if opp:
             opportunity_context = {
@@ -176,6 +274,9 @@ async def send_message(
                 "mission_requirements": opp.mission_requirements,
             }
 
+    # Fetch relevant opportunities from DB to inject as platform context
+    relevant_opps = _fetch_relevant_opportunities(db, req.message, current_user)
+
     ai_content = None
 
     # Strategy 1: Try AI Engine service (if URL is not localhost default)
@@ -188,6 +289,7 @@ async def send_message(
                         "message": req.message,
                         "user_profile": user_profile,
                         "opportunity": opportunity_context,
+                        "relevant_opportunities": relevant_opps,
                     },
                     timeout=10.0,
                 )
@@ -200,7 +302,7 @@ async def send_message(
     # Strategy 2: Direct Groq API fallback (always available)
     if not ai_content:
         ai_content = await _call_groq_direct(
-            req.message, user_profile, opportunity_context
+            req.message, user_profile, opportunity_context, relevant_opps
         )
 
     # Save AI response
