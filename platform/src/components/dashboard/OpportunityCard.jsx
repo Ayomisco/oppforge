@@ -96,6 +96,7 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
   const chainLogoUrl = getChainLogo(opp?.chain)
   const catStyle = getCategoryStyle(type)
   const CategoryIcon = catStyle.icon
+  const isNew = opp.created_at && (Date.now() - new Date(opp.created_at).getTime()) < 48 * 60 * 60 * 1000
 
   return (
     <motion.div
@@ -136,6 +137,11 @@ export default function OpportunityCard({ opp, index, onRefresh }) {
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-semibold uppercase tracking-wide shrink-0" style={{ color: catStyle.color }}>{type}</span>
               {opp.chain && <span className="text-[10px] text-[var(--text-tertiary)]">{opp.chain}</span>}
+              {isNew && (
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(255,85,0,0.15)', color: '#ff5500', border: '1px solid rgba(255,85,0,0.3)' }}>
+                  NEW
+                </span>
+              )}
               <div className="ml-auto"><ScoreBadge score={score} /></div>
             </div>
             <h3 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors line-clamp-1 leading-snug">

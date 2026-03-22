@@ -30,8 +30,8 @@ export default function DashboardPage() {
   const [deadline, setDeadline] = useState('all')
   const [reward, setReward] = useState('all')
   const [chain, setChain] = useState('all')
-  const { data: stats, error: statsError } = useSWR('/stats/dashboard', fetcher)
-  const { data: opportunities, error: oppsError, mutate } = useSWR('/opportunities/priority', fetcher)
+  const { data: stats, error: statsError } = useSWR('/stats/dashboard', fetcher, { refreshInterval: 120000 })
+  const { data: opportunities, error: oppsError, mutate } = useSWR('/opportunities/priority', fetcher, { refreshInterval: 60000 })
 
   const loading = !stats && !statsError && !opportunities && !oppsError
 
@@ -102,6 +102,20 @@ export default function DashboardPage() {
             </span>
             <span className="text-[var(--text-tertiary)]">·</span>
             <span><span className="text-[var(--accent-primary)] font-semibold">{opportunities?.length || 0}</span> opportunities available</span>
+            {opportunities?.[0]?.created_at && (
+              <>
+                <span className="text-(--text-tertiary)">·</span>
+                <span className="text-[11px] text-(--text-tertiary)">
+                  Last added {(() => {
+                    const diff = Math.floor((Date.now() - new Date(opportunities[0].created_at).getTime()) / 60000)
+                    if (diff < 1) return 'just now'
+                    if (diff < 60) return `${diff}m ago`
+                    if (diff < 1440) return `${Math.floor(diff / 60)}h ago`
+                    return `${Math.floor(diff / 1440)}d ago`
+                  })()}
+                </span>
+              </>
+            )}
           </p>
         </div>
       </div>

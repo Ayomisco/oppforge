@@ -3,20 +3,20 @@
 Seed current Web3 opportunities (February 2026)
 Real opportunities from major platforms
 """
+from datetime import datetime, timedelta
+from app.models.opportunity import Opportunity
+from app.database import SessionLocal
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from app.database import SessionLocal
-from app.models.opportunity import Opportunity
-from datetime import datetime, timedelta
 
 def main():
     db = SessionLocal()
-    
+
     # Current date as baseline
     today = datetime.now()
-    
+
     # Fresh opportunities for February-March 2026
     opportunities = [
         # ETHGlobal Hackathons
@@ -44,7 +44,7 @@ def main():
             "tags": ["Layer2", "zkEVM", "Scaling", "Rollups"],
             "mission_requirements": ["Project must focus on L2 scaling, rollups, or data availability", "Use at least one sponsor technology (Arbitrum, Optimism, zkSync, or Starknet)", "Submit working demo with source code", "Present a 3-minute pitch to judges"],
         },
-        
+
         # Solana Hackathons
         {
             "title": "Solana Grizzlython 2026",
@@ -68,7 +68,7 @@ def main():
             "chain": "Solana",
             "tags": ["DeFi", "Lending", "DEX", "Derivatives"]
         },
-        
+
         # Gitcoin Grants Round
         {
             "title": "Gitcoin Grants Round 20",
@@ -81,7 +81,7 @@ def main():
             "chain": "Multi-chain",
             "tags": ["Public Goods", "Dev Tools", "Climate", "Education"]
         },
-        
+
         # Protocol-Specific Grants
         {
             "title": "Uniswap Foundation Grants Program",
@@ -105,7 +105,7 @@ def main():
             "chain": "Ethereum",
             "tags": ["DeFi", "Lending", "GHO", "Risk Management"]
         },
-        
+
         # Layer 2 Opportunities
         {
             "title": "Arbitrum Stylus Hackathon",
@@ -151,7 +151,7 @@ def main():
             "chain": "zkSync",
             "tags": ["zkEVM", "Account Abstraction", "ZK", "Layer2"]
         },
-        
+
         # Ecosystem Grants
         {
             "title": "Polygon Village Accelerator Batch 3",
@@ -175,7 +175,7 @@ def main():
             "chain": "Avalanche",
             "tags": ["Subnets", "Infrastructure", "Gas Subsidies"]
         },
-        
+
         # Bounties & Quests
         {
             "title": "Superteam Earn: DeFi Dashboard Bounty",
@@ -210,7 +210,7 @@ def main():
             "chain": "Multi-chain",
             "tags": ["Security", "Research", "MEV", "Bridges"]
         },
-        
+
         # Emerging Ecosystems
         {
             "title": "Monad Testnet Incentives Program",
@@ -245,7 +245,7 @@ def main():
             "chain": "Blast",
             "tags": ["Native Yield", "Gas Revenue", "DeFi", "Layer2"]
         },
-        
+
         # DoraHacks Hackathons
         {
             "title": "DoraHacks Web3 For Good",
@@ -258,7 +258,7 @@ def main():
             "chain": "Multi-chain",
             "tags": ["Social Impact", "Climate", "Health", "Education"]
         },
-        
+
         # DAO Opportunities
         {
             "title": "MakerDAO Endgame Grants",
@@ -283,23 +283,23 @@ def main():
             "tags": ["DeFi", "Lending", "Governance", "Analytics"]
         },
     ]
-    
+
     print("🌱 Seeding fresh Web3 opportunities...")
     print("=" * 60)
-    
+
     added = 0
     skipped = 0
-    
+
     for opp_data in opportunities:
         # Check if exists
         existing = db.query(Opportunity).filter(
             Opportunity.url == opp_data['url']
         ).first()
-        
+
         if existing:
             skipped += 1
             continue
-        
+
         opp = Opportunity(
             title=opp_data['title'],
             description=opp_data['description'],
@@ -316,26 +316,27 @@ def main():
         db.add(opp)
         added += 1
         print(f"✅ Added: {opp_data['title'][:60]}...")
-    
+
     db.commit()
-    
+
     print("\n" + "=" * 60)
     print(f"✅ Seeding complete!")
     print(f"   Added: {added} new opportunities")
     print(f"   Skipped: {skipped} existing")
-    
+
     # Stats
     total = db.query(Opportunity).count()
     active = db.query(Opportunity).filter(
         Opportunity.is_open == True,
         or_(Opportunity.deadline == None, Opportunity.deadline >= datetime.now())
     ).count()
-    
+
     print(f"\n📊 Database now has:")
     print(f"   Total: {total} opportunities")
     print(f"   Active: {active} current/upcoming")
-    
+
     db.close()
+
 
 if __name__ == "__main__":
     from sqlalchemy import or_

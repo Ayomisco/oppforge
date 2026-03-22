@@ -368,7 +368,8 @@ def main():
             continue
 
         # Create slug from title
-        slug = opp_data["title"].lower().replace(" ", "-").replace("&", "and")[:50]
+        slug = opp_data["title"].lower().replace(
+            " ", "-").replace("&", "and")[:50]
         opp = Opportunity(
             title=opp_data["title"],
             slug=slug,

@@ -1,3 +1,10 @@
+from fastapi import WebSocket, WebSocketDisconnect
+from .core.sockets import manager
+from .models.feedback import Feedback  # Ensures table creation
+from .models.audit import AuditLog  # Ensures table creation
+from .models.ecosystem import Ecosystem  # Ensures table creation
+from .database import engine, Base
+from .routers import auth, opportunities, stats, tracker, notifications, chat, search, admin_audit, billing, admin as admin_router, feedback, workspace
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,11 +17,6 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Routers
-from .routers import auth, opportunities, stats, tracker, notifications, chat, search, admin_audit, billing, admin as admin_router, feedback, workspace
-from .database import engine, Base
-from .models.ecosystem import Ecosystem # Ensures table creation
-from .models.audit import AuditLog # Ensures table creation
-from .models.feedback import Feedback # Ensures table creation
 
 # Create Tables
 Base.metadata.create_all(bind=engine)
@@ -45,13 +47,14 @@ app.add_middleware(
 )
 
 # Global exception handler — ensures CORS headers on 500s
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Unhandled error on {request.method} {request.url.path}: {exc}")
+    logger.error(
+        f"Unhandled error on {request.method} {request.url.path}: {exc}")
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
-from .core.sockets import manager
-from fastapi import WebSocket, WebSocketDisconnect
 
 @app.websocket("/ws/live")
 async def websocket_endpoint(websocket: WebSocket):
@@ -76,9 +79,11 @@ app.include_router(billing.router)
 app.include_router(admin_router.router)
 app.include_router(feedback.router)
 
+
 @app.get("/")
 def read_root():
     return {"message": "OppForge API is running 🚀"}
+
 
 @app.get("/health")
 def check_health():

@@ -3,12 +3,13 @@
 Fix seeded opportunities: add mission_requirements and validate deadlines.
 Run once against the production database to patch existing records.
 """
-import sys, os
+from datetime import datetime, timezone
+from app.models.opportunity import Opportunity
+from app.database import SessionLocal
+import sys
+import os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from app.database import SessionLocal
-from app.models.opportunity import Opportunity
-from datetime import datetime, timezone
 
 # Requirements and deadlines keyed by opportunity title prefix
 PATCHES = {

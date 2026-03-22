@@ -46,9 +46,9 @@ celery_app.conf.update(
 celery_app.conf.beat_schedule = {
     # --- DISABLED PENDING IMPLEMENTATION ---
     # The scrape_ecosystem_grants task is currently a TODO stub.
-    # Leaving these disabled so we don't spam logs and artificially 
+    # Leaving these disabled so we don't spam logs and artificially
     # inflate the last_scraped_at timestamps with 0 actual results.
-    
+
     # "scrape-tier1-ecosystems": {
     #     "task": "app.tasks.scraping_tasks.scrape_tier1_ecosystems",
     #     "schedule": crontab(minute=0, hour="*/6"),
@@ -62,49 +62,49 @@ celery_app.conf.beat_schedule = {
     #     "schedule": crontab(minute=0, hour=2),
     # },
     # ---------------------------------------
-    
+
     # Twitter/Social - Every 3 hours
     "scrape-twitter": {
         "task": "app.tasks.scraping_tasks.scrape_twitter",
         "schedule": crontab(minute=0, hour="*/3"),
     },
-    
+
     # Platforms - Every 4 hours
     "scrape-platforms": {
         "task": "app.tasks.scraping_tasks.scrape_grant_platforms",
         "schedule": crontab(minute=30, hour="*/4"),
     },
-    
+
     # AI Processing - Every hour (process unscored opportunities)
     "process-ai-scoring": {
         "task": "app.tasks.ai_tasks.batch_score_opportunities",
         "schedule": crontab(minute=15),  # Every hour at :15
     },
-    
+
     # Risk Assessment - Every 2 hours
     "assess-risk": {
         "task": "app.tasks.ai_tasks.batch_risk_assessment",
         "schedule": crontab(minute=45, hour="*/2"),
     },
-    
+
     # Cleanup - Daily at 3 AM
     "cleanup-old-data": {
         "task": "app.tasks.scraping_tasks.cleanup_old_opportunities",
         "schedule": crontab(minute=0, hour=3),
     },
-    
+
     # Send digest emails - Daily at 9 AM
     "send-daily-digest": {
         "task": "app.tasks.notification_tasks.send_daily_digests",
         "schedule": crontab(minute=0, hour=9),
     },
-    
+
     # Check Trial Expirations & Reminders - Daily at 8 AM
     "check-trial-expirations": {
         "task": "app.tasks.notification_tasks.check_trial_expirations",
         "schedule": crontab(minute=0, hour=8),
     },
-    
+
     # Deadline Reminders - Daily at 8:30 AM (24h/48h before expiry)
     "send-deadline-reminders": {
         "task": "app.tasks.notification_tasks.send_deadline_reminders",

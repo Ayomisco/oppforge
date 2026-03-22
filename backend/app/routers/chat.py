@@ -20,6 +20,10 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
 class ChatRequest(BaseModel):
     message: str
     opportunity_id: Optional[uuid.UUID] = None
@@ -29,6 +33,29 @@ class ChatResponse(BaseModel):
     role: str
     content: str
     session_id: Optional[str] = None
+
+
+async def _call_gemini(messages: list) -> str | None:
+    """Gemini fallback — used when Groq hits rate limits."""
+    if not GEMINI_API_KEY:
+        return None
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                GEMINI_URL,
+                headers={
+                    "Authorization": f"Bearer {GEMINI_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={"model": GEMINI_MODEL, "messages": messages, "temperature": 0.8, "max_tokens": 1000},
+                timeout=20.0,
+            )
+            if resp.status_code == 200:
+                return resp.json()["choices"][0]["message"]["content"]
+            logger.error(f"Gemini error: {resp.status_code} - {resp.text[:200]}")
+    except Exception as e:
+        logger.error(f"Gemini exception: {e}")
+    return None
 
 
 async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict = None) -> str:
@@ -66,6 +93,11 @@ async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict 
     if context_parts:
         user_content = "CONTEXT:\n" + "\n".join(context_parts) + "\n\nUSER MESSAGE:\n" + message
 
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_content},
+    ]
+
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
@@ -74,24 +106,23 @@ async def _call_groq_direct(message: str, user_profile: dict, opportunity: dict 
                     "Authorization": f"Bearer {GROQ_API_KEY}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "model": GROQ_MODEL,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_content},
-                    ],
-                    "temperature": 0.8,
-                    "max_tokens": 1000,
-                },
+                json={"model": GROQ_MODEL, "messages": messages, "temperature": 0.8, "max_tokens": 1000},
                 timeout=20.0,
             )
             if resp.status_code == 200:
                 return resp.json()["choices"][0]["message"]["content"]
-            else:
-                logger.error(f"Groq fallback error: {resp.status_code} - {resp.text[:200]}")
-                return "Forge AI is experiencing high load. Please try again in a moment."
+            if resp.status_code == 429:
+                logger.warning("Groq rate limit hit, falling back to Gemini")
+                result = await _call_gemini(messages)
+                if result:
+                    return result
+            logger.error(f"Groq fallback error: {resp.status_code} - {resp.text[:200]}")
+            return "Forge AI is experiencing high load. Please try again in a moment."
     except Exception as e:
         logger.error(f"Groq fallback exception: {e}")
+        result = await _call_gemini(messages)
+        if result:
+            return result
         return "Forge AI is temporarily unavailable. Please try again later."
 
 

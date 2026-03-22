@@ -4,14 +4,14 @@ Comprehensive reseed: updates ALL existing seeded opportunities with
 real-world comprehensive data — descriptions, requirements, skills, scores, etc.
 Also inserts any missing opportunities.
 """
+from sqlalchemy import or_
+from datetime import datetime, timedelta
+from app.models.opportunity import Opportunity
+from app.database import SessionLocal
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from app.database import SessionLocal
-from app.models.opportunity import Opportunity
-from datetime import datetime, timedelta
-from sqlalchemy import or_
 
 def get_opportunities():
     today = datetime.now()

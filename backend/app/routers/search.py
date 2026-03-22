@@ -12,6 +12,7 @@ router = APIRouter(
     tags=["search"]
 )
 
+
 class SearchResult(BaseModel):
     id: str
     title: str
@@ -21,10 +22,12 @@ class SearchResult(BaseModel):
     relevance_score: Optional[float] = None
     url: str
 
+
 class SearchResponse(BaseModel):
     results: List[SearchResult]
     total_found: int
     query: str
+
 
 @router.get("", response_model=SearchResponse)
 def search_ops(q: str, limit: int = 10, category: Optional[str] = None, chain: Optional[str] = None, db: Session = Depends(get_db)):
@@ -41,10 +44,13 @@ def search_ops(q: str, limit: int = 10, category: Optional[str] = None, chain: O
     # 1. Try Vector Search
     try:
         where_filter = {}
-        if category: where_filter["category"] = category
-        if chain: where_filter["chain"] = chain
-        
-        vector_results = VectorDBService.search(q, n_results=limit, where=where_filter if where_filter else None)
+        if category:
+            where_filter["category"] = category
+        if chain:
+            where_filter["chain"] = chain
+
+        vector_results = VectorDBService.search(
+            q, n_results=limit, where=where_filter if where_filter else None)
     except Exception as e:
         print(f"[Search] Vector search failed: {e}")
 
@@ -53,16 +59,17 @@ def search_ops(q: str, limit: int = 10, category: Optional[str] = None, chain: O
         # Chroma returns list of lists
         found_ids = vector_results['ids'][0]
         # relevance_scores = vector_results['distances'][0] if 'distances' in vector_results else []
-    
+
     results = []
-    
+
     # 2. Fetch from DB
     if found_ids:
         # Preserve order of IDs (relevance)
         # SQLAlchemy IN clause doesn't guarantee order, so we fetch all and sort in Python
-        opps = db.query(Opportunity).filter(Opportunity.id.in_(found_ids)).all()
+        opps = db.query(Opportunity).filter(
+            Opportunity.id.in_(found_ids)).all()
         opp_map = {str(o.id): o for o in opps}
-        
+
         for oid in found_ids:
             if oid in opp_map:
                 o = opp_map[oid]
@@ -72,27 +79,29 @@ def search_ops(q: str, limit: int = 10, category: Optional[str] = None, chain: O
                     description=o.description,
                     category=o.category,
                     chain=o.chain,
-                    relevance_score=0.9, # Placeholder
+                    relevance_score=0.9,  # Placeholder
                     url=o.url
                 ))
-    
+
     # 3. Fallback to SQL Search if vector search yielded nothing or very few results
     if len(results) < 2:
         print(f"[Search] Falling back to SQL search for '{q}'")
         sql_query = db.query(Opportunity).filter(
-            Opportunity.title.ilike(f"%{q}%") | Opportunity.description.ilike(f"%{q}%")
+            Opportunity.title.ilike(
+                f"%{q}%") | Opportunity.description.ilike(f"%{q}%")
         )
         if category:
             sql_query = sql_query.filter(Opportunity.category == category)
         if chain:
             if chain.lower() == "others":
                 from sqlalchemy import or_
-                sql_query = sql_query.filter(or_(Opportunity.chain == None, Opportunity.chain.in_(["", "Other", "Multi-chain"])))
+                sql_query = sql_query.filter(or_(
+                    Opportunity.chain == None, Opportunity.chain.in_(["", "Other", "Multi-chain"])))
             else:
                 sql_query = sql_query.filter(Opportunity.chain == chain)
-            
+
         sql_opps = sql_query.limit(limit).all()
-        
+
         existing_ids = set(r.id for r in results)
         for o in sql_opps:
             if str(o.id) not in existing_ids:
@@ -102,7 +111,7 @@ def search_ops(q: str, limit: int = 10, category: Optional[str] = None, chain: O
                     description=o.description,
                     category=o.category,
                     chain=o.chain,
-                    relevance_score=0.5, # Lower score for keyword match
+                    relevance_score=0.5,  # Lower score for keyword match
                     url=o.url
                 ))
 

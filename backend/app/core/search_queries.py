@@ -14,8 +14,8 @@ ECOSYSTEMS = [
 ]
 
 KEYWORDS = [
-    "Hackathon", "Grant", "Bounty", "Accelerator", "Incubator", 
-    "Testnet", "Airdrop", "Validator", "Retroactive Funding", 
+    "Hackathon", "Grant", "Bounty", "Accelerator", "Incubator",
+    "Testnet", "Airdrop", "Validator", "Retroactive Funding",
     "Public Goods", "Developer Incentive", "Bug Bounty"
 ]
 
@@ -37,24 +37,25 @@ SOCIAL_PHRASES = [
     "mainnet launch",
     "incentivized testnet",
     "call for builders",
-    "rfp", 
+    "rfp",
     "request for proposal",
     "quadratic funding",
     "gitcoin round"
 ]
 
+
 def get_search_queries():
     """Generates a list of 50-100+ combined queries."""
     queries = []
-    
+
     # 1. Broad Ecosystem + Keyword combos
     for eco in ECOSYSTEMS:
         for kw in ["Grant", "Hackathon", "Bounty"]:
             queries.append(f"{eco} {kw}")
-            
+
     # 2. Specific Signal Phrases
     queries.extend(SOCIAL_PHRASES)
-    
+
     # 3. Specific High-Value Combos
     queries.append("Web3 Grants")
     queries.append("Crypto Internships")
@@ -62,5 +63,5 @@ def get_search_queries():
     queries.append("Zero Knowledge Grants")
     queries.append("DeFi Hackathon")
     queries.append("DePIN Grant")
-    
-    return list(set(queries)) # Dedup
+
+    return list(set(queries))  # Dedup

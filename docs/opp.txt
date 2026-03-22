@@ -1,0 +1,548 @@
+some of the oppurtunities we need to seed or update now we we need to update for now
+
+1. Big Opportunity For X Content Creator on 
+@PerleLabs
+ 
+
+Total Price Pool: 55,000 USD1
+
+🥇 Top 1–50 → 350 USD1 each 
+🥈 Top 51–150 → 200 USD1 each 
+🥉 Top 151–400 → 50 USD1 each 
+🏅 Discord Voyager + Navigator Bonus → Share a 5,000 USD1 pool
+
+HOW TO PARTICIPATE:
+
+• Post on X (text / meme / image / video)
+• Use hashtags: 
+#PerleAI + #ToPerle
+• End with: "— participating in 
+@PerleLabs
+ community campaign" 
+
+• Submit your entry: https://forms.gle/59CDQHKB6AAm5RmN6
+
+Rules to Follow:
+
+1. One X account per Discord account
+2. Max 3 submissions per person during the campaign period. You can save all of your tweets and submit anytime before the campaign ends.
+3. All content must be original
+4. Formats: text, memes, images, videos
+
+• Campaign runs from March 18 to March 27 (23:59 UTC)
+
+• Ranking is based on quality, originality, and engagement. DC Role Holders automatically qualify for the exclusive.
+• bonus pool in addition to the main competition. 
+(Eligible roles must be held before March 18).
+
+Evaluation Criteria:
+
+• Content quality & originality — 40% Engagement
+• metrics (likes, replies, reposts) — 40% Authentic  
+• community voice — 20%
+
+Timeline:
+
+Reviews will take place within 5 business days after campaign ends.
+Rewards will be distributed within 2 business days after results.
+
+🛑Important things to keep in mind:
+
+• Tweets must include: "— participating in 
+@PerleLabs
+ community campaign" or they won’t qualify.
+
+• Do not use an exchange deposit address for your EVM wallet.
+
+2. 
+HeyElsa
+@HeyElsaAI
+The $1,000,000 Agentic Fellowship
+For builders turning AI agents into on-chain businesses
+AI agents are everywhere.
+But most of them don’t execute.
+ They don’t settle.
+ They don’t earn.
+We’re changing that.
+Elsa is launching a $1M Agentic Fellowship to fund, mentor, and scale builders who are building real, revenue-generating on-chain agents using:
+x402 execution APIs
+ERC-8004 TrustForge infrastructure
+Elsa LLM Gateway
+If you’re building agents that actually do things on-chain — this is for you.
+Why this exists
+Most AI projects stop at demos.
+Cool UI
+Good prompts
+No settlement layer
+No trust layer
+No monetization
+The next phase of crypto + AI is different.
+It’s about:
+Agents that execute deterministically
+Agents that settle value
+Agents that earn per action
+Agents that build reputation on-chain
+This fellowship is designed to accelerate that shift.
+What we’re funding
+We’re backing builders working on:
+DeFi execution agents
+Autonomous trading systems
+Treasury optimisation agents
+Governance participation bots
+Cross-chain automation agents
+Agent-to-Agent (A2A) commerce flows
+AI infra built on top of x402 rails
+Reputation-aware agents leveraging ERC-8004
+If your agent can execute, verify, and settle, you qualify.
+What fellows get
+This isn’t just capital.
+Selected builders receive:
+Direct funding from the $1M pool
+Access to Elsa’s x402 facilitator rails
+ERC-8004 TrustForge integration support
+LLM Gateway credits
+Revenue design mentorship
+Token design guidance (if applicable)
+GTM amplification across the Elsa ecosystem
+Introductions to partners and infra providers
+We don’t want experiments.
+We want profitable agent businesses.
+The standard
+To qualify, your build must:
+Use at least one of: x402 APIs, ERC-8004, or Elsa LLM Gateway
+Be designed for monetisation from day one
+Demonstrate real on-chain execution
+Be composable within the agentic economy
+No vanity projects.
+ No speculative fluff.
+Execution only.
+How funding works
+Rolling cohort selection
+Milestone-based disbursement
+Performance-linked expansion capital
+Revenue-sharing optional (case by case)
+We win when you generate volume.
+Simple.
+Why now
+AI usage is still early globally.
+But the infrastructure for programmable value transfer is finally ready.
+With x402 rails enabling agent micropayments,
+ ERC-8004 enabling verifiable agent behaviour,
+ And LLM orchestration is becoming modular,
+The stack is here.
+What’s missing?
+Builders who treat agents like businesses.
+
+Apply Now & Let's build together: link https://tally.so/r/PdEG21
+
+3. 
+MagicBlock ✨
+@magicblock
+Build a privacy app on Solana and win $1,500 in 48 hours
+
+Announcing Solana Blitz v2 hackathon, focused on apps built with Private Ephemeral Rollups
+
+Starting this Friday 🧵👇
+📅 The Format
+
+Starts this Friday (March 20th), and you've got until Sunday (March 22nd) to submit it
+
+Go solo or squad up in the Builders Telegram
+
+Register ⬇️
+🛠️ What to Build
+
+The theme is privacy, but the hackathon is open to any project
+
+Build with Ephemeral Rollups or Private ERs, and you're eligible for prizes
+
+Sealed auctions, private payments, private credentials, hidden game state - PERs make all of it possible on 
+@Solana
+🏆 Prizes: $1,500 USDC
+
+🥇 $700 -> best privacy build
+🥈 $400
+🥉 $300
+🧙‍♂️ Wizardio's Choice: $100
+
+Everything you need: http://hackathon.magicblock.app
+🏆 Prizes: $1,500 USDC
+
+🥇 $700 -> best privacy build
+🥈 $400
+🥉 $300
+🧙‍♂️ Wizardio's Choice: $100
+
+Everything you need: http://hackathon.magicblock.app
+📌 Quick Links
+
+Register for Blitz: http://luma.com/olf99o4i
+Builders Telegram: http://t.me/+97xUuGliQk1hNjIy
+
+The series keeps going ⚡
+
+Translate with DeepL
+
+4. Facebook is launching a creator program paying $1,000 to $3,000 per month for creators to switch platforms
+
+Creators must have 100K to 1M followers on Instagram, TikTok, or YouTube to be eligible
+
+How dexerto.com
+
+Not available until April just an fyi
+
+
+5. Do you build for startups?
+
+Apply to become an a16z speedrun Marketplace partner and get your product in front of some of the most ambitious founders building the future.
+
+We’re looking for B2B companies with products that are a strong fit for startups from pre-seed and beyond.
+
+
+6. Stand a chance to win a share of 55,000 USD1 by joining 
+@PerleLabs
+ campaign!
+
+Just make any post about Perle labs and you could win. 
+
+Just 400 people are eligible to get prizes. 
+
+All you have to do is to be part of the perle labs discord
+
+What to do:
+
+1) Write a tweet about Perle…your thoughts, a message to the team, a meme, a video, anything
+
+2) Add these hashtags: 
+#PerleAI #ToPerle
+
+3) End the tweet with: “participating in 
+@PerleLabs
+ community campaign”
+
+4) Submit it here → https://t.co/i5UGQzBbAk
+
+Rules:
+One X account per Discord account
+
+Max 3 tweets per person
+
+Must be your own original content
+
+Text, memes, images, and videos all work
+
+Campaign runs March 18 – March 27 (11:59 PM UTC)
+
+Prizes:
+1st–50th place —350 USD1 each
+
+51st–150th place —200 USD1 each
+
+151st–400th place —50 USD1 each
+
+Voyager + Navigator Discord roles share an extra 5,000 USD pool
+
+How winners are picked:
+
+1)Quality and originality of content — 40%
+
+2)Likes, replies, reposts — 40%
+
+3)How genuine it feels — 20%
+
+Timeline:
+Results within 5 business days after March 27
+
+Prizes will be sent to winners within 2 business days after that
+
+You got questions? Ask in the Discord help channel.
+
+Good luck 👍
+
+
+7. Mandala
+@MandalaChain
+·
+18h
+Hey Mandala fam!
+
+We’re opening the doors to our Ambassador Program again and would love to welcome some amazing new faces to the family.
+
+We’re looking for people who:
+
+🖊️ Love creating – threads, memes, stories, or articles
+
+💬 Naturally make communities fun and engaging on Telegram & Discord
+
+🎙️ Enjoy hosting events, chats, or partnerships
+
+Why join us? 
+Being an Ambassador is about more than rewards – it’s about being part of something we’re building together:
+
+✨ Connect with the Mandala team and ecosystem partners
+✨ Get behind-the-scenes access to updates, events, and collabs
+✨ Earn in stable coins for your contributions while helping the community grow
+
+If you’re excited about blockchain adoption, love connecting with people, or just want to be part of a team that values your Web3 knowledge and expertise, this is your chance to join the Mandala family🏡
+
+Apply here and let’s grow together 👇
+https://forms.gle/eBztNjK5zJ3KkNCM7
+
+
+9. llowers
+Followed by Navigate, Xasus, and 64 others you follow
+All Bookmarks
+
+See new posts
+Bookmarks
+Macy Mills
+
+@_CallMeMacy
+·
+13h
+Do you build for startups?
+
+Apply to become an a16z speedrun Marketplace partner and get your product in front of some of the most ambitious founders building the future.
+
+We’re looking for B2B companies with products that are a strong fit for startups from pre-seed and beyond.
+Mo✝️
+@Mofeoluwa22
+·
+14h
+Stand a chance to win a share of 55,000 USD1 by joining 
+@PerleLabs
+ campaign!
+
+Just make any post about Perle labs and you could win. 
+
+Just 400 people are eligible to get prizes. 
+
+All you have to do is to be part of the perle labs discord
+
+What to do:
+
+1) Write a tweet about
+Show more
+Perle Labs
+Mandala
+@MandalaChain
+·
+18h
+Hey Mandala fam!
+
+We’re opening the doors to our Ambassador Program again and would love to welcome some amazing new faces to the family.
+
+We’re looking for people who:
+
+🖊️ Love creating – threads, memes, stories, or articles
+
+💬 Naturally make communities fun and engaging on Telegram & Discord
+
+🎙️ Enjoy hosting events, chats, or partnerships
+
+Why join us? 
+Being an Ambassador is about more than rewards – it’s about being part of something we’re building together:
+
+✨ Connect with the Mandala team and ecosystem partners
+✨ Get behind-the-scenes access to updates, events, and collabs
+✨ Earn in stable coins for your contributions while helping the community grow
+
+If you’re excited about blockchain adoption, love connecting with people, or just want to be part of a team that values your Web3 knowledge and expertise, this is your chance to join the Mandala family🏡
+
+Apply here and let’s grow together 👇
+https://forms.gle/eBztNjK5zJ3KkNCM7
+Alliance
+@alliance
+·
+11h
+The ALL17 Deadline is 1 Week Away
+
+Apply by March 25 to:
+‣ Receive $500K in Funding 
+‣ Pitch Paradigm, a16z, Founders Fund, and Dragonfly at Alliance Demo Day
+‣ Join a Network of 300+ Alliance Startups
+
+Tag a founder who needs to see this ↓
+https://t.co/4rDXZ2sdVX
+
+10. We're running eleven consecutive hackathons with a combined prize pool of over $240,000.
+
+It's called ElevenHacks. Here's how it works.Each week, a new challenge drops with a different sponsor.
+
+But your points carry across every hackathon on a global leaderboard.
+
+Top the leaderboard at the end of the season and there's a mystery grand prize.ponsors include some of the internet's most beloved brands - Stripe, Cloudflare, Cursor, Replit - and some you might not have heard of yet.
+
+A new one each week, eleven in total.
+The first hackathon, with Firecrawl, has a prize pool of nearly $20,000.
+
+It launches tomorrow. The challenge will be revealed at 9am PST.
+https://t.co/yPqTgisPUs
+
+11. If you are building agentic apps and want funding:
+
+The TinyFish Accelerator is looking for founders who want to build agents that navigate real web interfaces and execute real transactions.
+
+It's a 9-week accelerator program with a $2M seed pool.
+
+Here is what you get:
+
+• Free TinyFish API keys
+• Engineering support and product feedback from the team
+• Free credits + direct engineering access from partner companies
+• Weekly business mentorship sessions with founders and leaders
+• Off-the-record community meetups
+• Pitch directly to Robin Vasan (Mango Capital)
+
+To apply, you need a working app + record a demo, and publish it on X.
+
+So far, 18 founders have joined! I'm posting below 3 of my favorite applications.
+
+Apply → 
+http://tinyfish.ai/accelerator
+
+Applications are open until the end of March.
+
+12. 
+1. Alliance {
+@alliance
+} 
+
+One of the top crypto accelerators in the world, offering:
+
+~ $500K in funding
+~ 2-week in-person onboarding
+~ 8-week remote program
+~ Access to top VCs like Paradigm, Multicoin, and Dragonfly
+
+> Applications deadline: March 25
+
+2. Crypto Startup Accelerator (CSX) by 
+@a16zcrypto
+
+
+One of the most well-known web3 accelerators backed by Andreessen Horowitz, offering:
+
+~ Funding {up to ~$500K}
+~ 10-week program on product-market fit, token design, GTM, and more
+~ 1:1 mentorship from top investors and operators
+~ Access to a powerful network of founders, experts, and VCs
+~ Demo Day with exposure to top-tier investors
+
+> Applications: Rolling basis
+
+3. Techstars {
+@Techstars
+}
+
+One of the largest global accelerators, with programs across multiple cities and industries, offering:
+
+~ $220K funding 
+~ 3-month program
+~ Access to a global network of 10,000+ founders, mentors, and investors
+~ Perks worth $4M+ 
+~ Demo Day with top-tier investor exposure
+
+> Application deadline: June 10
+
+4. Orange DAO {
+@OrangeDAOxyz
+}
+
+A top Web3-focused accelerator backed by a strong founder community offering:
+
+~ $100K funding
+~ 12-week program focused on building, mentorship, and fundraising
+~ Hybrid format {SF + remote + final Demo Day}
+~ Access to 1,300+ founders and 300+ VCs
+
+> Applications: Rolling basis
+
+What accelerator did I miss?
+
+13. Looking to raise $500K - $1.5M Pre-Seed for your Vertical AI, Deep Tech, Health or Bio startup?  
+
+We’d love to meet you!
+
+@2048vc
+ Pre-Seed Fast Track helps you get funding within 10 business days. 
+
+No b.s., no gimmicks, no time wasted. Just a fast and transparent process. 
+
+Learn more and apply via 
+http://2048.vc/fasttrack.
+
+14. 
+This year, 
+@dev3pack
+ is doubling down on what matters: onboarding the next generation of builders and helping them stay. After a year of building a strong community and running non-scalable initiatives, I can finally say it: we’re ready to launch our biggest initiative yet, the dev3pack global hackathon. Not a classic one.
+
+1️⃣ A vibe-coding bootcamp to get builders ready
+2️⃣ A global hackathon with community vibes first (1,000+ students, 30+ local hubs worldwide)
+3️⃣ A friendly startup 101 accelerator helping young founders level up before advanced programs
+
+Last week, a single post brought us ~350 student applications, and the global hackathon doesn’t even start until the end of May.
+
+Behind the scenes, this is what I actually spend my time doing:
+
+> Running hands-on educational programs
+> Scouting talent beyond crypto Twitter
+> Talking with local builders and grassroots communities
+> Partnering with universities
+> Connecting to the right people on LinkedIn
+> Showing up as a human and supporting passionate people
+
+Honestly, this *is* developer relations.
+
+For joining the movement 👇
+https://hack.dev3pack.xyz
+
+15. Post
+
+See new posts
+Conversation
+Atrium Academy
+@AtriumAcademy
+500 graduates. 420+ hooks shipped. $235K+ in prizes. 
+@SemanticLayer
+ raised VC. 
+@levery_org
+ closed an angel round. LP Hub deployed mainnet pools with dynamic pricing.
+
+UHI isn't a course. it's where DeFi builders go to ship.
+
+apps close March 29. Tuition covered 100% by 
+@UniswapFND
+
+apply here: https://t.co/6cPiUvNCuJ
+
+16. We're putting $100K behind the real ones.
+
+Build agents normal people can actually use. We'll help ship your best ones to the world.
+
+You get:
+- X Premium+ + official affiliate with 
+@photon_hq
+
+- Unlimited Photon SDK access
+- Performance-based bonuses
+
+The PC had its builders.
+The web had its builders.
+Agents are waiting for theirs.
+
+Apply to become a Photon Ambassador →
+https://photonhq.typeform.com/to/KKiVcjyE
+
+Join our discord for Q&A → https://discord.gg/uZcn6k9TPg
+
+17: 
+AEON Ambassador Program is NOW LIVE for March!  
+
+If you're passionate about our vision, love creating content, engaging the community and building the future—this is for YOU.  
+
+👉More details please read the site: https://notion.so/aeonxyz/2026-AEON-Pioneer-Program-173b435d081c8051b91ad90b41a19b86
+🔗Join the squad: https://zealy.io/cw/aeonpioneer 
+
+#AEON #AIPayment #Pioneer #Web3
+https://t.co/wckgFkF08q

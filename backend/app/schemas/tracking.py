@@ -4,19 +4,23 @@ from datetime import datetime, timezone
 import uuid
 from .opportunity import OpportunityResponse
 
+
 class TrackedAppBase(BaseModel):
     status: str = "Interested"
     notes: Optional[str] = None
     submission_link: Optional[str] = None
     reminder_at: Optional[datetime] = None
 
+
 class TrackedAppCreate(TrackedAppBase):
     opportunity_id: uuid.UUID
+
 
 class TrackedAppUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
     submission_link: Optional[str] = None
+
 
 class TrackedAppResponse(TrackedAppBase):
     id: uuid.UUID

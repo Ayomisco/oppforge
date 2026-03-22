@@ -3,14 +3,13 @@
 Seed March 2026 Web3 opportunities
 Real, verified opportunities from hackathon platforms, grant programs, and fellowship listings
 """
+from sqlalchemy import or_
+from datetime import datetime, timedelta
+from app.models.opportunity import Opportunity
+from app.database import SessionLocal
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
-
-from app.database import SessionLocal
-from app.models.opportunity import Opportunity
-from datetime import datetime, timedelta
-from sqlalchemy import or_
 
 
 def main():

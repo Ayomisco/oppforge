@@ -3,14 +3,14 @@
 Clean reseed: removes ALL old seeded/fake opportunities and inserts ONLY
 real, verified March-April 2026 opportunities with correct URLs and deadlines.
 """
+from sqlalchemy import or_
+from datetime import datetime
+from app.models.opportunity import Opportunity
+from app.database import SessionLocal
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from app.database import SessionLocal
-from app.models.opportunity import Opportunity
-from datetime import datetime
-from sqlalchemy import or_
 
 # ─── Known fake/old URLs to remove ──────────────────────────────────────────
 FAKE_URLS = [
@@ -684,18 +684,19 @@ def get_real_opportunities():
 def main():
     db = SessionLocal()
     from datetime import timedelta
-    
+
     print("🧹 Step 1: Archiving all fake/old seeded opportunities (marking is_open=False)...")
     print("=" * 60)
-    
+
     archived = 0
     for fake_url in FAKE_URLS:
-        existing = db.query(Opportunity).filter(Opportunity.url == fake_url).first()
+        existing = db.query(Opportunity).filter(
+            Opportunity.url == fake_url).first()
         if existing and existing.is_open:
             print(f"  🗃️  Archived: {existing.title[:55]}")
             existing.is_open = False
             archived += 1
-    
+
     # Also archive any opportunities with expired deadlines (more than 7 days past)
     cutoff = datetime.now() - timedelta(days=7)
     expired = db.query(Opportunity).filter(
@@ -707,17 +708,17 @@ def main():
         print(f"  ⏰ Archived: {exp.title[:55]} (deadline: {exp.deadline})")
         exp.is_open = False
         archived += 1
-    
+
     db.commit()
     print(f"\n  Archived {archived} old/fake/expired opportunities.\n")
-    
+
     print("✅ Step 2: Adding real, verified opportunities...")
     print("=" * 60)
-    
+
     opportunities = get_real_opportunities()
     added = 0
     updated = 0
-    
+
     update_fields = [
         "description", "category", "source", "reward_pool", "reward_token",
         "estimated_value_usd", "deadline", "start_date", "chain", "tags",
@@ -726,11 +727,11 @@ def main():
         "urgency_score", "trust_score", "risk_score", "risk_level", "risk_flags",
         "logo_url",
     ]
-    
+
     for opp_data in opportunities:
         url = opp_data["url"]
         existing = db.query(Opportunity).filter(Opportunity.url == url).first()
-        
+
         if existing:
             for field in update_fields:
                 if field in opp_data:
@@ -748,22 +749,22 @@ def main():
             db.add(opp)
             added += 1
             print(f"  ✅ Added:   {opp_data['title'][:55]}")
-    
+
     db.commit()
-    
+
     print("\n" + "=" * 60)
     print(f"✅ Reseed complete!")
     print(f"   Archived: {archived}")
     print(f"   Updated: {updated}")
     print(f"   Added:   {added}")
-    
+
     total = db.query(Opportunity).count()
     active = db.query(Opportunity).filter(
         Opportunity.is_open == True,
         or_(Opportunity.deadline == None, Opportunity.deadline >= datetime.now())
     ).count()
     print(f"\n📊 Database: {total} total, {active} active")
-    
+
     db.close()
 
 

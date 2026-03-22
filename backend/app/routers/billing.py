@@ -1,3 +1,4 @@
+from web3 import Web3
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
@@ -11,15 +12,16 @@ from ..services.email_service import send_email, get_email_template
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
-from web3 import Web3
 
 # Active payment network config
 DEFAULT_NETWORK = os.getenv("PAYMENT_NETWORK", "sepolia")
 MASTER_WALLET = os.getenv("OPPFORGE_MASTER_WALLET", "")
-PROTOCOL_CONTRACT = os.getenv("PROTOCOL_CONTRACT_ADDRESS", "0x502973c5413167834d49078f214ee777a8C0A8Cf")
+PROTOCOL_CONTRACT = os.getenv(
+    "PROTOCOL_CONTRACT_ADDRESS", "0x502973c5413167834d49078f214ee777a8C0A8Cf")
 
 # Valid payment recipients (master wallet + contracts)
-VALID_RECIPIENTS = {addr.lower() for addr in [MASTER_WALLET, PROTOCOL_CONTRACT] if addr}
+VALID_RECIPIENTS = {addr.lower()
+                    for addr in [MASTER_WALLET, PROTOCOL_CONTRACT] if addr}
 
 # RPC URLs per network
 RPC_URLS = {
@@ -27,6 +29,7 @@ RPC_URLS = {
     "sepolia": os.getenv("SEPOLIA_RPC_URL", "https://ethereum-sepolia-rpc.publicnode.com"),
     "ethereum": os.getenv("ETHEREUM_RPC_URL", "https://eth.llamarpc.com"),
 }
+
 
 @router.post("/verify-payment", response_model=schemas.billing.PaymentHistoryResponse)
 async def verify_payment(
@@ -39,34 +42,38 @@ async def verify_payment(
     Verify an on-chain payment and upgrade the user's tier.
     """
     if request.tier != "hunter":
-        raise HTTPException(status_code=400, detail="Only hunter tier is supported")
+        raise HTTPException(
+            status_code=400, detail="Only hunter tier is supported")
 
     # 1. Check if tx_hash already exists (prevent double-spending the same tx)
     existing = db.query(models.billing.SubscriptionPayment).filter(
         models.billing.SubscriptionPayment.tx_hash == request.tx_hash
     ).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Transaction already processed")
+        raise HTTPException(
+            status_code=400, detail="Transaction already processed")
 
     # 2. Cryptographic On-Chain Verification
     try:
         rpc_url = RPC_URLS.get(request.network, RPC_URLS[DEFAULT_NETWORK])
         w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': 15}))
-        
+
         # Ensure hash is formatted correctly
         if not request.tx_hash.startswith('0x'):
             raise ValueError("tx_hash must start with 0x")
-            
+
         tx = w3.eth.get_transaction(request.tx_hash)
         receipt = w3.eth.get_transaction_receipt(request.tx_hash)
-        
+
         if receipt.status != 1:
-            raise HTTPException(status_code=400, detail="Transaction failed on-chain")
-            
+            raise HTTPException(
+                status_code=400, detail="Transaction failed on-chain")
+
         # Verify recipient is either master wallet or a known contract
         if tx.to.lower() not in VALID_RECIPIENTS:
-            raise HTTPException(status_code=400, detail="Transaction recipient is not an OppForge address")
-            
+            raise HTTPException(
+                status_code=400, detail="Transaction recipient is not an OppForge address")
+
     except HTTPException:
         raise
 
@@ -80,7 +87,7 @@ async def verify_payment(
         status=models.billing.PaymentStatus.COMPLETED
     )
     db.add(payment)
-    
+
     # 4. Create Invoice
     invoice_num = f"INV-{datetime.now().year}-{str(uuid.uuid4())[:8].upper()}"
     invoice = models.billing.Invoice(
@@ -98,7 +105,7 @@ async def verify_payment(
     current_user.is_pro = True
     current_user.subscription_status = "active"
     current_user.subscription_expires_at = datetime.now() + timedelta(days=30)
-    
+
     db.commit()
     db.refresh(payment)
 
@@ -117,13 +124,16 @@ async def verify_payment(
         cta_link="https://oppforge.xyz/dashboard",
         cta_text="Access Command Center"
     )
-    background_tasks.add_task(send_email, current_user.email, f"Receipt: {invoice_num}", template)
+    background_tasks.add_task(
+        send_email, current_user.email, f"Receipt: {invoice_num}", template)
 
     return payment
+
 
 @router.get("/invoices", response_model=List[schemas.billing.InvoiceResponse])
 def get_invoices(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.billing.Invoice).filter(models.billing.Invoice.user_id == current_user.id).all()
+
 
 @router.get("/history", response_model=List[schemas.billing.PaymentHistoryResponse])
 def get_payment_history(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):

@@ -15,13 +15,18 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
 router = APIRouter(
     prefix="/tracker",
     tags=["tracker"]
 )
 
+
 @router.get("", response_model=List[schemas.TrackedAppResponse])
-def get_tracked_apps(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+def get_tracked_apps(db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
     """
     Get all tracked applications for current user.
     """
@@ -31,11 +36,12 @@ def get_tracked_apps(db: Session = Depends(database.get_db), current_user = Depe
         models.TrackedApplication.user_id == current_user.id
     ).all()
 
+
 @router.post("", response_model=schemas.TrackedAppResponse)
 def track_opportunity(
-    track_data: schemas.TrackedAppCreate, 
-    db: Session = Depends(database.get_db), 
-    current_user = Depends(get_current_user)
+    track_data: schemas.TrackedAppCreate,
+    db: Session = Depends(database.get_db),
+    current_user=Depends(get_current_user)
 ):
     """
     Add an opportunity to tracker.
@@ -45,10 +51,11 @@ def track_opportunity(
         models.TrackedApplication.user_id == current_user.id,
         models.TrackedApplication.opportunity_id == track_data.opportunity_id
     ).first()
-    
+
     if existing:
-        raise HTTPException(status_code=400, detail="Opportunity already tracked")
-        
+        raise HTTPException(
+            status_code=400, detail="Opportunity already tracked")
+
     tracking = models.TrackedApplication(
         user_id=current_user.id,
         opportunity_id=track_data.opportunity_id,
@@ -56,21 +63,22 @@ def track_opportunity(
         notes=track_data.notes
     )
     db.add(tracking)
-    
+
     # --- Agentic Feedback Loop (Telemetry) ---
     # The AI learns the user's implicit preferences based on their actions
-    opp = db.query(models.Opportunity).filter(models.Opportunity.id == track_data.opportunity_id).first()
+    opp = db.query(models.Opportunity).filter(
+        models.Opportunity.id == track_data.opportunity_id).first()
     if opp:
         user_chains = set(current_user.preferred_chains or [])
         user_skills = set(current_user.skills or [])
-        
+
         updated_profile = False
-        
+
         # Learn chain preference
         if opp.chain and opp.chain != "Various" and opp.chain not in user_chains:
             current_user.preferred_chains = list(user_chains) + [opp.chain]
             updated_profile = True
-            
+
         # Learn skill preferences (incorporate up to 2 tags/reqs to prevent noise)
         opp_reqs = set(opp.required_skills or [])
         opp_tags = set(opp.tags or [])
@@ -78,20 +86,21 @@ def track_opportunity(
         if new_skills:
             current_user.skills = list(user_skills) + list(new_skills)[:2]
             updated_profile = True
-            
+
         if updated_profile:
             db.add(current_user)
-            
+
     db.commit()
     db.refresh(tracking)
     return tracking
 
+
 @router.put("/{id}", response_model=schemas.TrackedAppResponse)
 def update_tracking(
-    id: uuid.UUID, 
-    update_data: schemas.TrackedAppUpdate, 
-    db: Session = Depends(database.get_db), 
-    current_user = Depends(get_current_user)
+    id: uuid.UUID,
+    update_data: schemas.TrackedAppUpdate,
+    db: Session = Depends(database.get_db),
+    current_user=Depends(get_current_user)
 ):
     """
     Update status or notes.
@@ -100,23 +109,24 @@ def update_tracking(
         models.TrackedApplication.id == id,
         models.TrackedApplication.user_id == current_user.id
     ).first()
-    
+
     if not tracking:
         raise HTTPException(status_code=404, detail="Tracking entry not found")
-        
+
     if update_data.status:
         tracking.status = update_data.status
     if update_data.notes is not None:
         tracking.notes = update_data.notes
     if update_data.submission_link is not None:
         tracking.submission_link = update_data.submission_link
-        
+
     db.commit()
     db.refresh(tracking)
     return tracking
 
+
 @router.delete("/{id}")
-def delete_tracking(id: uuid.UUID, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+def delete_tracking(id: uuid.UUID, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
     """
     Remove from tracker.
     """
@@ -124,19 +134,20 @@ def delete_tracking(id: uuid.UUID, db: Session = Depends(database.get_db), curre
         models.TrackedApplication.id == id,
         models.TrackedApplication.user_id == current_user.id
     ).first()
-    
+
     if not tracking:
         raise HTTPException(status_code=404, detail="Tracking entry not found")
-        
+
     db.delete(tracking)
     db.commit()
     return {"status": "deleted"}
 
+
 @router.post("/{id}/draft")
 async def generate_draft(
-    id: uuid.UUID, 
-    db: Session = Depends(database.get_db), 
-    current_user = Depends(get_current_user)
+    id: uuid.UUID,
+    db: Session = Depends(database.get_db),
+    current_user=Depends(get_current_user)
 ):
     """
     Generates an AI-powered application draft for a tracked opportunity.
@@ -147,19 +158,20 @@ async def generate_draft(
         models.TrackedApplication.id == id,
         models.TrackedApplication.user_id == current_user.id
     ).first()
-    
+
     # If not found, try looking up as Opportunity ID
     if not tracking:
         tracking = db.query(models.TrackedApplication).filter(
             models.TrackedApplication.opportunity_id == id,
             models.TrackedApplication.user_id == current_user.id
         ).first()
-    
+
     if not tracking:
-        raise HTTPException(status_code=404, detail="Tracking entry not found for this user/id")
-        
+        raise HTTPException(
+            status_code=404, detail="Tracking entry not found for this user/id")
+
     opp = tracking.opportunity
-    
+
     # Prompt Construction
     prompt = f"""Act as a Web3 Application Advisor. Generate a high-fidelity application draft for a mission.
 
@@ -209,7 +221,13 @@ Output in Markdown format."""
                 if resp.status_code == 200:
                     draft_content = resp.json().get("response")
         except Exception as e:
-            logger.warning(f"AI Engine unreachable for draft, falling back to Groq: {e}")
+            logger.warning(
+                f"AI Engine unreachable for draft, falling back to Groq: {e}")
+
+    draft_messages = [
+        {"role": "system", "content": "You are Forge AI, a Web3 opportunity advisor. Generate compelling, professional application drafts in Markdown format."},
+        {"role": "user", "content": prompt},
+    ]
 
     # Strategy 2: Direct Groq API fallback
     if not draft_content and GROQ_API_KEY:
@@ -221,23 +239,37 @@ Output in Markdown format."""
                         "Authorization": f"Bearer {GROQ_API_KEY}",
                         "Content-Type": "application/json",
                     },
-                    json={
-                        "model": GROQ_MODEL,
-                        "messages": [
-                            {"role": "system", "content": "You are Forge AI, a Web3 opportunity advisor. Generate compelling, professional application drafts in Markdown format."},
-                            {"role": "user", "content": prompt},
-                        ],
-                        "temperature": 0.8,
-                        "max_tokens": 1500,
+                    json={"model": GROQ_MODEL, "messages": draft_messages, "temperature": 0.8, "max_tokens": 1500},
+                    timeout=20.0,
+                )
+                if resp.status_code == 200:
+                    draft_content = resp.json()["choices"][0]["message"]["content"]
+                elif resp.status_code == 429:
+                    logger.warning("Groq rate limit on draft, trying Gemini")
+                else:
+                    logger.error(f"Groq draft error: {resp.status_code}")
+        except Exception as e:
+            logger.error(f"Groq draft exception: {e}")
+
+    # Strategy 3: Gemini fallback (when Groq is rate-limited)
+    if not draft_content and GEMINI_API_KEY:
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    GEMINI_URL,
+                    headers={
+                        "Authorization": f"Bearer {GEMINI_API_KEY}",
+                        "Content-Type": "application/json",
                     },
+                    json={"model": GEMINI_MODEL, "messages": draft_messages, "temperature": 0.8, "max_tokens": 1500},
                     timeout=20.0,
                 )
                 if resp.status_code == 200:
                     draft_content = resp.json()["choices"][0]["message"]["content"]
                 else:
-                    logger.error(f"Groq draft error: {resp.status_code}")
+                    logger.error(f"Gemini draft error: {resp.status_code}")
         except Exception as e:
-            logger.error(f"Groq draft exception: {e}")
+            logger.error(f"Gemini draft exception: {e}")
 
     if not draft_content:
         draft_content = "Forge AI is temporarily unavailable. Please try generating the draft again."

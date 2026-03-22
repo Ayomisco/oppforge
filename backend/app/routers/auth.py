@@ -1,3 +1,5 @@
+from ..schemas.auth import GoogleLoginRequest
+from ..schemas.auth import XLoginRequest
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -20,12 +22,15 @@ router = APIRouter(
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_change_me_prod")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days persistence
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days persistence
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="auth/login", auto_error=False)
 
 # --- JWT Helpers ---
+
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -35,6 +40,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     credentials_exception = HTTPException(
@@ -49,11 +55,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     user = db.query(UserModel).filter(UserModel.email == email).first()
     if user is None:
         raise credentials_exception
     return user
+
 
 def get_optional_user(token: Optional[str] = Depends(oauth2_scheme_optional), db: Session = Depends(database.get_db)):
     """
@@ -71,6 +78,7 @@ def get_optional_user(token: Optional[str] = Depends(oauth2_scheme_optional), db
     except (JWTError, Exception):
         return None
 
+
 def check_subscription_clearance(current_user: UserModel = Depends(get_current_user)):
     """
     Dependency to ensure the user has active subscription clearance.
@@ -78,7 +86,7 @@ def check_subscription_clearance(current_user: UserModel = Depends(get_current_u
     """
     if current_user.role == "admin" or current_user.role == "ADMIN":
         return current_user
-        
+
     if current_user.subscription_status not in ["active", "trialing"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -88,7 +96,6 @@ def check_subscription_clearance(current_user: UserModel = Depends(get_current_u
 
 # --- Endpoints ---
 
-from ..schemas.auth import GoogleLoginRequest
 
 @router.post("/google", response_model=dict)
 def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.get_db)):
@@ -98,20 +105,21 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
     token = login_data.token
     if not token:
         raise HTTPException(status_code=400, detail="Token required")
-    
+
     try:
         # 1. Verify Google Token
         import requests as httpx_requests
-        
+
         idinfo = None
         try:
             # Try parsing as an id_token first
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+            idinfo = id_token.verify_oauth2_token(
+                token, requests.Request(), GOOGLE_CLIENT_ID)
         except ValueError:
             # If it's not a valid id_token, it might be an access_token. Let's fetch user info.
             # This allows the frontend to use a custom Google button (Implicit flow).
             res = httpx_requests.get(
-                "https://www.googleapis.com/oauth2/v3/userinfo", 
+                "https://www.googleapis.com/oauth2/v3/userinfo",
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=10.0
             )
@@ -119,10 +127,10 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
                 idinfo = res.json()
             else:
                 raise ValueError("Invalid Google access token")
-                
+
         if not idinfo:
             raise ValueError("Could not extract user information from Google.")
-        
+
         google_id = idinfo.get('sub')
         email = idinfo.get('email')
         name = idinfo.get('name')
@@ -133,7 +141,7 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
         # 2. Logic: Find or Create User
         user = db.query(UserModel).filter(UserModel.email == email).first()
         is_new_user = False
-        
+
         if not user:
             is_new_user = True
             # Generate a simple username from email if not provided
@@ -157,27 +165,30 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
             if not user.google_id:
                 user.google_id = google_id
             user.avatar_url = picture
-            if not user.first_name: user.first_name = first_name
-            if not user.last_name: user.last_name = last_name
-            if not user.username: user.username = email.split('@')[0]
-                
+            if not user.first_name:
+                user.first_name = first_name
+            if not user.last_name:
+                user.last_name = last_name
+            if not user.username:
+                user.username = email.split('@')[0]
+
             db.commit()
             db.refresh(user)
-            
+
         # 3. Create Session JWT
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={
-                "sub": user.email, 
-                "role": user.role.value, 
+                "sub": user.email,
+                "role": user.role.value,
                 "onboarded": user.onboarded
-            }, 
+            },
             expires_delta=access_token_expires
         )
-        
+
         # 4. Return everything needed for frontend state
         return {
-            "access_token": access_token, 
+            "access_token": access_token,
             "token_type": "bearer",
             "user": schemas.UserResponse.model_validate(user),
             "is_new_user": is_new_user
@@ -185,6 +196,7 @@ def google_login(login_data: GoogleLoginRequest, db: Session = Depends(database.
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")
+
 
 @router.post("/wallet", response_model=dict)
 def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depends(database.get_db)):
@@ -194,16 +206,18 @@ def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depe
     address = login_data.address.lower()
     if not address:
         raise HTTPException(status_code=400, detail="Wallet address required")
-    
+
     # Logic: Find or Create User by Wallet
-    user = db.query(UserModel).filter(UserModel.wallet_address == address).first()
+    user = db.query(UserModel).filter(
+        UserModel.wallet_address == address).first()
     is_new_user = False
-    
+
     if not user:
         is_new_user = True
         # Create a new Web3 user
         user = UserModel(
-            email=f"{address[:10]}@web3.internal", # Placeholder email for unique constraint
+            # Placeholder email for unique constraint
+            email=f"{address[:10]}@web3.internal",
             wallet_address=address,
             username=f"hunter_{address[2:8]}",
             full_name=f"Hunter {address[:6]}",
@@ -214,24 +228,25 @@ def wallet_login(login_data: schemas.auth.WalletLoginRequest, db: Session = Depe
         db.add(user)
         db.commit()
         db.refresh(user)
-    
+
     # Create Session JWT
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={
-            "sub": user.email, 
-            "role": user.role.value if user.role else "user", 
+            "sub": user.email,
+            "role": user.role.value if user.role else "user",
             "onboarded": user.onboarded
-        }, 
+        },
         expires_delta=access_token_expires
     )
-    
+
     return {
-        "access_token": access_token, 
+        "access_token": access_token,
         "token_type": "bearer",
         "user": schemas.UserResponse.model_validate(user),
         "is_new_user": is_new_user
     }
+
 
 @router.get("/me", response_model=schemas.UserResponse)
 def read_users_me(current_user: UserModel = Depends(get_current_user)):
@@ -239,6 +254,7 @@ def read_users_me(current_user: UserModel = Depends(get_current_user)):
     Get current logged-in user profile.
     """
     return current_user
+
 
 @router.put("/profile", response_model=schemas.UserResponse)
 def update_profile(
@@ -251,17 +267,17 @@ def update_profile(
     Used by the Settings page Save button.
     """
     update_data = updates.model_dump(exclude_unset=True)
-    
+
     for field, value in update_data.items():
         if hasattr(current_user, field):
             setattr(current_user, field, value)
-    
+
     # Rebuild full_name if first/last name provided
     if "first_name" in update_data or "last_name" in update_data:
         first = current_user.first_name or ""
         last = current_user.last_name or ""
         current_user.full_name = f"{first} {last}".strip()
-    
+
     db.commit()
     db.refresh(current_user)
     return current_user
@@ -269,6 +285,7 @@ def update_profile(
 
 class LinkGoogleRequest(BaseModel):
     token: str
+
 
 @router.post("/link-google", response_model=dict)
 def link_google_account(
@@ -290,7 +307,8 @@ def link_google_account(
     try:
         idinfo = None
         try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+            idinfo = id_token.verify_oauth2_token(
+                token, requests.Request(), GOOGLE_CLIENT_ID)
         except ValueError:
             res = httpx_requests.get(
                 "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -382,7 +400,6 @@ def link_google_account(
 X_CLIENT_ID = os.getenv("X_CLIENT_ID", "")
 X_CLIENT_SECRET = os.getenv("X_CLIENT_SECRET", "")
 
-from ..schemas.auth import XLoginRequest
 
 @router.post("/x", response_model=dict)
 def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
@@ -394,7 +411,8 @@ def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
     import requests as httpx_requests
 
     if not X_CLIENT_ID:
-        raise HTTPException(status_code=503, detail="X authentication not configured")
+        raise HTTPException(
+            status_code=503, detail="X authentication not configured")
 
     # 1. Exchange code for access token
     token_url = "https://api.twitter.com/2/oauth2/token"
@@ -405,11 +423,11 @@ def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
         "redirect_uri": login_data.redirect_uri,
         "code_verifier": login_data.code_verifier,
     }
-    
+
     auth = None
     if X_CLIENT_SECRET:
         auth = (X_CLIENT_ID, X_CLIENT_SECRET)
-    
+
     token_resp = httpx_requests.post(
         token_url,
         data=token_data,
@@ -417,10 +435,11 @@ def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=15.0,
     )
-    
+
     if token_resp.status_code != 200:
-        raise HTTPException(status_code=400, detail=f"X token exchange failed: {token_resp.text}")
-    
+        raise HTTPException(
+            status_code=400, detail=f"X token exchange failed: {token_resp.text}")
+
     x_tokens = token_resp.json()
     access_token = x_tokens.get("access_token")
     if not access_token:
@@ -433,15 +452,17 @@ def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
         headers={"Authorization": f"Bearer {access_token}"},
         timeout=10.0,
     )
-    
+
     if user_resp.status_code != 200:
-        raise HTTPException(status_code=400, detail="Failed to fetch X user info")
-    
+        raise HTTPException(
+            status_code=400, detail="Failed to fetch X user info")
+
     x_user = user_resp.json().get("data", {})
     x_id = x_user.get("id")
     x_username = x_user.get("username")
     x_name = x_user.get("name")
-    x_avatar = x_user.get("profile_image_url", "").replace("_normal", "_400x400")
+    x_avatar = x_user.get("profile_image_url", "").replace(
+        "_normal", "_400x400")
 
     if not x_id:
         raise HTTPException(status_code=400, detail="Could not get X user ID")
@@ -452,8 +473,9 @@ def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
 
     if not user:
         # Check if a user with same twitter_handle exists (link accounts)
-        user = db.query(UserModel).filter(UserModel.twitter_handle == x_username).first()
-        
+        user = db.query(UserModel).filter(
+            UserModel.twitter_handle == x_username).first()
+
         if not user:
             is_new_user = True
             user = UserModel(
@@ -509,6 +531,7 @@ def x_login(login_data: XLoginRequest, db: Session = Depends(database.get_db)):
 class LinkWalletRequest(BaseModel):
     address: str
 
+
 @router.post("/link-wallet", response_model=dict)
 def link_wallet_account(
     req: LinkWalletRequest,
@@ -563,6 +586,7 @@ class LinkXRequest(BaseModel):
     code_verifier: str
     redirect_uri: str
 
+
 @router.post("/link-x", response_model=dict)
 def link_x_account(
     req: LinkXRequest,
@@ -576,7 +600,8 @@ def link_x_account(
     import requests as httpx_requests
 
     if not X_CLIENT_ID:
-        raise HTTPException(status_code=503, detail="X authentication not configured")
+        raise HTTPException(
+            status_code=503, detail="X authentication not configured")
 
     # Exchange code for token
     token_url = "https://api.twitter.com/2/oauth2/token"
@@ -591,12 +616,15 @@ def link_x_account(
 
     if X_CLIENT_SECRET:
         import base64
-        credentials = base64.b64encode(f"{X_CLIENT_ID}:{X_CLIENT_SECRET}".encode()).decode()
+        credentials = base64.b64encode(
+            f"{X_CLIENT_ID}:{X_CLIENT_SECRET}".encode()).decode()
         headers["Authorization"] = f"Basic {credentials}"
 
-    token_resp = httpx_requests.post(token_url, data=token_data, headers=headers, timeout=15)
+    token_resp = httpx_requests.post(
+        token_url, data=token_data, headers=headers, timeout=15)
     if token_resp.status_code != 200:
-        raise HTTPException(status_code=400, detail="Failed to verify X account")
+        raise HTTPException(
+            status_code=400, detail="Failed to verify X account")
 
     x_access_token = token_resp.json().get("access_token")
     if not x_access_token:
@@ -610,14 +638,16 @@ def link_x_account(
         timeout=10,
     )
     if user_resp.status_code != 200:
-        raise HTTPException(status_code=400, detail="Failed to fetch X profile")
+        raise HTTPException(
+            status_code=400, detail="Failed to fetch X profile")
 
     x_data = user_resp.json().get("data", {})
     x_id = x_data.get("id")
     x_username = x_data.get("username")
 
     if not x_id:
-        raise HTTPException(status_code=400, detail="Could not verify X identity")
+        raise HTTPException(
+            status_code=400, detail="Could not verify X identity")
 
     # Check if x_id is already linked to a different user
     existing = db.query(UserModel).filter(

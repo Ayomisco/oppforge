@@ -32,6 +32,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 # Permission dependencies
 # ========================
 
+
 def require_staff(current_user=Depends(get_current_user)):
     """Require ADMIN or SUB_ADMIN role."""
     role = current_user.role
@@ -73,13 +74,16 @@ class DashboardStats(BaseModel):
     total_payments: int
     payments_this_month: int
 
+
 class UserGrowthPoint(BaseModel):
     date: str
     count: int
 
+
 class CategoryBreakdown(BaseModel):
     category: str
     count: int
+
 
 class AdminUserResponse(BaseModel):
     id: uuid.UUID
@@ -100,12 +104,15 @@ class AdminUserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UserRoleUpdate(BaseModel):
     role: str  # "admin", "sub_admin", "user", "moderator"
+
 
 class UserBulkAction(BaseModel):
     user_ids: List[uuid.UUID]
     action: str  # "activate", "deactivate", "delete"
+
 
 class OpportunityUpdate(BaseModel):
     title: Optional[str] = None
@@ -134,6 +141,7 @@ class OpportunityUpdate(BaseModel):
     win_probability: Optional[str] = None
     is_verified: Optional[bool] = None
 
+
 class OpportunityFlag(BaseModel):
     flag_reason: str  # scam, expired, duplicate, inaccurate, other
     notes: Optional[str] = None
@@ -154,11 +162,14 @@ def get_dashboard_stats(
     week_start = today_start - timedelta(days=7)
 
     total_users = db.query(func.count(User.id)).scalar()
-    new_today = db.query(func.count(User.id)).filter(User.created_at >= today_start).scalar()
-    new_week = db.query(func.count(User.id)).filter(User.created_at >= week_start).scalar()
+    new_today = db.query(func.count(User.id)).filter(
+        User.created_at >= today_start).scalar()
+    new_week = db.query(func.count(User.id)).filter(
+        User.created_at >= week_start).scalar()
 
     total_opps = db.query(func.count(Opportunity.id)).scalar()
-    verified = db.query(func.count(Opportunity.id)).filter(Opportunity.is_verified == True).scalar()
+    verified = db.query(func.count(Opportunity.id)).filter(
+        Opportunity.is_verified == True).scalar()
     active = db.query(func.count(Opportunity.id)).filter(
         Opportunity.is_open == True,
         (Opportunity.deadline == None) | (Opportunity.deadline >= now)
@@ -169,16 +180,20 @@ def get_dashboard_stats(
     ).scalar()
     tracked = db.query(func.count(TrackedApplication.id)).scalar()
     pro = db.query(func.count(User.id)).filter(User.is_pro == True).scalar()
-    admins = db.query(func.count(User.id)).filter(User.role == UserRole.ADMIN).scalar()
-    sub_admins = db.query(func.count(User.id)).filter(User.role == UserRole.SUB_ADMIN).scalar()
+    admins = db.query(func.count(User.id)).filter(
+        User.role == UserRole.ADMIN).scalar()
+    sub_admins = db.query(func.count(User.id)).filter(
+        User.role == UserRole.SUB_ADMIN).scalar()
 
     from ..models.billing import SubscriptionPayment
     total_payments = db.query(func.count(SubscriptionPayment.id)).scalar()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    payments_month = db.query(func.count(SubscriptionPayment.id)).filter(SubscriptionPayment.created_at >= month_start).scalar()
-    
+    payments_month = db.query(func.count(SubscriptionPayment.id)).filter(
+        SubscriptionPayment.created_at >= month_start).scalar()
+
     total_revenue = db.query(func.sum(SubscriptionPayment.amount)).scalar()
-    revenue_month = db.query(func.sum(SubscriptionPayment.amount)).filter(SubscriptionPayment.created_at >= month_start).scalar()
+    revenue_month = db.query(func.sum(SubscriptionPayment.amount)).filter(
+        SubscriptionPayment.created_at >= month_start).scalar()
 
     return DashboardStats(
         total_users=total_users or 0,
@@ -230,7 +245,8 @@ def get_category_breakdown(
 ):
     """Opportunity count by category."""
     rows = (
-        db.query(Opportunity.category, func.count(Opportunity.id).label("count"))
+        db.query(Opportunity.category, func.count(
+            Opportunity.id).label("count"))
         .group_by(Opportunity.category)
         .order_by(desc("count"))
         .all()
@@ -280,7 +296,7 @@ def get_payment_history(
 ):
     """Payment history for admin dashboard. ADMIN and SUB_ADMIN can view."""
     from ..models.billing import SubscriptionPayment
-    
+
     payments = (
         db.query(SubscriptionPayment)
         .order_by(desc(SubscriptionPayment.created_at))
@@ -288,7 +304,7 @@ def get_payment_history(
         .limit(limit)
         .all()
     )
-    
+
     return [
         {
             "id": str(p.id),
@@ -334,14 +350,15 @@ def list_users(
     if role:
         query = query.filter(User.role == role)
 
-    users = query.order_by(desc(User.created_at)).offset(skip).limit(limit).all()
+    users = query.order_by(desc(User.created_at)).offset(
+        skip).limit(limit).all()
 
     result = []
     for u in users:
         tracked_count = db.query(func.count(TrackedApplication.id)).filter(
             TrackedApplication.user_id == u.id
         ).scalar() or 0
-        
+
         role_val = u.role.value if hasattr(u.role, 'value') else str(u.role)
 
         result.append(AdminUserResponse(
@@ -412,13 +429,16 @@ def update_user_role(
         raise HTTPException(status_code=404, detail="User not found")
 
     if target.id == current_user.id:
-        raise HTTPException(status_code=400, detail="Cannot change your own role via API.")
+        raise HTTPException(
+            status_code=400, detail="Cannot change your own role via API.")
 
     valid_roles = [r.value for r in UserRole]
     if body.role not in valid_roles:
-        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
 
-    old_role = target.role.value if hasattr(target.role, 'value') else str(target.role)
+    old_role = target.role.value if hasattr(
+        target.role, 'value') else str(target.role)
     target.role = UserRole(body.role)
 
     db.add(AuditLog(
@@ -446,7 +466,8 @@ def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     if target.id == current_user.id:
-        raise HTTPException(status_code=400, detail="Cannot delete your own account here.")
+        raise HTTPException(
+            status_code=400, detail="Cannot delete your own account here.")
 
     email = target.email
     db.delete(target)
@@ -560,7 +581,8 @@ def list_all_opportunities(
         from sqlalchemy import or_
         term = f"%{search}%"
         query = query.filter(
-            or_(Opportunity.title.ilike(term), Opportunity.description.ilike(term))
+            or_(Opportunity.title.ilike(term),
+                Opportunity.description.ilike(term))
         )
     if category and category.lower() not in ("all", ""):
         query = query.filter(Opportunity.category.ilike(category))
@@ -613,6 +635,7 @@ class SendNotification(BaseModel):
     type: str = "info"
     link: Optional[str] = None
 
+
 @router.post("/notifications/send")
 def send_notification(
     body: SendNotification,
@@ -623,7 +646,8 @@ def send_notification(
     if body.user_id:
         target = db.query(User).filter(User.id == body.user_id).first()
         if not target:
-            raise HTTPException(status_code=404, detail="Target user not found")
+            raise HTTPException(
+                status_code=404, detail="Target user not found")
         notif = Notification(
             user_id=target.id,
             title=body.title,
@@ -658,6 +682,7 @@ def send_notification(
 class ScrapeRequest(BaseModel):
     source: Optional[str] = None  # None = all scrapers
 
+
 @router.post("/scrape")
 def trigger_scrape(
     body: ScrapeRequest,
@@ -665,7 +690,8 @@ def trigger_scrape(
     current_user=Depends(require_admin)
 ):
     """Trigger scrapers to fetch new opportunities. Admin only."""
-    import sys, os
+    import sys
+    import os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
     from app.scrapers.superteam import SuperteamScraper
@@ -718,20 +744,25 @@ def trigger_scrape(
                 exists = False
                 if source_id:
                     exists = db.query(Opportunity).filter(
-                        Opportunity.source_id == str(source_id), Opportunity.source == source
+                        Opportunity.source_id == str(
+                            source_id), Opportunity.source == source
                     ).first()
                 if not exists and url:
-                    exists = db.query(Opportunity).filter(Opportunity.url == url).first()
+                    exists = db.query(Opportunity).filter(
+                        Opportunity.url == url).first()
                 if not exists and title:
-                    exists = db.query(Opportunity).filter(Opportunity.title == title).first()
+                    exists = db.query(Opportunity).filter(
+                        Opportunity.title == title).first()
 
                 if exists:
                     skipped += 1
                     continue
 
-                slug = title.lower().replace(" ", "-").replace("'", "")[:80] if title else None
+                slug = title.lower().replace(
+                    " ", "-").replace("'", "")[:80] if title else None
                 if slug:
-                    slug_exists = db.query(Opportunity).filter(Opportunity.slug == slug).first()
+                    slug_exists = db.query(Opportunity).filter(
+                        Opportunity.slug == slug).first()
                     if slug_exists:
                         slug = f"{slug}-{source.lower()}"
 
@@ -763,7 +794,8 @@ def trigger_scrape(
                 except Exception:
                     db.rollback()
 
-            results[name] = {"found": len(raw), "saved": saved, "skipped": skipped}
+            results[name] = {"found": len(
+                raw), "saved": saved, "skipped": skipped}
             total_saved += saved
 
         except Exception as e:
@@ -804,8 +836,10 @@ def scraper_status(
         Opportunity.category, func.count(Opportunity.id)
     ).group_by(Opportunity.category).all()
 
-    verified = db.query(Opportunity).filter(Opportunity.is_verified == True).count()
-    open_count = db.query(Opportunity).filter(Opportunity.is_open == True).count()
+    verified = db.query(Opportunity).filter(
+        Opportunity.is_verified == True).count()
+    open_count = db.query(Opportunity).filter(
+        Opportunity.is_open == True).count()
 
     return {
         "total_opportunities": total,
