@@ -167,52 +167,72 @@ def scrape_twitter():
 @shared_task
 def scrape_grant_platforms():
     """
-    Scrape grant platforms (Gitcoin, DoraHacks, Devpost, Questbook, etc.).
-    Runs every 4 hours.
+    Scrape all hackathon/grant platforms: ETHGlobal, DoraHacks, HackQuest,
+    Superteam, Devfolio, Questbook, Gitcoin.
+    Runs every 4 hours. After ingestion, triggers AI scoring for new items.
     """
     try:
-        logger.info("💰 Scraping grant platforms...")
-        
+        logger.info("Scraping grant platforms...")
+
         db = SessionLocal()
-        count = 0
-        
-        # Import all platform scrapers
-        from app.scrapers.gitcoin import GitcoinScraper
+        ingested_ids = []
+
+        from app.scrapers.ethglobal import ETHGlobalScraper
         from app.scrapers.dorahacks import DoraHacksScraper
-        from app.scrapers.questbook import QuestbookScraper
         from app.scrapers.hackquest import HackQuestScraper
         from app.scrapers.superteam import SuperteamScraper
-        
+        from app.scrapers.devfolio import DevfolioScraper
+        from app.scrapers.questbook import QuestbookScraper
+        from app.scrapers.gitcoin import GitcoinScraper
+
         scrapers = [
-            GitcoinScraper(),
+            ETHGlobalScraper(),
             DoraHacksScraper(),
-            QuestbookScraper(),
             HackQuestScraper(),
             SuperteamScraper(),
+            DevfolioScraper(),
+            QuestbookScraper(),
+            GitcoinScraper(),
         ]
-        
+
         for scraper in scrapers:
             try:
-                logger.info(f"🔍 Running {scraper.source_name}...")
+                logger.info(f"Running {scraper.source_name}...")
                 results = scraper.run()
-                
+                new_for_source = 0
                 for opp_data in results:
                     try:
-                        ingest_opportunity(db, opp_data)
-                        count += 1
+                        saved = ingest_opportunity(db, opp_data)
+                        if saved:
+                            for opp in saved:
+                                ingested_ids.append(str(opp.id))
+                            new_for_source += len(saved)
                     except Exception as e:
-                        logger.error(f"Error ingesting from {scraper.source_name}: {e}")
-                
-                logger.info(f"✅ {scraper.source_name}: {len(results)} opportunities")
-                
+                        logger.error(f"Ingest error from {scraper.source_name}: {e}")
+                logger.info(f"{scraper.source_name}: {len(results)} scraped, {new_for_source} new")
             except Exception as e:
-                logger.error(f"❌ {scraper.source_name} failed: {e}")
+                logger.error(f"{scraper.source_name} failed: {e}")
                 continue
-        
+
         db.close()
-        logger.info(f"✅ Platform scrape complete: {count} opportunities")
-        return {"source": "platforms", "count": count, "scrapers": len(scrapers)}
-        
+
+        # Trigger AI analysis for newly ingested opportunities
+        if ingested_ids:
+            logger.info(f"Triggering AI analysis for {len(ingested_ids)} new opportunities")
+            try:
+                from app.tasks.ai_tasks import batch_score_opportunities, batch_risk_assessment
+                batch_score_opportunities.delay()
+                batch_risk_assessment.delay()
+            except Exception as ai_err:
+                logger.warning(f"AI trigger failed (non-critical): {ai_err}")
+
+        logger.info(f"Platform scrape complete: {len(ingested_ids)} new opportunities")
+        return {
+            "source": "platforms",
+            "new_count": len(ingested_ids),
+            "scrapers": len(scrapers),
+        }
+
     except Exception as e:
         logger.error(f"Platform scrape failed: {e}")
         return {"source": "platforms", "error": str(e)}
