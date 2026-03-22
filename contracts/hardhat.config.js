@@ -5,6 +5,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY || ""
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || ""
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || ""
 const ARBISCAN_API_KEY = process.env.ARBISCAN_API_KEY || ""
+const CELOSCAN_API_KEY = process.env.CELOSCAN_API_KEY || ""
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -44,11 +45,48 @@ module.exports = {
         : "https://arb1.arbitrum.io/rpc",
       chainId: 42161,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
+    },
+    // ── Celo ──────────────────────────────────────────────────────────────────
+    alfajores: {
+      url: "https://alfajores-forno.celo-testnet.org",
+      chainId: 44787,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
+    },
+    celo: {
+      url: "https://forno.celo.org",
+      chainId: 42220,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     }
   },
   etherscan: {
-    // Etherscan V2: single key covers all chains (mainnet, sepolia, arbitrum, etc.)
-    apiKey: ETHERSCAN_API_KEY
+    apiKey: {
+      // Etherscan V2 covers mainnet, sepolia, arbitrum
+      mainnet: ETHERSCAN_API_KEY,
+      sepolia: ETHERSCAN_API_KEY,
+      arbitrumOne: ETHERSCAN_API_KEY,
+      arbitrumSepolia: ETHERSCAN_API_KEY,
+      // Celoscan requires its own key — get one at https://celoscan.io/myapikey
+      celo: CELOSCAN_API_KEY,
+      alfajores: CELOSCAN_API_KEY,
+    },
+    customChains: [
+      {
+        network: "celo",
+        chainId: 42220,
+        urls: {
+          apiURL: "https://api.celoscan.io/api",
+          browserURL: "https://celoscan.io",
+        },
+      },
+      {
+        network: "alfajores",
+        chainId: 44787,
+        urls: {
+          apiURL: "https://api-alfajores.celoscan.io/api",
+          browserURL: "https://alfajores.celoscan.io",
+        },
+      },
+    ],
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS === "true",

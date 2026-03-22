@@ -18,16 +18,19 @@ DEFAULT_NETWORK = os.getenv("PAYMENT_NETWORK", "sepolia")
 MASTER_WALLET = os.getenv("OPPFORGE_MASTER_WALLET", "")
 PROTOCOL_CONTRACT = os.getenv(
     "PROTOCOL_CONTRACT_ADDRESS", "0x502973c5413167834d49078f214ee777a8C0A8Cf")
+CELO_PROTOCOL_CONTRACT = os.getenv("CELO_PROTOCOL_CONTRACT_ADDRESS", "")
 
-# Valid payment recipients (master wallet + contracts)
+# Valid payment recipients (master wallet + all known contracts across chains)
 VALID_RECIPIENTS = {addr.lower()
-                    for addr in [MASTER_WALLET, PROTOCOL_CONTRACT] if addr}
+                    for addr in [MASTER_WALLET, PROTOCOL_CONTRACT, CELO_PROTOCOL_CONTRACT] if addr}
 
 # RPC URLs per network
 RPC_URLS = {
     "arbitrum": os.getenv("ARBITRUM_RPC_URL", "https://arb1.arbitrum.io/rpc"),
     "sepolia": os.getenv("SEPOLIA_RPC_URL", "https://ethereum-sepolia-rpc.publicnode.com"),
     "ethereum": os.getenv("ETHEREUM_RPC_URL", "https://eth.llamarpc.com"),
+    "celo": os.getenv("CELO_RPC_URL", "https://forno.celo.org"),
+    "alfajores": os.getenv("ALFAJORES_RPC_URL", "https://alfajores-forno.celo-testnet.org"),
 }
 
 
@@ -89,13 +92,14 @@ async def verify_payment(
     db.add(payment)
 
     # 4. Create Invoice
+    currency = "CELO" if request.network in ("celo", "alfajores") else "ETH"
     invoice_num = f"INV-{datetime.now().year}-{str(uuid.uuid4())[:8].upper()}"
     invoice = models.billing.Invoice(
         user_id=current_user.id,
         payment_id=payment.id,
         invoice_number=invoice_num,
         amount=request.amount,
-        currency="ETH",
+        currency=currency,
         status="paid"
     )
     db.add(invoice)
@@ -114,7 +118,7 @@ async def verify_payment(
     <h3>Payment Received!</h3>
     <p>Your upgrade to <b>{request.tier.upper()}</b> is confirmed.</p>
     <p><b>Transaction:</b> {request.tx_hash[:10]}...{request.tx_hash[-8:]}</p>
-    <p><b>Amount:</b> {request.amount} ETH</p>
+    <p><b>Amount:</b> {request.amount} {currency}</p>
     <p><b>Invoice:</b> {invoice_num}</p>
     <p>Welcome to the Elite Hunter Program.</p>
     """

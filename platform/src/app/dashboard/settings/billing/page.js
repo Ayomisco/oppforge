@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
+import { NETWORK_CONFIG } from '@/lib/contracts';
 
 const PLAN_DETAILS = {
   scout: { name: 'Scout', price: '$0', period: '7-Day Trial', color: '#10b981', icon: Shield },
@@ -185,7 +186,7 @@ export default function BillingPage() {
                 <CreditCard size={20} className="text-[#627eea]" />
               </div>
               <div className="flex-1">
-                <div className="text-sm font-bold text-white uppercase tracking-tight">On-Chain Wallet (ETH)</div>
+                <div className="text-sm font-bold text-white uppercase tracking-tight">On-Chain Wallet</div>
                 <div className="text-[10px] text-gray-600 font-mono tracking-widest">
                   {user?.wallet_address 
                     ? `${user.wallet_address.slice(0, 12)}...${user.wallet_address.slice(-8)}` 
@@ -198,7 +199,7 @@ export default function BillingPage() {
             </div>
 
             <p className="mt-4 text-[10px] text-gray-700 font-mono leading-relaxed">
-              Payments are verified on the Arbitrum network. Invoices are generated as cryptographically-signed records of your contribution to the forge.
+              Payments are verified on Arbitrum or Celo. Invoices are generated as cryptographically-signed records of your contribution to the forge.
             </p>
           </div>
 
@@ -223,7 +224,7 @@ export default function BillingPage() {
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right">
-                         <div className="text-xs font-black text-white">{inv.amount} ETH</div>
+                         <div className="text-xs font-black text-white">{inv.amount} {inv.currency || 'ETH'}</div>
                          <div className="text-[9px] text-[#10b981] font-mono font-bold uppercase tracking-widest">Confirmed</div>
                       </div>
                       <button className="p-2 hover:bg-white/10 rounded transition-all text-gray-500 hover:text-white border border-transparent hover:border-white/10">
@@ -255,9 +256,9 @@ export default function BillingPage() {
                                 <Zap size={14} className="text-[#ff5500] mt-1" />
                                 <div>
                                     <div className="text-[11px] font-bold text-white uppercase tracking-tight">Access Level Up: {tx.tier}</div>
-                                    <a 
-                                      href={`https://arbiscan.io/tx/${tx.tx_hash}`} 
-                                      target="_blank" 
+                                    <a
+                                      href={`${(NETWORK_CONFIG[tx.network] || NETWORK_CONFIG.arbitrum).explorer}${tx.tx_hash}`}
+                                      target="_blank"
                                       className="text-[9px] font-mono text-gray-600 hover:text-[#ff5500] flex items-center gap-1 mt-1 transition-colors"
                                     >
                                         TX: {tx.tx_hash.slice(0, 16)}... <ExternalLink size={8} />

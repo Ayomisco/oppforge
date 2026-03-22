@@ -1,0 +1,10 @@
+{
+  "network": "celo",
+  "chainId": 42220,
+  "currency": "CELO",
+  "PROTOCOL": "0x44cF9A17e5D976f3D63a497068E2eC2D0a36B9Ae",
+  "MISSION": "0x91F0106205D87EAB2e7541bb2a09d5b933f94937",
+  "hunterPriceCELO": "17.0",
+  "deployedAt": "2026-03-22T13:17:12.086Z",
+  "deployer": "0xE5978059D18c0B840A3F33389dc4425465442E69"
+}

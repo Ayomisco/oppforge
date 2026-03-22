@@ -3,14 +3,14 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
-import { mainnet, polygon, optimism, arbitrum, base, zora, sepolia } from 'wagmi/chains';
+import { mainnet, polygon, optimism, arbitrum, base, zora, sepolia, celo } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 const config = getDefaultConfig({
   appName: 'OppForge',
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
-  chains: [mainnet, polygon, optimism, arbitrum, base, zora, sepolia],
-  ssr: true, // If your dApp uses server side rendering (SSR)
+  chains: [arbitrum, celo, mainnet, polygon, optimism, base, zora, sepolia],
+  ssr: true,
 });
 
 const queryClient = new QueryClient();
