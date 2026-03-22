@@ -5,11 +5,21 @@ from typing import List
 from datetime import datetime, date
 import os
 import uuid
-import shutil
+import logging
+import httpx
 from pydantic import BaseModel
 from .. import database, models
 from ..models.user import User
 from .auth import get_current_user
+
+logger = logging.getLogger(__name__)
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 
 router = APIRouter(prefix="/workspace", tags=["workspace"])
 
@@ -157,68 +167,95 @@ async def workspace_chat(
     """
     Chat with AI in workspace context.
     Includes user's uploaded files, skills, and CV context.
+    Fallback chain: AI Engine → Groq → Gemini.
     """
-    import requests
-    
     AI_ENGINE_URL = os.getenv("AI_ENGINE_URL", "http://localhost:8001")
-    
-    # Get user's uploaded files
+
+    # Get user's uploaded files for context
     uploads = db.query(models.WorkspaceUpload).filter(
         models.WorkspaceUpload.user_id == current_user.id
     ).all()
-    
-    # Build context
-    context_text = f"User: {current_user.full_name}\\n"
-    context_text += f"Level: {current_user.level}\\n"
-    context_text += f"Skills: {', '.join(current_user.skills or [])}\\n"
-    
+
+    # Build enriched message with user context
+    context_prefix = (
+        f"[WORKSPACE CONTEXT]\n"
+        f"User: {current_user.full_name} | Level: {current_user.level}\n"
+        f"Skills: {', '.join(current_user.skills or []) or 'Not specified'}\n"
+    )
     if uploads:
-        context_text += f"\\nUploaded Documents ({len(uploads)}): {', '.join([u.filename for u in uploads])}\\n"
-        context_text += "Note: User has uploaded their CV/portfolio. Use this context when drafting proposals.\\n"
-    
-    context_text += f"\\nUser Message: {payload.message}"
-    
-    # Call AI engine
-    try:
-        response = requests.post(
-            f"{AI_ENGINE_URL}/ai/chat",
-            json={
-                "message": context_text,
-                "context": {
-                    "user_id": current_user.id,
-                    "has_cv": len(uploads) > 0,
-                    "skills": current_user.skills or [],
-                    "uploaded_files": payload.context.get("uploaded_files", [])
-                },
-                "model": "llama-3.3-70b-versatile"
-            },
-            timeout=60
+        context_prefix += (
+            f"Uploaded Documents ({len(uploads)}): {', '.join(u.filename for u in uploads)}\n"
+            f"Note: User has uploaded CV/portfolio — reference it when drafting.\n"
         )
-        
-        if response.status_code == 200:
-            ai_response = response.json().get("content", "I'm having trouble processing that request.")
-        else:
-            ai_response = "AI engine is temporarily unavailable. Please try again."
+    context_prefix += "\n"
+
+    full_message = context_prefix + payload.message
+    ai_response = None
+
+    # Strategy 1: AI Engine
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{AI_ENGINE_URL}/ai/chat",
+                json={"message": full_message, "user_profile": {
+                    "full_name": current_user.full_name,
+                    "skills": current_user.skills or [],
+                }},
+                timeout=30.0,
+            )
+            if resp.status_code == 200:
+                ai_response = resp.json().get("response")
     except Exception as e:
-        print(f"AI Engine error: {e}")
-        ai_response = "I'm experiencing connection issues. Please try again in a moment."
-    
-    # Save to chat history
-    chat_msg = models.WorkspaceChat(
-        user_id=current_user.id,
-        role="user",
-        content=payload.message
-    )
-    db.add(chat_msg)
-    
-    ai_msg = models.WorkspaceChat(
-        user_id=current_user.id,
-        role="assistant",
-        content=ai_response
-    )
-    db.add(ai_msg)
+        logger.warning(f"Workspace AI Engine unreachable: {e}")
+
+    # Strategy 2: Groq
+    if not ai_response and GROQ_API_KEY:
+        messages = [
+            {"role": "system", "content": "You are Forge AI, a Web3 opportunity advisor. Help users write compelling proposals and applications. Be direct, specific, and actionable."},
+            {"role": "user", "content": full_message},
+        ]
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    GROQ_URL,
+                    headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+                    json={"model": GROQ_MODEL, "messages": messages, "temperature": 0.8, "max_tokens": 1500},
+                    timeout=25.0,
+                )
+                if resp.status_code == 200:
+                    ai_response = resp.json()["choices"][0]["message"]["content"]
+                elif resp.status_code == 429 and GEMINI_API_KEY:
+                    logger.warning("Workspace Groq rate limit, trying Gemini")
+        except Exception as e:
+            logger.error(f"Workspace Groq error: {e}")
+
+    # Strategy 3: Gemini
+    if not ai_response and GEMINI_API_KEY:
+        messages = [
+            {"role": "system", "content": "You are Forge AI, a Web3 opportunity advisor. Help users write compelling proposals and applications."},
+            {"role": "user", "content": full_message},
+        ]
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    GEMINI_URL,
+                    headers={"Authorization": f"Bearer {GEMINI_API_KEY}", "Content-Type": "application/json"},
+                    json={"model": GEMINI_MODEL, "messages": messages, "temperature": 0.8, "max_tokens": 1500},
+                    timeout=25.0,
+                )
+                if resp.status_code == 200:
+                    ai_response = resp.json()["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.error(f"Workspace Gemini error: {e}")
+
+    if not ai_response:
+        ai_response = "Forge AI is temporarily at capacity. Please try again in a moment."
+
+    # Save to workspace chat history (separate from main chat)
+    db.add(models.WorkspaceChat(user_id=current_user.id, role="user", content=payload.message))
+    db.add(models.WorkspaceChat(user_id=current_user.id, role="assistant", content=ai_response))
     db.commit()
-    
+
     return ChatResponse(content=ai_response)
 
 @router.get("/history")

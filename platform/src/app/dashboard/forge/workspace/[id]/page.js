@@ -190,9 +190,9 @@ export default function ForgeWorkspace({ params }) {
         const history = apps.slice(0, 5).map(a =>
           `${a.title || a.opportunity?.title || 'Unknown'} (${a.status || 'tracked'})`
         ).join(', ')
-        const resp = await api.post('/chat', {
+        const resp = await api.post('/workspace/chat', {
           message: `You are a strategic advisor. Give a concise 3-point intelligence brief:\n\n1. **What they want** — top 2 things the organizers care about most\n2. **Competition level** — difficulty (Easy/Medium/Hard) and why\n3. **#1 tip to stand out** — the most important differentiator\n\nOpportunity: ${opp.title}\nCategory: ${opp.category}\nReward: ${opp.reward_pool || 'Not stated'}\nDescription: ${(opp.ai_summary || opp.description || '').slice(0, 500)}\n${opp.win_probability ? `Win rate: ${Math.round(opp.win_probability * 100)}%` : ''}\n${history ? `User history: ${history}` : ''}\n\nBe direct. 4-6 sentences max. No fluff.`,
-          opportunity_id: id
+          context: { opportunity_id: id }
         })
         setChatHistory([{ role: 'ai', content: resp.data.content, tag: 'brief' }])
       } catch { /* silent */ }
@@ -253,9 +253,9 @@ export default function ForgeWorkspace({ params }) {
         const resp = await api.post(`/tracker/${id}/draft`)
         draftContent = resp.data.draft
       } catch {
-        const resp = await api.post('/chat', {
+        const resp = await api.post('/workspace/chat', {
           message: buildForgePrompt(mode),
-          opportunity_id: id
+          context: { opportunity_id: id }
         })
         draftContent = resp.data.content
       }
@@ -280,9 +280,9 @@ export default function ForgeWorkspace({ params }) {
   const regenerateSection = async (section) => {
     setSectionGenId(section.id)
     try {
-      const resp = await api.post('/chat', {
+      const resp = await api.post('/workspace/chat', {
         message: `Rewrite ONLY the "${section.title}" section. Make it stronger and better tailored.\n\nCurrent content:\n${section.content}\n\nOpportunity: ${opp?.title} | Reward: ${opp?.reward_pool || 'N/A'}\n\nReturn ONLY the new content — no heading, no commentary.`,
-        opportunity_id: id
+        context: { opportunity_id: id }
       })
       setSections(prev => {
         const updated = prev.map(s => s.id === section.id ? { ...s, content: resp.data.content } : s)
@@ -338,9 +338,9 @@ export default function ForgeWorkspace({ params }) {
     setShowThread(true)
     setIsGenerating(true)
     try {
-      const resp = await api.post('/chat', {
+      const resp = await api.post('/workspace/chat', {
         message: `User request: "${userMsg}"\n\nContext: Working on ${currentModeConfig.label} for "${opp?.title}"\nCurrent draft: ${proposal?.slice(0, 700) || 'Not generated yet'}\nReward: ${opp?.reward_pool || 'N/A'}\n\nIf updating the draft, prefix with UPDATED_DRAFT:\nOtherwise answer directly. Be specific to this opportunity.`,
-        opportunity_id: id
+        context: { opportunity_id: id }
       })
       const aiResponse = resp.data.content
       setChatHistory(prev => [...prev, { role: 'ai', content: aiResponse }])
@@ -371,7 +371,7 @@ export default function ForgeWorkspace({ params }) {
       setShowThread(true)
       setIsGenerating(true)
       try {
-        const resp = await api.post('/chat', {
+        const resp = await api.post('/workspace/chat', {
           message: `Generate professional content for "${opp?.title}" (${opp?.category}).\n\nUser instruction: "${userMsg}"\n\nOpportunity:\n- Reward: ${opp?.reward_pool || 'N/A'}\n- Description: ${(opp?.ai_summary || opp?.description || '').slice(0, 500)}\n- Skills: ${(opp?.required_skills || []).join(', ')}\n- Deadline: ${opp?.deadline || 'Ongoing'}\n\nGenerate a complete, well-structured response in Markdown with clear section headers (## heading). Be specific and actionable.`,
           opportunity_id: id
         })

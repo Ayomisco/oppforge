@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Link from 'next/link';
-import { 
-  CreditCard, Shield, Zap, ArrowRight, Clock, 
+import {
+  CreditCard, Shield, Zap, ArrowRight, Clock, Crown,
   CheckCircle, AlertCircle, Download, Settings, User, Bell, Receipt, ExternalLink
 } from 'lucide-react';
 import { motion } from 'framer-motion';

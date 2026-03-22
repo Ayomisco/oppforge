@@ -170,9 +170,10 @@ def get_dashboard_stats(
     total_opps = db.query(func.count(Opportunity.id)).scalar()
     verified = db.query(func.count(Opportunity.id)).filter(
         Opportunity.is_verified == True).scalar()
+    from sqlalchemy import or_ as sql_or
     active = db.query(func.count(Opportunity.id)).filter(
         Opportunity.is_open == True,
-        (Opportunity.deadline == None) | (Opportunity.deadline >= now)
+        sql_or(Opportunity.deadline == None, Opportunity.deadline >= now)
     ).scalar()
     expired = db.query(func.count(Opportunity.id)).filter(
         Opportunity.deadline != None,
@@ -186,14 +187,20 @@ def get_dashboard_stats(
         User.role == UserRole.SUB_ADMIN).scalar()
 
     from ..models.billing import SubscriptionPayment
-    total_payments = db.query(func.count(SubscriptionPayment.id)).scalar()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    payments_month = db.query(func.count(SubscriptionPayment.id)).filter(
-        SubscriptionPayment.created_at >= month_start).scalar()
-
-    total_revenue = db.query(func.sum(SubscriptionPayment.amount)).scalar()
-    revenue_month = db.query(func.sum(SubscriptionPayment.amount)).filter(
-        SubscriptionPayment.created_at >= month_start).scalar()
+    try:
+        total_payments = db.query(func.count(SubscriptionPayment.id)).scalar() or 0
+        payments_month = db.query(func.count(SubscriptionPayment.id)).filter(
+            SubscriptionPayment.created_at >= month_start).scalar() or 0
+        total_revenue = db.query(func.sum(SubscriptionPayment.amount)).scalar()
+        revenue_month = db.query(func.sum(SubscriptionPayment.amount)).filter(
+            SubscriptionPayment.created_at >= month_start).scalar()
+    except Exception as billing_err:
+        logger.warning(f"Billing stats unavailable: {billing_err}")
+        total_payments = 0
+        payments_month = 0
+        total_revenue = None
+        revenue_month = None
 
     return DashboardStats(
         total_users=total_users or 0,

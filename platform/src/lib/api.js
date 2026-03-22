@@ -35,8 +35,11 @@ api.interceptors.response.use(
       }
     }
     if (error.response?.status === 401) {
+      const hadToken = !!Cookies.get('token');
       Cookies.remove('token', { path: '/' });
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      // Only hard-redirect if the user was previously authenticated (had a token).
+      // Guests browsing as anonymous should not be kicked to /login on 401.
+      if (hadToken && typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         if (window.location.pathname.startsWith('/dashboard')) {
           window.location.href = '/login';
         }

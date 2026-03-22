@@ -47,13 +47,30 @@ app.add_middleware(
 )
 
 # Global exception handler — ensures CORS headers on 500s
-
+_CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Allow-Headers": "*",
+}
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    logger.error(
-        f"Unhandled error on {request.method} {request.url.path}: {exc}")
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    origin = request.headers.get("origin", "")
+    allowed = [
+        "http://localhost:3000", "http://localhost:3001",
+        "https://app.oppforge.xyz", "https://oppforge.xyz",
+        "https://oppforge-platform.vercel.app",
+    ]
+    cors_origin = origin if (origin in allowed or origin.endswith(".vercel.app")) else ""
+    headers = {
+        "Access-Control-Allow-Origin": cors_origin or "*",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Methods": "*",
+        "Access-Control-Allow-Headers": "*",
+    }
+    logger.error(f"Unhandled error on {request.method} {request.url.path}: {exc}")
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"}, headers=headers)
 
 
 @app.websocket("/ws/live")
